@@ -1,0 +1,8 @@
+{
+  "extends": "./tsconfig",
+  "compilerOptions": {
+    "skipLibCheck": true,
+    "skipDefaultLibCheck": true
+  },
+  "exclude": ["src/__tests__"]
+}

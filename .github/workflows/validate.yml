@@ -1,0 +1,14 @@
+name: validate
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2.3.5
+      - uses: actions/setup-node@v2.4.1
+        with:
+          node-version: 14.18.2
+      - run: npm ci
+      - run: npm run validate
