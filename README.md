@@ -20,7 +20,7 @@ npm install --save @uxd-protocol/uxd-client
 - UXD Program: _BA67esrWE7cPzQWtAftaTbrVWtmHZJ1PbbBBpZgpjH4p_
 - UXD Mint: _B8fvu55oqVmPzRFjo99wvnPXkuA2AcFBou5tstpeHFaR_
 
-#### Instantiate the Controller
+#### Instantiate the Controller Object
 
 ```javascript
 import { Controller } from '@uxd-protocol/uxd-client';
@@ -51,7 +51,7 @@ const mango = createAndInitializeMango(
 );
 ```
 
-### Instantiate a MangoDepository for a given UXD collateral, ie WSOL
+### Instantiate a MangoDepository Object for a given UXD collateral, ie WSOL
 
 ```javascript
 import {
@@ -63,13 +63,13 @@ import {
 } from '@uxd-protocol/uxd-client';
 
 return new MangoDepository(
-  WSOL,
+  WSOL, 
   'SOL',
   SOL_DECIMALS,
-  USDC,
+  USDC, // Use mainnet mint, must be matching the program used (see USDC_DEVNET)
   'USDC',
-  USDC_DECIMALS,
-  'UXD8m9cvwk4RcSxnX2HZ9VudQCEeDH6fRnB4CAP57Dr'
+  USDC_DECIMALS, 
+  'UXD8m9cvwk4RcSxnX2HZ9VudQCEeDH6fRnB4CAP57Dr' // Mainnet program
 );
 ```
 
@@ -89,7 +89,7 @@ import { Transaction } from '@solana/web3.js';
 const transaction = new Transaction();
 const mintWithMangoDepositoryIx =
   client.createMintWithMangoDepositoryInstruction(
-    1, // UI amount of collateral to mint
+    1, // UI amount of collateral to use to mint UXD
     5, // 0.5% slippage in points
     controller,
     depository, // matching Mango Depository for the collateral
@@ -112,7 +112,7 @@ import { Transaction } from '@solana/web3.js';
 const transaction = new Transaction();
 const redeemFromMangoDepositoryIx =
   client.createRedeemFromMangoDepositoryInstruction(
-    1, // UI amount of collateral to redeem
+    10, // UI amount of UXD to redeem (returned as the provided depository Collateral, here SOL))
     5, // 0.5% slippage in points
     controller,
     depository, // matching Mango Depository for the collateral
@@ -125,4 +125,96 @@ const redeemFromMangoDepositoryIx =
 transaction.add(redeemFromMangoDepositoryIx)
 
 // sign, send & confirm transaction
+```
+
+### Rebalance an UXD Mango Depository
+
+This can be used as a Swap. Depending of the polarity of the PnL of the depository, this instruction
+will switch Quote->Collateral or Collateral->Quote.
+
+For instance, when the PnL is Positive (Collateral price went up since minting), user can provide USDC.
+By doing so, UXDProgram will offset the PnL of an equal amount, close equivalent short position, and return the backing collateral amount.
+
+It's a 4bps + slippage + spread swap (as we use the Perp price for all operations).
+
+You can find detailed information about the current state of depositories on the following page
+<https://uxd-backoffice.vercel.app/>
+
+```javascript
+import { Transaction } from '@solana/web3.js';
+
+const unrealizedPnl = await depository.getUnrealizedPnl(mango, TXN_OPTS);
+const polarity = unrealizedPnl > 0 ? PnLPolarity.Positive : PnLPolarity.Negative;
+
+const transaction = new Transaction();
+const rebalanceLiteMangoDepositoryIx =
+  client.createRebalanceMangoDepositoryLiteInstruction(
+    10, // UI amount in Quote to rebalance (Quote on mango is USDC)
+    5, // 0.5% slippage in points
+    PnLPolarity.positive, // The polarity of the PnL, the expected direction of the swap (can be enforce program side but here to be explicit)
+    controller,
+    depository, // matching Mango Depository for the collateral
+    mango,
+    user // PublicKey of recipient
+    {}, // ConfirmOptions, leave empty for defaults
+    payer, // PublicKey of payer, optional, defaults to user
+  );
+
+transaction.add(redeemFromMangoDepositoryIx)
+
+// sign, send & confirm transaction
+```
+
+### Retrieve the price impact and minting/redeeming estimates
+
+To determine the estimates about a minting operation :
+
+```javascript
+import { Transaction } from '@solana/web3.js';
+
+const perpPrice = await this.getCollateralPerpPriceUI(mango);
+
+// Minting
+// User wants to mint `collateralQuantity` (Collateral -> UXD)
+const mintingPriceImpact = await this.getMintingPriceImpact(
+  collateralQuantity,
+  mango
+);
+if (!mintingPriceImpact) {
+  throw new Error("mintingPriceImpact couldn't be determined.");
+}
+console.log("Minting price impact", mintingPriceImpact);
+const mintingEstimates = await depository.getMintingEstimates(
+  collateralQuantity,
+  perpPrice,
+  mintingPriceImpact,
+  mango,
+);
+console.log("Will mint", mintingEstimates.yield, "UXD");
+console.log("(fees:", mintingEstimates.fees, ", slippage:", mintingEstimates.slippage, ")");
+```
+
+and for redeeming :
+
+```javascript
+// Redeeming
+// User wants to redeem `redeemableQuantity` of UXD (UXD -> Collateral)
+const redeemingPriceImpact = await this.getRedeemingPriceImpact(
+  redeemableQuantity,
+  mango
+);
+if (!redeemingPriceImpact) {
+  throw new Error("redeemingPriceImpact couldn't be determined.");
+}
+console.log("Redeeming price impact", redeemingPriceImpact);
+
+const redeemingEstimates = await depository.getRedeemingEstimates(
+  redeemableQuantity,
+  perpPrice,
+  mintingPriceImpact,
+  mango,
+);
+console.log("Will redeem", redeemingEstimates.yield, "Collateral");
+console.log("(fees:", redeemingEstimates.fees, ", slippage:", redeemingEstimates.slippage, ")");
+
 ```

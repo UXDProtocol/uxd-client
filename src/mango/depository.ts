@@ -6,6 +6,7 @@ import {
   Payer,
   PerpMarket,
   PerpMarketConfig,
+  uiToNative,
 } from '@blockworks-foundation/mango-client';
 import { BorshAccountsCoder } from '@project-serum/anchor';
 import { ConfirmOptions, Connection, PublicKey } from '@solana/web3.js';
@@ -13,6 +14,19 @@ import { Mango } from '.';
 import { findAddrSync, UXD_DECIMALS } from '../utils';
 import { IDL } from '../idl';
 import { MangoDepositoryAccount } from '../interfaces';
+
+export enum OrderBookSide {
+  Bid,
+  Ask,
+}
+
+// Outcome of a swap operation
+export interface SwapEstimate {
+  // Estimated final outcome
+  yield: number;
+  fees: number;
+  slippage: number;
+}
 
 export class MangoDepository {
   public pda: PublicKey;
@@ -289,5 +303,88 @@ export class MangoDepository {
       price,
       payer
     );
+  }
+
+  // Estimated amount of Redeemable (UXD) that will be given for Minting (Mint or RebalancingLite when PnlPolarity is positive)
+  // `collateralQuantity` : In Collateral UI units
+  //  Output -> breakdown of estimated costs
+  public async getMintingEstimates(
+    collateralQuantity: number,
+    perpPrice: number,
+    mintingPriceImpact: number,
+    mango: Mango
+  ): Promise<SwapEstimate> {
+    const takerFee = this.getCollateralPerpTakerFees(mango);
+    const perfectAmount = collateralQuantity * perpPrice;
+    const realAmount = collateralQuantity * mintingPriceImpact;
+    const fees = realAmount * takerFee;
+    const slippage = perfectAmount - realAmount - fees;
+    const finalYield = realAmount - fees;
+    return { yield: finalYield, fees, slippage };
+  }
+
+  // Estimated amount of Collateral (SOL/BTC/ETH) that will be given for Redeeming (Redeem or RebalancingLite when PnlPolarity is negative)
+  // `collateralQuantity` : In UXD UI units
+  //  Output -> Collateral UI Units, estimated
+  public async getRedeemingEstimates(
+    redeemableQuantity: number,
+    perpPrice: number,
+    priceImpact: number,
+    mango: Mango
+  ): Promise<SwapEstimate> {
+    const takerFee = this.getCollateralPerpTakerFees(mango);
+    const collateralQuantity = redeemableQuantity / perpPrice;
+    const perfectAmount = collateralQuantity * perpPrice;
+    const realAmount = collateralQuantity * priceImpact;
+    const fees = realAmount * takerFee;
+    const slippage = perfectAmount - realAmount - fees;
+    const finalYield = realAmount - fees;
+    return { yield: finalYield, fees, slippage };
+  }
+
+  // Price impact for a minting operation (Mint or RebalancingLite when PnlPolarity is positive)
+  public async getMintingPriceImpact(
+    collateralQuantity: number, // UI units
+    mango: Mango
+  ): Promise<number | undefined> {
+    // Minting is placing a ask IoC limit order, will check the impact on the bid side
+    return this.getMangoPerpOrderBookPriceImpact(
+      mango,
+      collateralQuantity,
+      OrderBookSide.Ask
+    );
+  }
+
+  // Price impact for a redeeming operation (Redeeming or RebalancingLite when PnlPolarity is negative)
+  public async getRedeemingPriceImpact(
+    redeemableQuantity: number, // UI units
+    perpPrice: number,
+    mango: Mango
+  ): Promise<number | undefined> {
+    const takerFee = this.getCollateralPerpTakerFees(mango);
+    // Remove the max possible fees, as we place an order on that amount to  make sure we can pay for the fees on the program side.
+    const redeemableQuantityMinusFees = redeemableQuantity * (1 - takerFee);
+    const collateralQuantity = redeemableQuantityMinusFees / perpPrice;
+    // Redeeming is placing a bid IoC limit order, will check the impact on the ask side
+    return this.getMangoPerpOrderBookPriceImpact(
+      mango,
+      collateralQuantity,
+      OrderBookSide.Bid
+    );
+  }
+
+  // Return the price impact for an order
+  public async getMangoPerpOrderBookPriceImpact(
+    mango: Mango,
+    quantity: number, // UI AMount
+    side: OrderBookSide
+  ): Promise<number | undefined> {
+    const nativeQuantity = uiToNative(quantity, this.collateralMintDecimals);
+
+    const { loadBids, loadAsks } = await this.getPerpMarket(mango);
+    const loadSideBook = side === OrderBookSide.Bid ? loadBids : loadAsks;
+    const sideBook = await loadSideBook(mango.client.connection, false);
+
+    return sideBook.getImpactPriceUi(nativeQuantity);
   }
 }
