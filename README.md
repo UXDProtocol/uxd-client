@@ -68,7 +68,7 @@ import {
 } from '@uxd-protocol/uxd-client';
 
 return new MangoDepository(
-  WSOL,
+  WSOL, 
   'SOL',
   SOL_DECIMALS,
   USDC, // Use mainnet mint, must be matching the program used (see USDC_DEVNET)
@@ -142,7 +142,8 @@ By doing so, UXDProgram will offset the PnL of an equal amount, close equivalent
 
 It's a 4bps + slippage + spread swap (as we use the Perp price for all operations).
 
-You can find detailed information about the current state of depositories on the [UXD Backoffice](https://backoffice.uxd.fi).
+You can find detailed information about the current state of depositories on the following page
+<https://uxd-backoffice.vercel.app/>
 
 ```javascript
 import { Transaction } from '@solana/web3.js';
@@ -167,4 +168,58 @@ const rebalanceLiteMangoDepositoryIx =
 transaction.add(redeemFromMangoDepositoryIx)
 
 // sign, send & confirm transaction
+```
+
+### Retrieve the price impact and minting/redeeming estimates
+
+To determine the estimates about a minting operation :
+
+```javascript
+import { Transaction } from '@solana/web3.js';
+
+const perpPrice = await this.getCollateralPerpPriceUI(mango);
+
+// Minting
+// User wants to mint `collateralQuantity` (Collateral -> UXD)
+const mintingPriceImpact = await this.getMintingPriceImpact(
+  collateralQuantity,
+  mango
+);
+if (!mintingPriceImpact) {
+  throw new Error("mintingPriceImpact couldn't be determined.");
+}
+console.log("Minting price impact", mintingPriceImpact);
+const mintingEstimates = await depository.getMintingEstimates(
+  collateralQuantity,
+  perpPrice,
+  mintingPriceImpact,
+  mango,
+);
+console.log("Will mint", mintingEstimates.yield, "UXD");
+console.log("(fees:", mintingEstimates.fees, ", slippage:", mintingEstimates.slippage, ")");
+```
+
+and for redeeming :
+
+```javascript
+// Redeeming
+// User wants to redeem `redeemableQuantity` of UXD (UXD -> Collateral)
+const redeemingPriceImpact = await this.getRedeemingPriceImpact(
+  redeemableQuantity,
+  mango
+);
+if (!redeemingPriceImpact) {
+  throw new Error("redeemingPriceImpact couldn't be determined.");
+}
+console.log("Redeeming price impact", redeemingPriceImpact);
+
+const redeemingEstimates = await depository.getRedeemingEstimates(
+  redeemableQuantity,
+  perpPrice,
+  mintingPriceImpact,
+  mango,
+);
+console.log("Will redeem", redeemingEstimates.yield, "Collateral");
+console.log("(fees:", redeemingEstimates.fees, ", slippage:", redeemingEstimates.slippage, ")");
+
 ```
