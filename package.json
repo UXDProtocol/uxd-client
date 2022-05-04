@@ -1,7 +1,7 @@
 {
   "name": "@uxd-protocol/uxd-client",
   "version": "1.0.0",
-  "description": "JavaScript (TypeScript) Client for the UXD Solana Program.",
+  "description": "JavaScript Client for the UXD Solana Program",
   "keywords": [
     "solana",
     "stablecoin"

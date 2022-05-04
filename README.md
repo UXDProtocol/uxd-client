@@ -1,4 +1,9 @@
-# JavaScript (TypeScript) Client for the UXD Solana Program
+[![npm][npm-image]][npm-url]
+
+[npm-image]: https://img.shields.io/npm/v/@uxd-protocol/uxd-client.svg
+[npm-url]: https://www.npmjs.com/package/@uxd-protocol/uxd-client
+
+# JavaScript Client for the UXD Solana Program
 
 ## Install
 
@@ -63,12 +68,12 @@ import {
 } from '@uxd-protocol/uxd-client';
 
 return new MangoDepository(
-  WSOL, 
+  WSOL,
   'SOL',
   SOL_DECIMALS,
   USDC, // Use mainnet mint, must be matching the program used (see USDC_DEVNET)
   'USDC',
-  USDC_DECIMALS, 
+  USDC_DECIMALS,
   'UXD8m9cvwk4RcSxnX2HZ9VudQCEeDH6fRnB4CAP57Dr' // Mainnet program
 );
 ```
@@ -137,8 +142,7 @@ By doing so, UXDProgram will offset the PnL of an equal amount, close equivalent
 
 It's a 4bps + slippage + spread swap (as we use the Perp price for all operations).
 
-You can find detailed information about the current state of depositories on the following page
-<https://uxd-backoffice.vercel.app/>
+You can find detailed information about the current state of depositories on the [UXD Backoffice](https://backoffice.uxd.fi).
 
 ```javascript
 import { Transaction } from '@solana/web3.js';
