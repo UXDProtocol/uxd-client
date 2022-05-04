@@ -1,7 +1,7 @@
 import {
   TOKEN_PROGRAM_ID,
-  Token,
   ASSOCIATED_TOKEN_PROGRAM_ID,
+  Token,
 } from '@solana/spl-token';
 import {
   PublicKey,
@@ -46,6 +46,12 @@ export const BTC_DEVNET = new PublicKey(
 );
 export const ETH_DEVNET = new PublicKey(
   'Cu84KB3tDL6SbFgToHMLYVDJJXdJjenNzSKikeAvzmkA'
+);
+export const USDC_DEVNET_ZO = new PublicKey(
+  '7UT1javY6X1M9R2UrPGrwcZ78SX3huaXyETff5hm5YdX'
+);
+export const BTC_DEVNET_ZO = new PublicKey(
+  '3n3sMJMnZhgNDaxp6cfywvjHLrV1s34ndfa6xAaYvpRs'
 );
 
 // abbreviation for too long name

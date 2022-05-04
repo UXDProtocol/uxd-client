@@ -1,7 +1,7 @@
 import type { Idl } from '@project-serum/anchor/dist/cjs/idl';
 
 export const IDL: Idl = {
-  version: '3.0.2',
+  version: '3.1.0',
   name: 'uxd',
   instructions: [
     {
@@ -126,7 +126,7 @@ export const IDL: Idl = {
           isSigner: false,
         },
         {
-          name: 'depositoryMangoAccount',
+          name: 'mangoAccount',
           isMut: true,
           isSigner: false,
         },
@@ -177,22 +177,12 @@ export const IDL: Idl = {
           isSigner: false,
         },
         {
-          name: 'collateralMint',
-          isMut: false,
-          isSigner: false,
-        },
-        {
-          name: 'quoteMint',
-          isMut: false,
-          isSigner: false,
-        },
-        {
           name: 'authorityQuote',
           isMut: true,
           isSigner: false,
         },
         {
-          name: 'depositoryMangoAccount',
+          name: 'mangoAccount',
           isMut: true,
           isSigner: false,
         },
@@ -203,12 +193,12 @@ export const IDL: Idl = {
         },
         {
           name: 'mangoCache',
-          isMut: false,
+          isMut: true,
           isSigner: false,
         },
         {
           name: 'mangoRootBank',
-          isMut: false,
+          isMut: true,
           isSigner: false,
         },
         {
@@ -258,22 +248,12 @@ export const IDL: Idl = {
           isSigner: false,
         },
         {
-          name: 'collateralMint',
-          isMut: false,
-          isSigner: false,
-        },
-        {
-          name: 'quoteMint',
-          isMut: false,
-          isSigner: false,
-        },
-        {
           name: 'authorityQuote',
           isMut: true,
           isSigner: false,
         },
         {
-          name: 'depositoryMangoAccount',
+          name: 'mangoAccount',
           isMut: true,
           isSigner: false,
         },
@@ -294,7 +274,7 @@ export const IDL: Idl = {
         },
         {
           name: 'mangoRootBank',
-          isMut: false,
+          isMut: true,
           isSigner: false,
         },
         {
@@ -374,7 +354,7 @@ export const IDL: Idl = {
           isSigner: false,
         },
         {
-          name: 'depositoryMangoAccount',
+          name: 'mangoAccount',
           isMut: true,
           isSigner: false,
         },
@@ -385,17 +365,17 @@ export const IDL: Idl = {
         },
         {
           name: 'mangoGroup',
-          isMut: false,
+          isMut: true,
           isSigner: false,
         },
         {
           name: 'mangoCache',
-          isMut: false,
+          isMut: true,
           isSigner: false,
         },
         {
           name: 'mangoRootBankQuote',
-          isMut: false,
+          isMut: true,
           isSigner: false,
         },
         {
@@ -410,7 +390,7 @@ export const IDL: Idl = {
         },
         {
           name: 'mangoRootBankCollateral',
-          isMut: false,
+          isMut: true,
           isSigner: false,
         },
         {
@@ -454,17 +434,7 @@ export const IDL: Idl = {
           isSigner: false,
         },
         {
-          name: 'associatedTokenProgram',
-          isMut: false,
-          isSigner: false,
-        },
-        {
           name: 'mangoProgram',
-          isMut: false,
-          isSigner: false,
-        },
-        {
-          name: 'rent',
           isMut: false,
           isSigner: false,
         },
@@ -481,8 +451,8 @@ export const IDL: Idl = {
           },
         },
         {
-          name: 'slippage',
-          type: 'u32',
+          name: 'limitPrice',
+          type: 'f32',
         },
       ],
     },
@@ -515,11 +485,6 @@ export const IDL: Idl = {
           isSigner: false,
         },
         {
-          name: 'collateralMint',
-          isMut: false,
-          isSigner: false,
-        },
-        {
           name: 'userCollateral',
           isMut: true,
           isSigner: false,
@@ -530,7 +495,7 @@ export const IDL: Idl = {
           isSigner: false,
         },
         {
-          name: 'depositoryMangoAccount',
+          name: 'mangoAccount',
           isMut: true,
           isSigner: false,
         },
@@ -541,12 +506,12 @@ export const IDL: Idl = {
         },
         {
           name: 'mangoCache',
-          isMut: false,
+          isMut: true,
           isSigner: false,
         },
         {
           name: 'mangoRootBank',
-          isMut: false,
+          isMut: true,
           isSigner: false,
         },
         {
@@ -590,17 +555,7 @@ export const IDL: Idl = {
           isSigner: false,
         },
         {
-          name: 'associatedTokenProgram',
-          isMut: false,
-          isSigner: false,
-        },
-        {
           name: 'mangoProgram',
-          isMut: false,
-          isSigner: false,
-        },
-        {
-          name: 'rent',
           isMut: false,
           isSigner: false,
         },
@@ -611,8 +566,8 @@ export const IDL: Idl = {
           type: 'u64',
         },
         {
-          name: 'slippage',
-          type: 'u32',
+          name: 'limitPrice',
+          type: 'f32',
         },
       ],
     },
@@ -621,7 +576,7 @@ export const IDL: Idl = {
       accounts: [
         {
           name: 'user',
-          isMut: false,
+          isMut: true,
           isSigner: true,
         },
         {
@@ -660,18 +615,18 @@ export const IDL: Idl = {
           isSigner: false,
         },
         {
-          name: 'depositoryMangoAccount',
+          name: 'mangoAccount',
           isMut: true,
           isSigner: false,
         },
         {
           name: 'mangoGroup',
-          isMut: false,
+          isMut: true,
           isSigner: false,
         },
         {
           name: 'mangoCache',
-          isMut: false,
+          isMut: true,
           isSigner: false,
         },
         {
@@ -681,7 +636,7 @@ export const IDL: Idl = {
         },
         {
           name: 'mangoRootBank',
-          isMut: false,
+          isMut: true,
           isSigner: false,
         },
         {
@@ -725,17 +680,7 @@ export const IDL: Idl = {
           isSigner: false,
         },
         {
-          name: 'associatedTokenProgram',
-          isMut: false,
-          isSigner: false,
-        },
-        {
           name: 'mangoProgram',
-          isMut: false,
-          isSigner: false,
-        },
-        {
-          name: 'rent',
           isMut: false,
           isSigner: false,
         },
@@ -746,8 +691,8 @@ export const IDL: Idl = {
           type: 'u64',
         },
         {
-          name: 'slippage',
-          type: 'u32',
+          name: 'limitPrice',
+          type: 'f32',
         },
       ],
     },
@@ -891,241 +836,6 @@ export const IDL: Idl = {
     },
   ],
   types: [
-    {
-      name: 'SourceFileId',
-      type: {
-        kind: 'enum',
-        variants: [
-          {
-            name: 'InstructionInitializeController',
-          },
-          {
-            name: 'InstructionSetRedeemableGlobalSupplyCap',
-          },
-          {
-            name: 'InstructionSetMangoDepositoriesRedeemableSoftCap',
-          },
-          {
-            name: 'InstructionRegisterMangoDepository',
-          },
-          {
-            name: 'InstructionMangoDexMintWithMangoDepository',
-          },
-          {
-            name: 'InstructionMangoDexRedeemFromMangoDepository',
-          },
-          {
-            name: 'InstructionMangoDexDepositInsuranceToMangoDepository',
-          },
-          {
-            name: 'InstructionMangoDexWithdrawInsuranceFromMangoDepository',
-          },
-          {
-            name: 'MangoProgramAnchorMango',
-          },
-          {
-            name: 'MangoProgramDeposit',
-          },
-          {
-            name: 'MangoProgramInitMangoAccount',
-          },
-          {
-            name: 'MangoProgramPlacePerpOrder',
-          },
-          {
-            name: 'MangoProgramWithdraw',
-          },
-          {
-            name: 'MangoUtilsLimitUtils',
-          },
-          {
-            name: 'MangoUtilsOrderDelta',
-          },
-          {
-            name: 'MangoUtilsOrder',
-          },
-          {
-            name: 'MangoUtilsPerpAccountUtils',
-          },
-          {
-            name: 'MangoUtilsPerpInfo',
-          },
-          {
-            name: 'StateController',
-          },
-          {
-            name: 'StateMangoDepository',
-          },
-          {
-            name: 'Error',
-          },
-          {
-            name: 'Lib',
-          },
-          {
-            name: 'InstructionMangoDexRebalanceMangoDepositoryLite',
-          },
-          {
-            name: 'InstructionMangoDexMigrateMangoDepositoryToV2',
-          },
-        ],
-      },
-    },
-    {
-      name: 'UxdError',
-      type: {
-        kind: 'enum',
-        variants: [
-          {
-            name: 'ProgramError',
-            fields: [
-              {
-                defined: 'ProgramError',
-              },
-            ],
-          },
-          {
-            name: 'UxdErrorCode',
-            fields: [
-              {
-                name: 'uxd_error_code',
-                type: {
-                  defined: 'UxdErrorCode',
-                },
-              },
-              {
-                name: 'line',
-                type: 'u32',
-              },
-              {
-                name: 'source_file_id',
-                type: {
-                  defined: 'SourceFileId',
-                },
-              },
-            ],
-          },
-        ],
-      },
-    },
-    {
-      name: 'UxdErrorCode',
-      type: {
-        kind: 'enum',
-        variants: [
-          {
-            name: 'InvalidRedeemableMintDecimals',
-          },
-          {
-            name: 'InvalidRedeemableGlobalSupplyCap',
-          },
-          {
-            name: 'RootBankIndexNotFound',
-          },
-          {
-            name: 'InvalidSlippage',
-          },
-          {
-            name: 'EffectiveOrderPriceBeyondLimitPrice',
-          },
-          {
-            name: 'InvalidCollateralAmount',
-          },
-          {
-            name: 'InsufficientCollateralAmount',
-          },
-          {
-            name: 'InvalidRedeemableAmount',
-          },
-          {
-            name: 'InsufficientRedeemableAmount',
-          },
-          {
-            name: 'PerpOrderPartiallyFilled',
-          },
-          {
-            name: 'RedeemableGlobalSupplyCapReached',
-          },
-          {
-            name: 'MangoDepositoriesSoftCapOverflow',
-          },
-          {
-            name: 'MaxNumberOfMangoDepositoriesRegisteredReached',
-          },
-          {
-            name: 'InvalidInsuranceAmount',
-          },
-          {
-            name: 'InsufficientAuthorityInsuranceAmount',
-          },
-          {
-            name: 'InvalidRebalancedAmount',
-          },
-          {
-            name: 'InsufficientOrderBookDepth',
-          },
-          {
-            name: 'InvalidExecutedOrderSize',
-          },
-          {
-            name: 'MangoPerpMarketIndexNotFound',
-          },
-          {
-            name: 'InvalidMangoDepositoriesRedeemableSoftCap',
-          },
-          {
-            name: 'InvalidQuoteDelta',
-          },
-          {
-            name: 'InvalidOrderDirection',
-          },
-          {
-            name: 'MathError',
-          },
-          {
-            name: 'SlippageReached',
-          },
-          {
-            name: 'InvalidRebalancingAmount',
-          },
-          {
-            name: 'InsufficientQuoteAmount',
-          },
-          {
-            name: 'InvalidPnlPolarity',
-          },
-          {
-            name: 'RebalancingError',
-          },
-          {
-            name: 'BumpError',
-          },
-          {
-            name: 'OrderSizeBelowMinLotSize',
-          },
-          {
-            name: 'InvalidCollateralDelta',
-          },
-          {
-            name: 'Default',
-          },
-        ],
-      },
-    },
-    {
-      name: 'AccountingEvent',
-      type: {
-        kind: 'enum',
-        variants: [
-          {
-            name: 'Deposit',
-          },
-          {
-            name: 'Withdraw',
-          },
-        ],
-      },
-    },
     {
       name: 'PnlPolarity',
       type: {
@@ -1288,42 +998,7 @@ export const IDL: Idl = {
       ],
     },
     {
-      name: 'DepositInsuranceToMangoDepositoryEvent',
-      fields: [
-        {
-          name: 'version',
-          type: 'u8',
-          index: false,
-        },
-        {
-          name: 'controller',
-          type: 'publicKey',
-          index: false,
-        },
-        {
-          name: 'depository',
-          type: 'publicKey',
-          index: false,
-        },
-        {
-          name: 'insuranceMint',
-          type: 'publicKey',
-          index: false,
-        },
-        {
-          name: 'insuranceMintDecimals',
-          type: 'u8',
-          index: false,
-        },
-        {
-          name: 'depositedAmount',
-          type: 'u64',
-          index: false,
-        },
-      ],
-    },
-    {
-      name: 'DepositInsuranceToMangoDepositoryEventV2',
+      name: 'DepositInsuranceToDepositoryEvent',
       fields: [
         {
           name: 'version',
@@ -1393,7 +1068,7 @@ export const IDL: Idl = {
       ],
     },
     {
-      name: 'WithdrawInsuranceFromMangoDepositoryEventV2',
+      name: 'WithdrawInsuranceFromDepositoryEvent',
       fields: [
         {
           name: 'version',
@@ -1456,29 +1131,29 @@ export const IDL: Idl = {
           index: false,
         },
         {
-          name: 'slippage',
-          type: 'u32',
+          name: 'limitPrice',
+          type: 'f32',
           index: false,
         },
         {
-          name: 'collateralDelta',
-          type: 'u64',
+          name: 'baseDelta',
+          type: 'i64',
           index: false,
         },
         {
-          name: 'redeemableDelta',
-          type: 'u64',
+          name: 'quoteDelta',
+          type: 'i64',
           index: false,
         },
         {
           name: 'feeDelta',
-          type: 'u64',
+          type: 'i64',
           index: false,
         },
       ],
     },
     {
-      name: 'RedeemFromMangoDepositoryEvent',
+      name: 'RedeemFromDepositoryEvent',
       fields: [
         {
           name: 'version',
@@ -1506,23 +1181,23 @@ export const IDL: Idl = {
           index: false,
         },
         {
-          name: 'slippage',
-          type: 'u32',
+          name: 'limitPrice',
+          type: 'f32',
           index: false,
         },
         {
-          name: 'collateralDelta',
-          type: 'u64',
+          name: 'baseDelta',
+          type: 'i64',
           index: false,
         },
         {
-          name: 'redeemableDelta',
-          type: 'u64',
+          name: 'quoteDelta',
+          type: 'i64',
           index: false,
         },
         {
           name: 'feeDelta',
-          type: 'u64',
+          type: 'i64',
           index: false,
         },
       ],
@@ -1573,23 +1248,23 @@ export const IDL: Idl = {
           index: false,
         },
         {
-          name: 'slippage',
-          type: 'u32',
+          name: 'limitPrice',
+          type: 'f32',
           index: false,
         },
         {
-          name: 'collateralDelta',
-          type: 'u64',
+          name: 'baseDelta',
+          type: 'i64',
           index: false,
         },
         {
           name: 'quoteDelta',
-          type: 'u64',
+          type: 'i64',
           index: false,
         },
         {
           name: 'feeDelta',
-          type: 'u64',
+          type: 'i64',
           index: false,
         },
       ],
@@ -1598,48 +1273,228 @@ export const IDL: Idl = {
   errors: [
     {
       code: 6000,
+      name: 'InvalidRedeemableMintDecimals',
+      msg: 'The redeemable mint decimals must be between 0 and 9 (inclusive).',
+    },
+    {
+      code: 6001,
+      name: 'InvalidRedeemableGlobalSupplyCap',
+      msg: 'Redeemable global supply above.',
+    },
+    {
+      code: 6002,
+      name: 'RootBankIndexNotFound',
+      msg: 'The associated mango root bank index cannot be found for the deposited coin..',
+    },
+    {
+      code: 6003,
+      name: 'InvalidLimitPrice',
+      msg: 'The provided limit_price value is invalid, must be > 0',
+    },
+    {
+      code: 6004,
+      name: 'EffectiveOrderPriceBeyondLimitPrice',
+      msg: 'Could not fill the order given order book state and provided slippage.',
+    },
+    {
+      code: 6005,
+      name: 'InvalidCollateralAmount',
+      msg: 'Collateral amount cannot be 0',
+    },
+    {
+      code: 6006,
+      name: 'InsufficientCollateralAmount',
+      msg: 'The balance of the collateral ATA is not enough to fulfill the mint operation.',
+    },
+    {
+      code: 6007,
+      name: 'InvalidRedeemableAmount',
+      msg: 'The redeemable amount for redeem must be superior to 0.',
+    },
+    {
+      code: 6008,
+      name: 'InsufficientRedeemableAmount',
+      msg: 'The balance of the redeemable ATA is not enough to fulfill the redeem operation.',
+    },
+    {
+      code: 6009,
+      name: 'PerpOrderPartiallyFilled',
+      msg: 'The perp position could not be fully filled with the provided slippage.',
+    },
+    {
+      code: 6010,
+      name: 'RedeemableGlobalSupplyCapReached',
+      msg: 'Minting amount would go past the Redeemable Global Supply Cap.',
+    },
+    {
+      code: 6011,
+      name: 'MangoDepositoriesSoftCapOverflow',
+      msg: 'Operation not allowed due to being over the Mango Redeemable soft Cap.',
+    },
+    {
+      code: 6012,
+      name: 'MaxNumberOfMangoDepositoriesRegisteredReached',
+      msg: 'Cannot register more mango depositories, the limit has been reached.',
+    },
+    {
+      code: 6013,
+      name: 'InvalidInsuranceAmount',
+      msg: 'The amount to withdraw from the Insurance Fund must be superior to zero..',
+    },
+    {
+      code: 6014,
+      name: 'InsufficientAuthorityQuoteAmount',
+      msg: "The Quote ATA from authority doesn't have enough balance.",
+    },
+    {
+      code: 6015,
+      name: 'InvalidRebalancedAmount',
+      msg: 'The rebalanced amount must be superior to zero..',
+    },
+    {
+      code: 6016,
+      name: 'InsufficientOrderBookDepth',
+      msg: 'Insufficient order book depth for order.',
+    },
+    {
+      code: 6017,
+      name: 'InvalidExecutedOrderSize',
+      msg: 'The executed order size does not match the expected one.',
+    },
+    {
+      code: 6018,
+      name: 'InvalidMangoDepositoriesRedeemableSoftCap',
+      msg: 'Mango depositories redeemable soft cap above.',
+    },
+    {
+      code: 6019,
+      name: 'InvalidQuoteDelta',
+      msg: "Quote_lot_delta can't be 0.",
+    },
+    {
+      code: 6020,
+      name: 'InvalidOrderDirection',
+      msg: "The perp order wasn't executed in the right direction.",
+    },
+    {
+      code: 6021,
+      name: 'MathError',
+      msg: 'Math error.',
+    },
+    {
+      code: 6022,
+      name: 'SlippageReached',
+      msg: "The order couldn't be executed with the provided slippage.",
+    },
+    {
+      code: 6023,
+      name: 'InvalidRebalancingAmount',
+      msg: 'The rebalancing amount must be above 0.',
+    },
+    {
+      code: 6024,
+      name: 'InsufficientQuoteAmount',
+      msg: 'The Quote amount in the provided user_quote ATA must be >= max_amount_rebalancing.',
+    },
+    {
+      code: 6025,
+      name: 'InvalidPnlPolarity',
+      msg: "The PnL polarity provided is not the same as the perp position's one.",
+    },
+    {
+      code: 6026,
+      name: 'RebalancingError',
+      msg: "The rebalanced amount doesn't match the expected rebalance amount.",
+    },
+    {
+      code: 6027,
+      name: 'BumpError',
+      msg: 'A bump was expected but is missing.',
+    },
+    {
+      code: 6028,
+      name: 'OrderSizeBelowMinLotSize',
+      msg: 'The order is below size is below the min lot size.',
+    },
+    {
+      code: 6029,
+      name: 'InvalidCollateralDelta',
+      msg: "The collateral delta post perp order doesn't match the planned one.",
+    },
+    {
+      code: 6030,
+      name: 'MangoPerpMarketIndexNotFound',
+      msg: 'The perp market index could not be found for this MangoMarkets Pair.',
+    },
+    {
+      code: 6031,
+      name: 'InvalidMangoGroup',
+      msg: 'Could not load the provided MangoGroup account.',
+    },
+    {
+      code: 6032,
+      name: 'QuantityBelowContractSize',
+      msg: 'The order quantity is below contract_size of the perp market.',
+    },
+    {
+      code: 6033,
       name: 'InvalidAuthority',
       msg: 'Only the Program initializer authority can access this instructions.',
     },
     {
-      code: 6001,
+      code: 6034,
       name: 'InvalidController',
       msg: "The Depository's controller doesn't match the provided Controller.",
     },
     {
-      code: 6002,
+      code: 6035,
       name: 'InvalidDepository',
       msg: 'The Depository provided is not registered with the Controller.',
     },
     {
-      code: 6003,
+      code: 6036,
       name: 'InvalidCollateralMint',
       msg: "The provided collateral mint does not match the depository's collateral mint.",
     },
     {
-      code: 6004,
+      code: 6037,
       name: 'InvalidQuoteMint',
       msg: "The provided quote mint does not match the depository's quote mint.",
     },
     {
-      code: 6005,
-      name: 'InvalidAuthorityQuoteATAMint',
-      msg: "The authority's Quote ATA's mint does not match the Depository's one.",
-    },
-    {
-      code: 6006,
+      code: 6038,
       name: 'InvalidMangoAccount',
       msg: "The Mango Account isn't the Depository one.",
     },
     {
-      code: 6007,
+      code: 6039,
       name: 'InvalidRedeemableMint',
       msg: "The Redeemable Mint provided does not match the Controller's one.",
     },
     {
-      code: 6008,
-      name: 'UnsupportedDepositoryVersion',
-      msg: "The instruction doesn't support this version of the Depository. Migrate first.",
+      code: 6040,
+      name: 'InvalidDexMarket',
+      msg: 'The provided perp_market is not the one tied to this Depository.',
+    },
+    {
+      code: 6041,
+      name: 'InvalidOwner',
+      msg: 'The provided token account is not owner by the expected party.',
+    },
+    {
+      code: 6042,
+      name: 'InvalidMaxBaseQuantity',
+      msg: 'The max base quantity must be above 0.',
+    },
+    {
+      code: 6043,
+      name: 'InvalidMaxQuoteQuantity',
+      msg: 'The max quote quantity must be above 0.',
+    },
+    {
+      code: 6044,
+      name: 'Default',
+      msg: 'Default - Check the source code for more info',
     },
   ],
 };
