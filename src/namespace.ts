@@ -19,7 +19,6 @@ export default class NamespaceFactory {
         programId
       );
       const name = camelcase(idlIx.name);
-      // @ts-expect-error Type 'InstructionFn<IDL, I>' is not assignable to type 'InstructionContextFn<Idl, IdlInstruction & { name: string; }, TransactionInstruction> & { accounts: (ctx: Accounts<...>) => unknown; }'.
       instruction[name] = ixItem;
     });
 

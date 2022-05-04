@@ -15,6 +15,9 @@ export {
 } from './interfaces';
 export { Mango, createAndInitializeMango } from './mango';
 export { MangoDepository } from './mango/depository';
+export { Zo, createAndInitializeZo } from './01';
+export { CONTROL_ACCOUNT_SIZE } from '@zero_one/client';
+export { ZoDepository } from './01/depository';
 export {
   ETH_DECIMALS,
   BTC_DECIMALS,
@@ -31,6 +34,8 @@ export {
   BTC_DEVNET,
   ETH,
   ETH_DEVNET,
+  BTC_DEVNET_ZO,
+  USDC_DEVNET_ZO,
   createAssocTokenIx,
   findATAAddrSync,
   findAddrSync,
