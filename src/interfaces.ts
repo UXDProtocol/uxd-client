@@ -73,4 +73,4 @@ export class ZoDepositoryAccount {
   redeemableAmountUnderManagement!: BN; // u128
   totalAmountRebalanced!: BN; // u128
   totalAmountPaidTakerFee!: BN; // u128
-} 
+}

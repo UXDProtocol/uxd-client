@@ -38,11 +38,21 @@ export const UXD_DEVNET = new PublicKey(
   'GhFRARKh28888Cn6LkHu11L38pgf84TaeaVFJfuTPFUH'
 ); // with Devnet ProgId 5rYjdoWQcbGSes3G4frkLA6oLxFmtUagn8xc1fvSATYL
 export const WSOL_DEVNET = WSOL;
-export const USDC_DEVNET = new PublicKey("8FRFC6MoGGkMFQwngccyu69VnYbzykGeez7ignHVAFSN");
-export const BTC_DEVNET = new PublicKey("3UNBZ6o52WTWwjac2kPUb4FyodhU1vFkRJheu1Sh2TvU");
-export const ETH_DEVNET = new PublicKey("Cu84KB3tDL6SbFgToHMLYVDJJXdJjenNzSKikeAvzmkA");
-export const USDC_DEVNET_ZO = new PublicKey("7UT1javY6X1M9R2UrPGrwcZ78SX3huaXyETff5hm5YdX");
-export const BTC_DEVNET_ZO = new PublicKey("3n3sMJMnZhgNDaxp6cfywvjHLrV1s34ndfa6xAaYvpRs");
+export const USDC_DEVNET = new PublicKey(
+  '8FRFC6MoGGkMFQwngccyu69VnYbzykGeez7ignHVAFSN'
+);
+export const BTC_DEVNET = new PublicKey(
+  '3UNBZ6o52WTWwjac2kPUb4FyodhU1vFkRJheu1Sh2TvU'
+);
+export const ETH_DEVNET = new PublicKey(
+  'Cu84KB3tDL6SbFgToHMLYVDJJXdJjenNzSKikeAvzmkA'
+);
+export const USDC_DEVNET_ZO = new PublicKey(
+  '7UT1javY6X1M9R2UrPGrwcZ78SX3huaXyETff5hm5YdX'
+);
+export const BTC_DEVNET_ZO = new PublicKey(
+  '3n3sMJMnZhgNDaxp6cfywvjHLrV1s34ndfa6xAaYvpRs'
+);
 
 // abbreviation for too long name
 // note this returns the array

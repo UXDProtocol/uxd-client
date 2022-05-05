@@ -18,17 +18,17 @@ export const SLIPPAGE_BASIS = 1000;
 
 interface InterestStats {
   [key: string]: {
-    total_borrow_interest: number
-    total_deposit_interest: number
-  }
+    total_borrow_interest: number;
+    total_deposit_interest: number;
+  };
 }
 
 interface FundingStats {
   [key: string]: {
-    short_funding: number
-    long_funding: number
-    total_funding: number
-  }
+    short_funding: number;
+    long_funding: number;
+    total_funding: number;
+  };
 }
 
 export class MangoDepository {
@@ -285,14 +285,19 @@ export class MangoDepository {
     // Get funding from mango stats
     var response = await fetch(
       `https://mango-transaction-log.herokuapp.com/v3/stats/total-funding?mango-account=${this.mangoAccountPda}`
-    )
+    );
     const parsedResponse: FundingStats = await response.json();
     const fundingPnl = Object.entries(parsedResponse)[0][1].total_funding;
     return fundingPnl;
   }
 
   // Return the depository lifetime deposit/borrow PnL for quote and collateral
-  public async getDepositBorrowPnl(mango: Mango): Promise<{ quote: { deposit: number, borrow: number }, collateral: { deposit: number, borrow: number } }> {
+  public async getDepositBorrowPnl(
+    mango: Mango
+  ): Promise<{
+    quote: { deposit: number; borrow: number };
+    collateral: { deposit: number; borrow: number };
+  }> {
     let usdcBorrowInterest: number = 0;
     let usdcDepositInterest: number = 0;
     let collateralBorrowInterest: number = 0;
@@ -301,23 +306,22 @@ export class MangoDepository {
 
     var response = await fetch(
       `https://mango-transaction-log.herokuapp.com/v3/stats/total-interest-earned?mango-account=${this.mangoAccountPda}`
-    )
-    const parsedRes: InterestStats = await response.json()
+    );
+    const parsedRes: InterestStats = await response.json();
     Object.entries(parsedRes).forEach((r) => {
-      const tokens = mango.groupConfig.tokens
-      const token = tokens.find((t) => t.symbol === r[0])
+      const tokens = mango.groupConfig.tokens;
+      const token = tokens.find((t) => t.symbol === r[0]);
       if (!token) {
         return;
       }
       if (token.mintKey.equals(this.collateralMint)) {
         if (!token || !mango.group || !mangoCache) {
-          return
+          return;
         }
-        const tokenIndex = mango.group.getTokenIndex(token.mintKey)
-        const price = mango.group.getPrice(tokenIndex, mangoCache).toNumber()
+        const tokenIndex = mango.group.getTokenIndex(token.mintKey);
+        const price = mango.group.getPrice(tokenIndex, mangoCache).toNumber();
         collateralBorrowInterest = -r[1].total_borrow_interest * price;
         collateralDepositInterest = r[1].total_deposit_interest * price;
-
       }
       if (token.mintKey.equals(this.quoteMint)) {
         usdcBorrowInterest = -r[1].total_borrow_interest;
@@ -325,7 +329,13 @@ export class MangoDepository {
       }
     });
 
-    return { quote: { deposit: usdcDepositInterest, borrow: usdcBorrowInterest }, collateral: { deposit: collateralDepositInterest, borrow: collateralBorrowInterest } };
+    return {
+      quote: { deposit: usdcDepositInterest, borrow: usdcBorrowInterest },
+      collateral: {
+        deposit: collateralDepositInterest,
+        borrow: collateralBorrowInterest,
+      },
+    };
   }
 
   // This call allow to "settle" the paper profits of the depository. Anyone can call it, result is that it settle a particular account
@@ -356,7 +366,7 @@ export class MangoDepository {
     );
   }
 
-  // Return the price of 1 base native unit expressed in quote native units 
+  // Return the price of 1 base native unit expressed in quote native units
   // This is the format of the on chain program input parameter
   async getCollateralPerpPriceNativeQuotePerNativeBase(
     mango: Mango
@@ -368,8 +378,14 @@ export class MangoDepository {
   }
 
   // The side of the taker (the user)
-  async getLimitPrice(slippage: I80F48, perpOrderTakerSide: 'short' | 'long', mango: Mango): Promise<I80F48> {
-    const price = await this.getCollateralPerpPriceNativeQuotePerNativeBase(mango);
+  async getLimitPrice(
+    slippage: I80F48,
+    perpOrderTakerSide: 'short' | 'long',
+    mango: Mango
+  ): Promise<I80F48> {
+    const price = await this.getCollateralPerpPriceNativeQuotePerNativeBase(
+      mango
+    );
     const delta = price.mul(slippage.div(I80F48.fromNumber(SLIPPAGE_BASIS)));
     switch (perpOrderTakerSide) {
       case 'short': {
@@ -381,4 +397,3 @@ export class MangoDepository {
     }
   }
 }
-
