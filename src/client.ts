@@ -59,7 +59,9 @@ export class UXDClient {
     supplyCapAmount: number,
     options: ConfirmOptions
   ): TransactionInstruction {
-    const supplyCapAmountNativeUnits = new BN(supplyCapAmount) * new BN(10) ** new BN(controller.redeemableMintDecimals);
+    const supplyCapAmountNativeUnits =
+      new BN(supplyCapAmount) *
+      new BN(10) ** new BN(controller.redeemableMintDecimals);
     return this.instruction.setRedeemableGlobalSupplyCap(
       supplyCapAmountNativeUnits,
       {
@@ -78,7 +80,9 @@ export class UXDClient {
     supplySoftCapAmount: number,
     options: ConfirmOptions
   ): TransactionInstruction {
-    const supplySoftCapAmountNativeUnits = new BN(supplySoftCapAmount) * new BN(10) ** new BN(controller.redeemableMintDecimals);
+    const supplySoftCapAmountNativeUnits =
+      new BN(supplySoftCapAmount) *
+      new BN(10) ** new BN(controller.redeemableMintDecimals);
     return this.instruction.setMangoDepositoriesRedeemableSoftCap(
       supplySoftCapAmountNativeUnits,
       {
@@ -163,7 +167,9 @@ export class UXDClient {
     const mangoPerpMarketConfig = mango.getPerpMarketConfig(
       depository.collateralMintSymbol
     );
-    const maxRebalancingAmountNative = new BN(maxRebalancingAmount) * new BN(10) ** new BN(depository.quoteMintDecimals);
+    const maxRebalancingAmountNative =
+      new BN(maxRebalancingAmount) *
+      new BN(10) ** new BN(depository.quoteMintDecimals);
     const perpSide = polarity == PnLPolarity.Positive ? 'short' : 'long'; //'sell' : 'buy';
     const limit_price = (
       await depository.getLimitPrice(
@@ -230,7 +236,9 @@ export class UXDClient {
       mint: depository.quoteMint,
       owner: authority,
     });
-    const insuranceAmountBN = new BN(insuranceDepositedAmount) * new BN(10) ** new BN(depository.quoteMintDecimals);
+    const insuranceAmountBN =
+      new BN(insuranceDepositedAmount) *
+      new BN(10) ** new BN(depository.quoteMintDecimals);
     return this.instruction.depositInsuranceToMangoDepository(
       insuranceAmountBN,
       {
@@ -278,7 +286,9 @@ export class UXDClient {
       authority,
       depository.quoteMint
     )[0];
-    const insuranceAmountBN = new BN(insuranceWithdrawnAmount) * new BN(10) ** new BN(depository.quoteMintDecimals);
+    const insuranceAmountBN =
+      new BN(insuranceWithdrawnAmount) *
+      new BN(10) ** new BN(depository.quoteMintDecimals);
     return this.instruction.withdrawInsuranceFromMangoDepository(
       insuranceAmountBN,
       {
@@ -336,7 +346,9 @@ export class UXDClient {
       mint: controller.redeemableMintPda,
       owner: user,
     });
-    const collateralAmountBN = new BN(collateralAmount) * new BN(10) ** new BN(depository.collateralMintDecimals);
+    const collateralAmountBN =
+      new BN(collateralAmount) *
+      new BN(10) ** new BN(depository.collateralMintDecimals);
     const limit_price = (
       await depository.getLimitPrice(
         I80F48.fromNumber(slippage),
@@ -410,7 +422,9 @@ export class UXDClient {
       mint: controller.redeemableMintPda,
       owner: user,
     });
-    const redeemAmountBN = new BN(amountRedeemable) * new BN(10) ** new BN(controller.redeemableMintDecimals);
+    const redeemAmountBN =
+      new BN(amountRedeemable) *
+      new BN(10) ** new BN(controller.redeemableMintDecimals);
     const limit_price = (
       await depository.getLimitPrice(I80F48.fromNumber(slippage), 'long', mango)
     ).toNumber();
@@ -692,7 +706,9 @@ export class UXDClient {
       mint: depository.quoteMint,
       owner: authority,
     });
-    const insuranceAmountBN = new BN(insuranceDepositedAmount) * new BN(10) ** new BN(depository.quoteMintDecimals);
+    const insuranceAmountBN =
+      new BN(insuranceDepositedAmount) *
+      new BN(10) ** new BN(depository.quoteMintDecimals);
     return this.instruction.depositInsuranceToZoDepository(insuranceAmountBN, {
       accounts: {
         authority: authority,
@@ -726,7 +742,9 @@ export class UXDClient {
       mint: depository.quoteMint,
       owner: authority,
     });
-    const insuranceAmountBN = new BN(insuranceWithdrawnAmount) * new BN(10) ** new BN(depository.quoteMintDecimals);
+    const insuranceAmountBN =
+      new BN(insuranceWithdrawnAmount) *
+      new BN(10) ** new BN(depository.quoteMintDecimals);
     return this.instruction.withdrawInsuranceFromZoDepository(
       insuranceAmountBN,
       {

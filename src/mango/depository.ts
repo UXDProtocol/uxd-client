@@ -292,9 +292,7 @@ export class MangoDepository {
   }
 
   // Return the depository lifetime deposit/borrow PnL for quote and collateral
-  public async getDepositBorrowPnl(
-    mango: Mango
-  ): Promise<{
+  public async getDepositBorrowPnl(mango: Mango): Promise<{
     quote: { deposit: number; borrow: number };
     collateral: { deposit: number; borrow: number };
   }> {
