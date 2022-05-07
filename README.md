@@ -177,7 +177,7 @@ To determine the estimates about a minting operation :
 ```javascript
 import { Transaction } from '@solana/web3.js';
 
-const perpPrice = await this.getCollateralPerpPriceUI(mango);
+const perpPrice = this.getCollateralPerpPriceUI(mango);
 
 // Minting
 // User wants to mint `collateralQuantity` (Collateral -> UXD)
@@ -189,7 +189,7 @@ if (!mintingPriceImpact) {
   throw new Error("mintingPriceImpact couldn't be determined.");
 }
 console.log("Minting price impact", mintingPriceImpact);
-const mintingEstimates = await depository.getMintingEstimates(
+const mintingEstimates = depository.getMintingEstimates(
   collateralQuantity,
   perpPrice,
   mintingPriceImpact,
@@ -213,7 +213,7 @@ if (!redeemingPriceImpact) {
 }
 console.log("Redeeming price impact", redeemingPriceImpact);
 
-const redeemingEstimates = await depository.getRedeemingEstimates(
+const redeemingEstimates = depository.getRedeemingEstimates(
   redeemableQuantity,
   perpPrice,
   mintingPriceImpact,
