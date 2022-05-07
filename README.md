@@ -184,7 +184,7 @@ if (!mintingPriceImpact) {
   throw new Error("mintingPriceImpact couldn't be determined.");
 }
 console.log("Minting price impact", mintingPriceImpact);
-const mintingEstimates = await depository.getMintingEstimates(
+const mintingEstimates = depository.getMintingEstimates(
   collateralQuantity,
   perpPrice,
   mintingPriceImpact,
@@ -208,7 +208,7 @@ if (!redeemingPriceImpact) {
 }
 console.log("Redeeming price impact", redeemingPriceImpact);
 
-const redeemingEstimates = await depository.getRedeemingEstimates(
+const redeemingEstimates = depository.getRedeemingEstimates(
   redeemableQuantity,
   perpPrice,
   mintingPriceImpact,
