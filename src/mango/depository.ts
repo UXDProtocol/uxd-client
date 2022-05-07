@@ -308,12 +308,12 @@ export class MangoDepository {
   // Estimated amount of Redeemable (UXD) that will be given for Minting (Mint or RebalancingLite when PnlPolarity is positive)
   // `collateralQuantity` : In Collateral UI units
   //  Output -> breakdown of estimated costs
-  public async getMintingEstimates(
+  public getMintingEstimates(
     collateralQuantity: number,
     perpPrice: number,
     mintingPriceImpact: number,
     mango: Mango
-  ): Promise<SwapEstimate> {
+  ): SwapEstimate {
     const takerFee = this.getCollateralPerpTakerFees(mango);
     const perfectAmount = collateralQuantity * perpPrice;
     const realAmount = collateralQuantity * mintingPriceImpact;
@@ -326,12 +326,12 @@ export class MangoDepository {
   // Estimated amount of Collateral (SOL/BTC/ETH) that will be given for Redeeming (Redeem or RebalancingLite when PnlPolarity is negative)
   // `collateralQuantity` : In UXD UI units
   //  Output -> Collateral UI Units, estimated
-  public async getRedeemingEstimates(
+  public getRedeemingEstimates(
     redeemableQuantity: number,
     perpPrice: number,
     priceImpact: number,
     mango: Mango
-  ): Promise<SwapEstimate> {
+  ): SwapEstimate {
     const takerFee = this.getCollateralPerpTakerFees(mango);
     const collateralQuantity = redeemableQuantity / perpPrice;
     const perfectAmount = collateralQuantity * perpPrice;
@@ -343,7 +343,7 @@ export class MangoDepository {
   }
 
   // Price impact for a minting operation (Mint or RebalancingLite when PnlPolarity is positive)
-  public async getMintingPriceImpact(
+  public getMintingPriceImpact(
     collateralQuantity: number, // UI units
     mango: Mango
   ): Promise<number | undefined> {

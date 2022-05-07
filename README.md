@@ -177,7 +177,7 @@ To determine the estimates about a minting operation :
 ```javascript
 import { Transaction } from '@solana/web3.js';
 
-const perpPrice = await this.getCollateralPerpPriceUI(mango);
+const perpPrice = this.getCollateralPerpPriceUI(mango);
 
 // Minting
 // User wants to mint `collateralQuantity` (Collateral -> UXD)
