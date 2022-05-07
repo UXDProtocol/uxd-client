@@ -346,7 +346,7 @@ export class MangoDepository {
   public getMintingPriceImpact(
     collateralQuantity: number, // UI units
     mango: Mango
-  ): Promise<number | undefined> {
+  ): Promise<number> {
     // Minting is placing a ask IoC limit order, will check the impact on the bid side
     return this.getMangoPerpOrderBookPriceImpact(
       mango,
@@ -360,7 +360,7 @@ export class MangoDepository {
     redeemableQuantity: number, // UI units
     perpPrice: number,
     mango: Mango
-  ): Promise<number | undefined> {
+  ): Promise<number> {
     const takerFee = this.getCollateralPerpTakerFees(mango);
     // Remove the max possible fees, as we place an order on that amount to  make sure we can pay for the fees on the program side.
     const redeemableQuantityMinusFees = redeemableQuantity * (1 - takerFee);
