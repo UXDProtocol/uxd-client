@@ -147,8 +147,7 @@ By doing so, UXDProgram will offset the PnL of an equal amount, close equivalent
 
 It's a 4bps + slippage + spread swap (as we use the Perp price for all operations).
 
-You can find detailed information about the current state of depositories on the following page
-<https://uxd-backoffice.vercel.app/>
+You can find detailed information about the current state of depositories on the [UXD Backoffice](https://backoffice.uxd.fi).
 
 ```javascript
 import { Transaction } from '@solana/web3.js';
