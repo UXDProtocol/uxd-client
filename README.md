@@ -1,4 +1,9 @@
-# JavaScript (TypeScript) Client for the UXD Solana Program
+[![npm][npm-image]][npm-url]
+
+[npm-image]: https://img.shields.io/npm/v/@uxd-protocol/uxd-client.svg
+[npm-url]: https://www.npmjs.com/package/@uxd-protocol/uxd-client
+
+# JavaScript Client for the UXD Solana Program
 
 ## Install
 
@@ -68,7 +73,7 @@ return new MangoDepository(
   SOL_DECIMALS,
   USDC, // Use mainnet mint, must be matching the program used (see USDC_DEVNET)
   'USDC',
-  USDC_DECIMALS, 
+  USDC_DECIMALS,
   'UXD8m9cvwk4RcSxnX2HZ9VudQCEeDH6fRnB4CAP57Dr' // Mainnet program
 );
 ```
