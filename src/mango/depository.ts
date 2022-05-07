@@ -381,12 +381,14 @@ export class MangoDepository {
   ): Promise<number> {
     const nativeQuantity = uiToNative(quantity, this.collateralMintDecimals);
 
-    const { loadBids, loadAsks } = await this.getPerpMarket(mango);
-    const loadSideBook = side === OrderBookSide.Bid ? loadBids : loadAsks;
+    const perpMarket = await this.getPerpMarket(mango);
+    const loadSideBook = (
+      side === OrderBookSide.Bid ? perpMarket.loadBids : perpMarket.loadAsks
+    ).bind(perpMarket);
     const sideBook = await loadSideBook(mango.client.connection, false);
     const priceImpact = sideBook.getImpactPriceUi(nativeQuantity);
-    if (!priceImpact) {
-      throw new Error("PriceImpact couldn't be determined.");
+    if (typeof priceImpact === 'undefined') {
+      throw new Error("Price impact couldn't be determined.");
     }
     return priceImpact;
   }

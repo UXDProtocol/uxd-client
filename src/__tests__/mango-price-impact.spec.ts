@@ -1,29 +1,27 @@
-import { PublicKey } from '@solana/web3.js';
-import { createAndInitializeMango } from '../mango';
+import { Connection, PublicKey } from '@solana/web3.js';
+import { createAndInitializeMango, Mango } from '../mango';
 import { MangoDepository } from '../mango/depository';
 import { SOL_DECIMALS, USDC, USDC_DECIMALS, WSOL } from '../utils';
-import { Connection } from '@solana/web3.js';
 
-describe('Price Impact / Mint/Redeem estimations tests', async () => {
-  const mainnetProgramId = new PublicKey(
-    'UXD8m9cvwk4RcSxnX2HZ9VudQCEeDH6fRnB4CAP57Dr'
-  );
+describe('Price Impact / Mint/Redeem estimations tests', () => {
   const connection = new Connection('https://api.mainnet-beta.solana.com');
-  const mango = await createAndInitializeMango(
-    connection,
-    'mainnet' // 'devnet'
-  );
+  const program = new PublicKey('UXD8m9cvwk4RcSxnX2HZ9VudQCEeDH6fRnB4CAP57Dr');
   const depository = new MangoDepository(
     WSOL,
     'SOL',
     SOL_DECIMALS,
-    USDC, // Use mainnet mint, must be matching the program used (see USDC_DEVNET)
+    USDC,
     'USDC',
     USDC_DECIMALS,
-    mainnetProgramId // Mainnet program
+    program
   );
+  let mango: Mango;
+  let perpPrice: number;
 
-  const perpPrice = await depository.getCollateralPerpPriceUI(mango);
+  beforeAll(async () => {
+    mango = await createAndInitializeMango(connection, 'mainnet');
+    perpPrice = await depository.getCollateralPerpPriceUI(mango);
+  });
 
   it('Minting', async () => {
     // User wants to mint `collateralQuantity` (Collateral -> UXD)
