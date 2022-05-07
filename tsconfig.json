@@ -6,6 +6,7 @@
     "paths": {
       "*": ["./typings/*"]
     },
+    "types": ["big.js", "jest"],
     "resolveJsonModule": true,
     "strict": true,
     "sourceMap": true,
