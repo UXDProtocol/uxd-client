@@ -16,7 +16,6 @@ export {
 export { Mango, createAndInitializeMango } from './mango';
 export { MangoDepository } from './mango/depository';
 export { Zo, createAndInitializeZo } from './01';
-export { CONTROL_ACCOUNT_SIZE } from '@zero_one/client';
 export { ZoDepository } from './01/depository';
 export {
   ETH_DECIMALS,

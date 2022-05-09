@@ -1,10 +1,16 @@
 import { Cluster, Connection, PublicKey } from '@solana/web3.js';
-import * as zo from '@zero_one/client';
 import {
   ZO_DEVNET_STATE_KEY,
   ZO_DEX_DEVNET_PROGRAM_ID,
   ZO_DEX_MAINNET_PROGRAM_ID,
   ZO_MAINNET_STATE_KEY,
+  Wallet as zoWallet,
+  Cluster as zoCluster,
+  createProvider as zoCreateProvider,
+  createProgram as zoCreateProgram,
+  State as zoState,
+  Margin as zoMargin,
+  Zo as ZoIdl,
 } from '@zero_one/client';
 import * as anchorZo from '@zero_one/client/node_modules/@project-serum/anchor';
 
@@ -13,23 +19,23 @@ const invalidClusterError = 'Invalid cluster';
 // Helper to init and configure a Zo object.
 export async function createAndInitializeZo(
   connection: Connection,
-  user: zo.Wallet,
+  user: zoWallet,
   options: anchorZo.web3.ConfirmOptions,
   cluster: Cluster
 ): Promise<Zo> {
-  let zoState: PublicKey;
-  let zoCluster: zo.Cluster;
+  let stateZo: PublicKey;
+  let clusterZo: zoCluster;
   let zoDexProgram: PublicKey;
 
   switch (cluster) {
     case 'devnet':
-      zoCluster = zo.Cluster.Devnet;
-      zoState = ZO_DEVNET_STATE_KEY;
+      clusterZo = zoCluster.Devnet;
+      stateZo = ZO_DEVNET_STATE_KEY;
       zoDexProgram = ZO_DEX_DEVNET_PROGRAM_ID;
       break;
     case 'mainnet-beta':
-      zoCluster = zo.Cluster.Mainnet;
-      zoState = ZO_MAINNET_STATE_KEY;
+      clusterZo = zoCluster.Mainnet;
+      stateZo = ZO_MAINNET_STATE_KEY;
       zoDexProgram = ZO_DEX_MAINNET_PROGRAM_ID;
       break;
     default: {
@@ -38,24 +44,24 @@ export async function createAndInitializeZo(
   }
 
   // Setup the program
-  const zoProvider = zo.createProvider(connection, user, options);
-  const program = zo.createProgram(zoProvider, zoCluster);
+  const zoProvider = zoCreateProvider(connection, user, options);
+  const program = zoCreateProgram(zoProvider, clusterZo);
 
   // Load the state
-  const state: zo.State = await zo.State.load(program, zoState);
+  const state: zoState = await zoState.load(program, stateZo);
 
   return new Zo(program, zoDexProgram, state);
 }
 
 export class Zo {
-  public program: anchorZo.Program<zo.Zo>;
+  public program: anchorZo.Program<ZoIdl>;
   public dexProgramId: PublicKey;
-  public state: zo.State;
+  public state: zoState;
 
   constructor(
-    program: anchorZo.Program<zo.Zo>,
+    program: anchorZo.Program<ZoIdl>,
     zoDexProgram: PublicKey,
-    state: zo.State
+    state: zoState
   ) {
     this.program = program;
     this.dexProgramId = zoDexProgram;
@@ -64,16 +70,12 @@ export class Zo {
     state.startCacheRefreshCycle();
   }
 
-  public async loadMarginAccount(owner: PublicKey): Promise<zo.Margin> {
-    return await zo.Margin.load(
+  public async loadMarginAccount(owner: PublicKey): Promise<zoMargin> {
+    return await zoMargin.load(
       this.program,
       this.state,
       this.state.cache,
       owner
     );
   }
-
-  // public async getDexMarket(collateralSymbol: string): Promise<zo.ZoMarket> {
-  //     return this.state.getMarketBySymbol(collateralSymbol + "-PERP");
-  // }
 }

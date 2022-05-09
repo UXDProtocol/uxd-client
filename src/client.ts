@@ -1,8 +1,5 @@
 import { BN, InstructionNamespace, utils } from '@project-serum/anchor';
-import {
-  ASSOCIATED_TOKEN_PROGRAM_ID,
-  TOKEN_PROGRAM_ID,
-} from '@solana/spl-token';
+import { TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import {
   SystemProgram,
   SYSVAR_RENT_PUBKEY,
@@ -21,6 +18,7 @@ import NamespaceFactory from './namespace';
 import { IDL as UXD_IDL } from './idl';
 import { PnLPolarity } from './interfaces';
 import { I80F48 } from './index';
+import { uiToNative } from '@blockworks-foundation/mango-client';
 
 export class UXDClient {
   public instruction: InstructionNamespace<typeof UXD_IDL>;
@@ -59,9 +57,7 @@ export class UXDClient {
     supplyCapAmount: number,
     options: ConfirmOptions
   ): TransactionInstruction {
-    const supplyCapAmountNativeUnits =
-      new BN(supplyCapAmount) *
-      new BN(10) ** new BN(controller.redeemableMintDecimals);
+    const supplyCapAmountNativeUnits = uiToNative(supplyCapAmount, controller.redeemableMintDecimals);
     return this.instruction.setRedeemableGlobalSupplyCap(
       supplyCapAmountNativeUnits,
       {
@@ -80,9 +76,7 @@ export class UXDClient {
     supplySoftCapAmount: number,
     options: ConfirmOptions
   ): TransactionInstruction {
-    const supplySoftCapAmountNativeUnits =
-      new BN(supplySoftCapAmount) *
-      new BN(10) ** new BN(controller.redeemableMintDecimals);
+    const supplySoftCapAmountNativeUnits = uiToNative(supplySoftCapAmount, controller.redeemableMintDecimals);
     return this.instruction.setMangoDepositoriesRedeemableSoftCap(
       supplySoftCapAmountNativeUnits,
       {
@@ -167,9 +161,7 @@ export class UXDClient {
     const mangoPerpMarketConfig = mango.getPerpMarketConfig(
       depository.collateralMintSymbol
     );
-    const maxRebalancingAmountNative =
-      new BN(maxRebalancingAmount) *
-      new BN(10) ** new BN(depository.quoteMintDecimals);
+    const maxRebalancingAmountNative = uiToNative(maxRebalancingAmount, depository.quoteMintDecimals);
     const perpSide = polarity == PnLPolarity.Positive ? 'short' : 'long'; //'sell' : 'buy';
     const limit_price = (
       await depository.getLimitPrice(
@@ -236,9 +228,7 @@ export class UXDClient {
       mint: depository.quoteMint,
       owner: authority,
     });
-    const insuranceAmountBN =
-      new BN(insuranceDepositedAmount) *
-      new BN(10) ** new BN(depository.quoteMintDecimals);
+    const insuranceAmountBN = uiToNative(insuranceDepositedAmount, depository.quoteMintDecimals);
     return this.instruction.depositInsuranceToMangoDepository(
       insuranceAmountBN,
       {
@@ -246,8 +236,6 @@ export class UXDClient {
           authority: authority,
           controller: controller.pda,
           depository: depository.pda,
-          collateralMint: depository.collateralMint,
-          quoteMint: depository.quoteMint,
           authorityQuote: authorityQuoteATA,
           mangoAccount: depository.mangoAccountPda,
           // mango accounts for CPI
@@ -286,9 +274,7 @@ export class UXDClient {
       authority,
       depository.quoteMint
     )[0];
-    const insuranceAmountBN =
-      new BN(insuranceWithdrawnAmount) *
-      new BN(10) ** new BN(depository.quoteMintDecimals);
+    const insuranceAmountBN = uiToNative(insuranceWithdrawnAmount, depository.quoteMintDecimals);
     return this.instruction.withdrawInsuranceFromMangoDepository(
       insuranceAmountBN,
       {
@@ -346,9 +332,7 @@ export class UXDClient {
       mint: controller.redeemableMintPda,
       owner: user,
     });
-    const collateralAmountBN =
-      new BN(collateralAmount) *
-      new BN(10) ** new BN(depository.collateralMintDecimals);
+    const collateralAmountBN = uiToNative(collateralAmount, depository.collateralMintDecimals);
     const limit_price = (
       await depository.getLimitPrice(
         I80F48.fromNumber(slippage),
@@ -422,9 +406,7 @@ export class UXDClient {
       mint: controller.redeemableMintPda,
       owner: user,
     });
-    const redeemAmountBN =
-      new BN(amountRedeemable) *
-      new BN(10) ** new BN(controller.redeemableMintDecimals);
+    const redeemAmountBN = uiToNative(amountRedeemable, controller.redeemableMintDecimals)
     const limit_price = (
       await depository.getLimitPrice(I80F48.fromNumber(slippage), 'long', mango)
     ).toNumber();
@@ -706,9 +688,7 @@ export class UXDClient {
       mint: depository.quoteMint,
       owner: authority,
     });
-    const insuranceAmountBN =
-      new BN(insuranceDepositedAmount) *
-      new BN(10) ** new BN(depository.quoteMintDecimals);
+    const insuranceAmountBN = uiToNative(insuranceDepositedAmount, depository.quoteMintDecimals);
     return this.instruction.depositInsuranceToZoDepository(insuranceAmountBN, {
       accounts: {
         authority: authority,
@@ -742,9 +722,8 @@ export class UXDClient {
       mint: depository.quoteMint,
       owner: authority,
     });
-    const insuranceAmountBN =
-      new BN(insuranceWithdrawnAmount) *
-      new BN(10) ** new BN(depository.quoteMintDecimals);
+
+    const insuranceAmountBN = uiToNative(insuranceWithdrawnAmount, depository.quoteMintDecimals);
     return this.instruction.withdrawInsuranceFromZoDepository(
       insuranceAmountBN,
       {

@@ -1,7 +1,7 @@
 import {
   TOKEN_PROGRAM_ID,
-  Token,
   ASSOCIATED_TOKEN_PROGRAM_ID,
+  Token,
 } from '@solana/spl-token';
 import {
   PublicKey,
@@ -98,6 +98,7 @@ export function findATAAddrSync(
   ];
   return findAddrSync(seeds, ASSOCIATED_TOKEN_PROGRAM_ID);
 }
+
 
 export async function getBalance(
   connection: Connection,
