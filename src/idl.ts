@@ -193,7 +193,7 @@ export const IDL: Idl = {
         },
         {
           name: 'mangoCache',
-          isMut: false,
+          isMut: true,
           isSigner: false,
         },
         {
