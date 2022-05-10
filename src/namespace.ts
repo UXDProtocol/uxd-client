@@ -19,6 +19,15 @@ export default class NamespaceFactory {
         programId
       );
       const name = camelcase(idlIx.name);
+      // src/namespace.ts:22:7 - error TS2322: Type 'InstructionFn<IDL, I>' is not assignable to type 'InstructionContextFn<Idl, IdlInstruction & { name: string; }, TransactionInstruction> & { accounts: (ctx: Accounts<...>) => unknown; }'.
+      // Type 'InstructionFn<IDL, I>' is not assignable to type 'InstructionContextFn<Idl, IdlInstruction & { name: string; }, TransactionInstruction>'.
+      //   Types of parameters 'args_0' and 'args_0' are incompatible.
+      //     Type '[...unknown[], Context<Accounts<IdlAccountItem>>]' is not assignable to type '[...(I["args"][number] extends IdlField ? DecodeType<I["args"][number]["type"], IdlTypes<IDL>> : unknown)[], Context<Accounts<I["accounts"][number]>
+      // >]'.
+      //       Type at position 0 in source is not compatible with type at position 0 in target.
+      //         Type 'unknown' is not assignable to type 'I["args"][number] extends IdlField ? DecodeType<I["args"][number]["type"], IdlTypes<IDL>> : unknown'.
+      //          
+      // @ts-ignore
       instruction[name] = ixItem;
     });
 

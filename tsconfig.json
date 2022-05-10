@@ -6,6 +6,7 @@
     "paths": {
       "*": ["./typings/*"]
     },
+    "types": ["jest", "node", "@types/bn.js"],
     "resolveJsonModule": true,
     "strict": true,
     "sourceMap": true,
