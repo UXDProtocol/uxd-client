@@ -917,6 +917,32 @@ export const IDL: Idl = {
           "type": "u64"
         }
       ]
+    },
+    {
+      "name": "setMangoDepositoryQuoteMintAndRedeemFee",
+      "accounts": [
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "controller",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "depository",
+          "isMut": true,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "quoteFee",
+          "type": "u8"
+        }
+      ]
     }
   ],
   "accounts": [
