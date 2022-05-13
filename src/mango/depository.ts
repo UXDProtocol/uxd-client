@@ -269,6 +269,30 @@ export class MangoDepository {
     return unrealizedPnl;
   }
 
+  public async getOffsetUnrealizedPnl(
+    mango: Mango,
+    // connection: Connection,
+    options: ConfirmOptions
+  ): Promise<number> {
+    // Do the lengthy operation first to have the most up to date price
+    const depositoryOnchainAccount = await this.getOnchainAccount(
+      // connection,
+      mango.client.connection,
+      options
+    );
+    const redeemableAmountUnderManagementUi = nativeToUi(
+      depositoryOnchainAccount.redeemableAmountUnderManagement.toNumber(),
+      UXD_DECIMALS
+    ); // Here should inject controller to be nice
+
+    const deltaNeutralPositionNotionalSize =
+      await this.getDeltaNeutralPositionNotionalSizeUI(mango);
+    const unrealizedPnl =
+      redeemableAmountUnderManagementUi - deltaNeutralPositionNotionalSize;
+    const netQuoteMinted = depositoryOnchainAccount.netQuoteMinted.toNumber();
+    return unrealizedPnl + netQuoteMinted;
+  }
+
   public async getFundingRate(mango: Mango): Promise<number> {
     const pmc = this.getPerpMarketConfig(mango); // perpMarketConfig
     const pm = await this.getPerpMarket(mango); // perpMarket
