@@ -787,9 +787,7 @@ export class UXDClient {
     options: ConfirmOptions,
     payer?: PublicKey
   ): Promise<TransactionInstruction> {
-    const depositedTokenIndex = mango.group.getTokenIndex(
-      depository.quoteMint
-    );
+    const depositedTokenIndex = mango.group.getTokenIndex(depository.quoteMint);
     const mangoCacheAccount = mango.getMangoCacheAccount();
     const mangoRootBankAccount = mango.getRootBankForToken(depositedTokenIndex);
     const mangoNodeBankAccount = mango.getNodeBankFor(
@@ -847,14 +845,14 @@ export class UXDClient {
     payer?: PublicKey
   ): Promise<TransactionInstruction> {
     const depositedTokenIndex = mango.group.getTokenIndex(
-      depository.collateralMint
+      depository.quoteMint
     );
     const mangoCacheAccount = mango.getMangoCacheAccount();
     const mangoGroupSigner = mango.group.signerKey;
     const mangoRootBankAccount = mango.getRootBankForToken(depositedTokenIndex);
     const mangoNodeBankAccount = mango.getNodeBankFor(
       depositedTokenIndex,
-      depository.collateralMint
+      depository.quoteMint
     );
     const mangoDepositedVaultAccount = mango.getVaultFor(depositedTokenIndex);
     const mangoPerpMarketConfig = mango.getPerpMarketConfig(

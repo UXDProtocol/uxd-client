@@ -857,7 +857,7 @@ export const IDL: Idl = {
         },
         {
           name: 'mangoCache',
-          isMut: false,
+          isMut: true,
           isSigner: false,
         },
         {
@@ -947,7 +947,7 @@ export const IDL: Idl = {
   ],
   accounts: [
     {
-      name: 'controller',
+      name: 'Controller',
       type: {
         kind: 'struct',
         fields: [
@@ -1001,7 +1001,7 @@ export const IDL: Idl = {
       },
     },
     {
-      name: 'mangoDepository',
+      name: 'MangoDepository',
       type: {
         kind: 'struct',
         fields: [
@@ -1782,4 +1782,7 @@ export const IDL: Idl = {
       msg: 'Default - Check the source code for more info',
     },
   ],
+  metadata: {
+    address: 'DjtbiSj9PvcfG1NB1q4KPrNiBcQJ4zTJKAqj2qJkcBNy',
+  },
 };

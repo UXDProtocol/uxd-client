@@ -128,7 +128,7 @@ export class MangoDepository {
     if (!result) {
       throw new Error('mangoDepositoryAccount not found');
     }
-    return coder.decode('mangoDepository', result.data);
+    return coder.decode('MangoDepository', result.data);
   }
 
   public async getCollateralOraclePrice(mango: Mango): Promise<I80F48> {
