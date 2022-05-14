@@ -788,13 +788,13 @@ export class UXDClient {
     payer?: PublicKey
   ): Promise<TransactionInstruction> {
     const depositedTokenIndex = mango.group.getTokenIndex(
-      depository.collateralMint
+      depository.quoteMint
     );
     const mangoCacheAccount = mango.getMangoCacheAccount();
     const mangoRootBankAccount = mango.getRootBankForToken(depositedTokenIndex);
     const mangoNodeBankAccount = mango.getNodeBankFor(
       depositedTokenIndex,
-      depository.collateralMint
+      depository.quoteMint
     );
     const mangoDepositedVaultAccount = mango.getVaultFor(depositedTokenIndex);
     const mangoPerpMarketConfig = mango.getPerpMarketConfig(
@@ -817,6 +817,7 @@ export class UXDClient {
         redeemableMint: controller.redeemableMintPda,
         userQuote: userQuoteATA,
         userRedeemable: userRedeemableATA,
+        mangoAccount: depository.mangoAccountPda,
         // mango accounts for CPI
         mangoGroup: mango.group.publicKey,
         mangoCache: mangoCacheAccount,
@@ -867,7 +868,7 @@ export class UXDClient {
     const redeemableAmountNativeBN = new BN(
       redeemableAmount * 10 ** controller.redeemableMintDecimals
     );
-    return this.instruction.quoteRedeemWithMangoDepository(
+    return this.instruction.quoteRedeemFromMangoDepository(
       redeemableAmountNativeBN,
       {
         accounts: {

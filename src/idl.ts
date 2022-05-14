@@ -746,12 +746,12 @@ export const IDL: Idl = {
         },
         {
           name: 'mangoCache',
-          isMut: false,
+          isMut: true,
           isSigner: false,
         },
         {
           name: 'mangoRootBank',
-          isMut: false,
+          isMut: true,
           isSigner: false,
         },
         {
@@ -947,7 +947,7 @@ export const IDL: Idl = {
   ],
   accounts: [
     {
-      name: 'Controller',
+      name: 'controller',
       type: {
         kind: 'struct',
         fields: [
