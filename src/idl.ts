@@ -1,6 +1,6 @@
 import type { Idl } from '@project-serum/anchor/dist/cjs/idl';
 
-export const IDL: Uxd = {
+export const IDL: Idl = {
   version: '3.1.0',
   name: 'uxd',
   instructions: [
