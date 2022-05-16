@@ -34,8 +34,8 @@ export class MangoDepositoryAccountV1 {
   totalAmountPaidTakerFee!: BN; // u128
 }
 
-// V2
-export class MangoDepositoryAccount {
+// V2 with ZO no USDC
+export class MangoDepositoryAccountV2 {
   version!: number; // u8
   collateralMint!: PublicKey;
   mangoAccount!: PublicKey;
@@ -49,6 +49,24 @@ export class MangoDepositoryAccount {
   totalAmountRebalanced!: BN; // u128
   registeredZoDepositories!: PublicKey[]; // 4 entries max currently
   registeredZoDepositoriesCount!: number; // u8
+}
+
+// V3 with USDC no ZO
+export class MangoDepositoryAccount {
+  version!: number; // u8
+  collateralMint!: PublicKey;
+  mangoAccount!: PublicKey;
+  controller!: PublicKey;
+  insuranceAmountDeposited!: BN; // u128
+  collateralAmountDeposited!: BN; // u128
+  redeemableAmountUnderManagement!: BN; // u128
+  totalAmountPaidTakerFee!: BN; // u128
+  quoteMint!: PublicKey;
+  quoteMintDecimals!: number; // u8
+  totalAmountRebalanced!: BN; // u128
+  netQuoteMinted!: BN; // i128
+  quoteMintAndRedeemFee!: number; // u8
+  totalQuoteMintAndRedeemFees!: BN; // u128
 }
 
 export enum PnLPolarity {
