@@ -288,7 +288,7 @@ export class MangoDepository {
     const unrealizedPnl =
       redeemableAmountUnderManagementUi - deltaNeutralPositionNotionalSize;
     const netQuoteMintedUi = nativeToUi(
-      depositoryOnchainAccount.netQuoteMinted.toNumber(), 
+      depositoryOnchainAccount.netQuoteMinted.toNumber(),
       UXD_DECIMALS
     );
     return unrealizedPnl + netQuoteMintedUi;

@@ -1,6 +1,6 @@
 import type { Idl } from '@project-serum/anchor/dist/cjs/idl';
 
-export const IDL: Idl = {
+export const IDL: Uxd = {
   version: '3.1.0',
   name: 'uxd',
   instructions: [
@@ -947,7 +947,7 @@ export const IDL: Idl = {
   ],
   accounts: [
     {
-      name: 'Controller',
+      name: 'controller',
       type: {
         kind: 'struct',
         fields: [
@@ -1001,7 +1001,7 @@ export const IDL: Idl = {
       },
     },
     {
-      name: 'MangoDepository',
+      name: 'mangoDepository',
       type: {
         kind: 'struct',
         fields: [
@@ -1782,7 +1782,4 @@ export const IDL: Idl = {
       msg: 'Default - Check the source code for more info',
     },
   ],
-  metadata: {
-    address: 'DjtbiSj9PvcfG1NB1q4KPrNiBcQJ4zTJKAqj2qJkcBNy',
-  },
 };
