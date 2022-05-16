@@ -271,12 +271,10 @@ export class MangoDepository {
 
   public async getOffsetUnrealizedPnl(
     mango: Mango,
-    // connection: Connection,
     options: ConfirmOptions
   ): Promise<number> {
     // Do the lengthy operation first to have the most up to date price
     const depositoryOnchainAccount = await this.getOnchainAccount(
-      // connection,
       mango.client.connection,
       options
     );
