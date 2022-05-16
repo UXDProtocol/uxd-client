@@ -289,8 +289,11 @@ export class MangoDepository {
       await this.getDeltaNeutralPositionNotionalSizeUI(mango);
     const unrealizedPnl =
       redeemableAmountUnderManagementUi - deltaNeutralPositionNotionalSize;
-    const netQuoteMinted = depositoryOnchainAccount.netQuoteMinted.toNumber();
-    return unrealizedPnl + netQuoteMinted;
+    const netQuoteMintedUi = nativeToUi(
+      depositoryOnchainAccount.netQuoteMinted.toNumber(), 
+      UXD_DECIMALS
+    );
+    return unrealizedPnl + netQuoteMintedUi;
   }
 
   public async getFundingRate(mango: Mango): Promise<number> {
