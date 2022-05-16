@@ -19,6 +19,7 @@ export default class NamespaceFactory {
         programId
       );
       const name = camelcase(idlIx.name);
+      //@ts-expect-error
       instruction[name] = ixItem;
     });
 
