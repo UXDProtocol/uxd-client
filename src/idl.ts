@@ -965,7 +965,7 @@ export const IDL: Idl = {
       ],
       args: [
         {
-          name: 'disable',
+          name: 'disableMinting',
           type: 'bool',
         },
       ],
@@ -1118,7 +1118,7 @@ export const IDL: Idl = {
             type: 'u128',
           },
           {
-            name: 'disabled',
+            name: 'mintingDisabled',
             type: 'bool',
           },
         ],
@@ -1759,7 +1759,7 @@ export const IDL: Idl = {
     {
       code: 6039,
       name: 'MintingAlreadyDisabledOrEnabled',
-      msg: 'Minting has already disabled/enabled',
+      msg: 'Minting is already disabled/enabled',
     },
     {
       code: 6040,
