@@ -916,13 +916,13 @@ export class UXDClient {
     });
   }
 
-  public async createDisableDepositoryMintingInstruction(
+  public createDisableDepositoryMintingInstruction(
     disableMinting: boolean,
     controller: Controller,
     depository: MangoDepository,
     authority: PublicKey,
     options: ConfirmOptions
-  ): Promise<TransactionInstruction> {
+  ): TransactionInstruction {
     return this.instruction.disableDepositoryMinting(disableMinting, {
       accounts: {
         authority: authority,
