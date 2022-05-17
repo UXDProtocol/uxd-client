@@ -915,4 +915,21 @@ export class UXDClient {
       options: options,
     });
   }
+
+  public createDisableDepositoryMintingInstruction(
+    disableMinting: boolean,
+    controller: Controller,
+    depository: MangoDepository,
+    authority: PublicKey,
+    options: ConfirmOptions
+  ): TransactionInstruction {
+    return this.instruction.disableDepositoryMinting(disableMinting, {
+      accounts: {
+        authority: authority,
+        controller: controller.pda,
+        depository: depository.pda,
+      },
+      options: options,
+    });
+  }
 }

@@ -67,6 +67,7 @@ export class MangoDepositoryAccount {
   netQuoteMinted!: BN; // i128
   quoteMintAndRedeemFee!: number; // u8
   totalQuoteMintAndRedeemFees!: BN; // u128
+  mintingDisabled!: boolean;
 }
 
 export enum PnLPolarity {
