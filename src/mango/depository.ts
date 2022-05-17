@@ -16,21 +16,6 @@ import { MangoDepositoryAccount } from '../interfaces';
 
 export const SLIPPAGE_BASIS = 1000;
 
-interface InterestStats {
-  [key: string]: {
-    total_borrow_interest: number;
-    total_deposit_interest: number;
-  };
-}
-
-interface FundingStats {
-  [key: string]: {
-    short_funding: number;
-    long_funding: number;
-    total_funding: number;
-  };
-}
-
 export class MangoDepository {
   public pda: PublicKey;
   public mangoAccountPda: PublicKey;
@@ -269,31 +254,6 @@ export class MangoDepository {
     return unrealizedPnl;
   }
 
-  public async getOffsetUnrealizedPnl(
-    mango: Mango,
-    options: ConfirmOptions
-  ): Promise<number> {
-    // Do the lengthy operation first to have the most up to date price
-    const depositoryOnchainAccount = await this.getOnchainAccount(
-      mango.client.connection,
-      options
-    );
-    const redeemableAmountUnderManagementUi = nativeToUi(
-      depositoryOnchainAccount.redeemableAmountUnderManagement.toNumber(),
-      UXD_DECIMALS
-    ); // Here should inject controller to be nice
-
-    const deltaNeutralPositionNotionalSize =
-      await this.getDeltaNeutralPositionNotionalSizeUI(mango);
-    const unrealizedPnl =
-      redeemableAmountUnderManagementUi - deltaNeutralPositionNotionalSize;
-    const netQuoteMintedUi = nativeToUi(
-      depositoryOnchainAccount.netQuoteMinted.toNumber(),
-      UXD_DECIMALS
-    );
-    return unrealizedPnl + netQuoteMintedUi;
-  }
-
   public async getFundingRate(mango: Mango): Promise<number> {
     const pmc = this.getPerpMarketConfig(mango); // perpMarketConfig
     const pm = await this.getPerpMarket(mango); // perpMarket
@@ -303,62 +263,6 @@ export class MangoDepository {
     const asks = await pm.loadAsks(mango.client.connection);
 
     return pm.getCurrentFundingRate(mango.group, mc, pmi, bids, asks);
-  }
-
-  // Return the depository lifetime funding PnL
-  public async getFundingPnl(): Promise<number> {
-    // Get funding from mango stats
-    const response = await fetch(
-      `https://mango-transaction-log.herokuapp.com/v3/stats/total-funding?mango-account=${this.mangoAccountPda}`
-    );
-    const parsedResponse: FundingStats = await response.json();
-    const fundingPnl = Object.entries(parsedResponse)[0][1].total_funding;
-    return fundingPnl;
-  }
-
-  // Return the depository lifetime deposit/borrow PnL for quote and collateral
-  public async getDepositBorrowPnl(mango: Mango): Promise<{
-    quote: { deposit: number; borrow: number };
-    collateral: { deposit: number; borrow: number };
-  }> {
-    let usdcBorrowInterest = 0;
-    let usdcDepositInterest = 0;
-    let collateralBorrowInterest = 0;
-    let collateralDepositInterest = 0;
-    const mangoCache = await mango.getCache();
-
-    const response = await fetch(
-      `https://mango-transaction-log.herokuapp.com/v3/stats/total-interest-earned?mango-account=${this.mangoAccountPda}`
-    );
-    const parsedRes: InterestStats = await response.json();
-    Object.entries(parsedRes).forEach((r) => {
-      const tokens = mango.groupConfig.tokens;
-      const token = tokens.find((t) => t.symbol === r[0]);
-      if (!token) {
-        return;
-      }
-      if (token.mintKey.equals(this.collateralMint)) {
-        if (!token || !mango.group || !mangoCache) {
-          return;
-        }
-        const tokenIndex = mango.group.getTokenIndex(token.mintKey);
-        const price = mango.group.getPrice(tokenIndex, mangoCache).toNumber();
-        collateralBorrowInterest = -r[1].total_borrow_interest * price;
-        collateralDepositInterest = r[1].total_deposit_interest * price;
-      }
-      if (token.mintKey.equals(this.quoteMint)) {
-        usdcBorrowInterest = -r[1].total_borrow_interest;
-        usdcDepositInterest = r[1].total_deposit_interest;
-      }
-    });
-
-    return {
-      quote: { deposit: usdcDepositInterest, borrow: usdcBorrowInterest },
-      collateral: {
-        deposit: collateralDepositInterest,
-        borrow: collateralBorrowInterest,
-      },
-    };
   }
 
   // This call allow to "settle" the paper profits of the depository. Anyone can call it, result is that it settle a particular account

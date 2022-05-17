@@ -1,3 +1,4 @@
+import { uiToNative } from '@blockworks-foundation/mango-client';
 import { BN, InstructionNamespace, utils } from '@project-serum/anchor';
 import {
   ASSOCIATED_TOKEN_PROGRAM_ID,
@@ -14,14 +15,10 @@ import { Controller } from './controller';
 import { MangoDepository } from './mango/depository';
 import { Mango } from './mango';
 import { findATAAddrSync } from './utils';
-import { ZoDepository } from './01/depository';
-import { Zo } from './01';
-import { ZO_FUTURE_TAKER_FEE } from '@zero_one/client';
 import NamespaceFactory from './namespace';
 import { IDL as UXD_IDL } from './idl';
 import { PnLPolarity } from './interfaces';
 import { I80F48 } from './index';
-import { uiToNative } from '@blockworks-foundation/mango-client';
 
 export class UXDClient {
   public instruction: InstructionNamespace<typeof UXD_IDL>;
@@ -136,14 +133,21 @@ export class UXDClient {
     options: ConfirmOptions,
     payer?: PublicKey
   ): Promise<TransactionInstruction> {
-    const userCollateralATA = await utils.token.associatedAddress({
-      mint: depository.collateralMint,
-      owner: user,
-    });
-    const userQuoteATA = await utils.token.associatedAddress({
-      mint: depository.quoteMint,
-      owner: user,
-    });
+    const perpSide = polarity === PnLPolarity.Positive ? 'short' : 'long'; //'sell' : 'buy';
+
+    const [userCollateralATA, userQuoteATA, limitPriceI80F48] =
+      await Promise.all([
+        utils.token.associatedAddress({
+          mint: depository.collateralMint,
+          owner: user,
+        }),
+        utils.token.associatedAddress({
+          mint: depository.quoteMint,
+          owner: user,
+        }),
+        depository.getLimitPrice(I80F48.fromNumber(slippage), perpSide, mango),
+      ]);
+
     const mangoGroupSigner = mango.group.signerKey;
     const mangoCacheAccount = mango.getMangoCacheAccount();
     const quoteMintTokenIndex = mango.group.getTokenIndex(depository.quoteMint);
@@ -174,18 +178,11 @@ export class UXDClient {
       maxRebalancingAmount,
       depository.quoteMintDecimals
     );
-    const perpSide = polarity == PnLPolarity.Positive ? 'short' : 'long'; //'sell' : 'buy';
-    const limit_price = (
-      await depository.getLimitPrice(
-        I80F48.fromNumber(slippage),
-        perpSide,
-        mango
-      )
-    ).toNumber();
+
     return this.instruction.rebalanceMangoDepositoryLite(
       maxRebalancingAmountNative,
       polarity == PnLPolarity.Positive ? { positive: {} } : { negative: {} },
-      limit_price,
+      limitPriceI80F48.toNumber(),
       {
         accounts: {
           user,
@@ -329,6 +326,19 @@ export class UXDClient {
     options: ConfirmOptions,
     payer?: PublicKey
   ): Promise<TransactionInstruction> {
+    const [userCollateralATA, userRedeemableATA, limitPriceI80F48] =
+      await Promise.all([
+        utils.token.associatedAddress({
+          mint: depository.collateralMint,
+          owner: user,
+        }),
+        utils.token.associatedAddress({
+          mint: controller.redeemableMintPda,
+          owner: user,
+        }),
+        depository.getLimitPrice(I80F48.fromNumber(slippage), 'short', mango),
+      ]);
+
     const depositedTokenIndex = mango.group.getTokenIndex(
       depository.collateralMint
     );
@@ -342,29 +352,15 @@ export class UXDClient {
     const mangoPerpMarketConfig = mango.getPerpMarketConfig(
       depository.collateralMintSymbol
     );
-    const userCollateralATA = await utils.token.associatedAddress({
-      mint: depository.collateralMint,
-      owner: user,
-    });
-    const userRedeemableATA = await utils.token.associatedAddress({
-      mint: controller.redeemableMintPda,
-      owner: user,
-    });
+
     const collateralAmountBN = uiToNative(
       collateralAmount,
       depository.collateralMintDecimals
     );
-    const limit_price = (
-      await depository.getLimitPrice(
-        I80F48.fromNumber(slippage),
-        'short',
-        mango
-      )
-    ).toNumber();
-    console.log('LIMIT_PRICE for PERP ORDER : ', limit_price);
+
     return this.instruction.mintWithMangoDepository(
       collateralAmountBN,
-      limit_price,
+      limitPriceI80F48.toNumber(),
       {
         accounts: {
           user,
@@ -405,6 +401,19 @@ export class UXDClient {
     options: ConfirmOptions,
     payer?: PublicKey
   ): Promise<TransactionInstruction> {
+    const [userCollateralATA, userRedeemableATA, limitPriceI80F48] =
+      await Promise.all([
+        utils.token.associatedAddress({
+          mint: depository.collateralMint,
+          owner: user,
+        }),
+        utils.token.associatedAddress({
+          mint: controller.redeemableMintPda,
+          owner: user,
+        }),
+        depository.getLimitPrice(I80F48.fromNumber(slippage), 'long', mango),
+      ]);
+
     const depositedTokenIndex = mango.group.getTokenIndex(
       depository.collateralMint
     );
@@ -419,24 +428,14 @@ export class UXDClient {
     const mangoPerpMarketConfig = mango.getPerpMarketConfig(
       depository.collateralMintSymbol
     );
-    const userCollateralATA = await utils.token.associatedAddress({
-      mint: depository.collateralMint,
-      owner: user,
-    });
-    const userRedeemableATA = await utils.token.associatedAddress({
-      mint: controller.redeemableMintPda,
-      owner: user,
-    });
     const redeemAmountBN = uiToNative(
       amountRedeemable,
       controller.redeemableMintDecimals
     );
-    const limit_price = (
-      await depository.getLimitPrice(I80F48.fromNumber(slippage), 'long', mango)
-    ).toNumber();
+
     return this.instruction.redeemFromMangoDepository(
       redeemAmountBN,
-      limit_price,
+      limitPriceI80F48.toNumber(),
       {
         accounts: {
           user,
@@ -465,313 +464,6 @@ export class UXDClient {
           systemProgram: SystemProgram.programId,
           tokenProgram: TOKEN_PROGRAM_ID,
           mangoProgram: mango.programId,
-        },
-        options: options,
-      }
-    );
-  }
-
-  public async createRegisterZoDepositoryInstruction(
-    controller: Controller,
-    depository: ZoDepository,
-    authority: PublicKey,
-    options: ConfirmOptions,
-    payer?: PublicKey
-  ): Promise<TransactionInstruction> {
-    return this.instruction.registerZoDepository({
-      accounts: {
-        authority,
-        payer: payer ?? authority,
-        controller: controller.pda,
-        depository: depository.pda,
-        collateralMint: depository.collateralMint,
-        quoteMint: depository.quoteMint,
-        systemProgram: SystemProgram.programId,
-        tokenProgram: TOKEN_PROGRAM_ID,
-        rent: SYSVAR_RENT_PUBKEY,
-      },
-      options: options,
-    });
-  }
-
-  public async createInitializeZoDepositoryInstruction(
-    controller: Controller,
-    depository: ZoDepository,
-    zo: Zo,
-    control: PublicKey,
-    authority: PublicKey,
-    options: ConfirmOptions,
-    payer?: PublicKey
-  ): Promise<TransactionInstruction> {
-    const market = await zo.state.getMarketBySymbol(
-      depository.collateralMintSymbol + '-PERP'
-    );
-    const openOrdersPda =
-      await depository.getZoAccountCollateralOpenOrdersAccountKey(zo, control);
-
-    return this.instruction.initializeZoDepository({
-      accounts: {
-        authority,
-        payer: payer ?? authority,
-        controller: controller.pda,
-        depository: depository.pda,
-        zoAccount: depository.zoAccountPda,
-        zoOpenOrders: openOrdersPda,
-        zoState: zo.state.pubkey,
-        zoStateSigner: zo.state.signer,
-        zoDexMarket: market.address,
-        zoControl: control,
-        zoDexProgram: zo.dexProgramId,
-        systemProgram: SystemProgram.programId,
-        zoProgram: zo.program.programId,
-        rent: SYSVAR_RENT_PUBKEY,
-      },
-      options: options,
-    });
-  }
-
-  public async createMintWithZoDepositoryInstruction(
-    collateralAmount: number, // UI
-    slippage: number,
-    controller: Controller,
-    depository: ZoDepository,
-    zo: Zo,
-    user: PublicKey,
-    options: ConfirmOptions,
-    payer?: PublicKey
-  ): Promise<TransactionInstruction> {
-    const marginAccount = await zo.loadMarginAccount(depository.pda);
-    const userCollateralATA = await utils.token.associatedAddress({
-      mint: depository.collateralMint,
-      owner: user,
-    });
-    const userRedeemableATA = await utils.token.associatedAddress({
-      mint: controller.redeemableMintPda,
-      owner: user,
-    });
-    const limitPrice = depository.getLimitPrice(slippage, 'short', zo);
-    const market = await zo.state.getMarketBySymbol(
-      depository.collateralMintSymbol + '-PERP'
-    );
-
-    const limitPriceBn = market.priceNumberToLots(limitPrice);
-    const feeMultiplier = 1 - ZO_FUTURE_TAKER_FEE;
-    const maxBaseQtyBn = market.baseSizeNumberToLots(collateralAmount);
-    // Removing the odd lots
-    const maxQuoteQtyNativeBn = new BN(
-      Math.round(
-        limitPriceBn
-          .mul(maxBaseQtyBn)
-          .mul(market.decoded['quoteLotSize'])
-          .toNumber() * feeMultiplier
-      )
-    );
-    console.log('QUOTE LOT SIZE', market.decoded['quoteLotSize'].toNumber());
-    console.log('BASE LOT SIZE', market.decoded['baseLotSize'].toNumber());
-
-    console.log('collateralAmount', collateralAmount);
-    console.log('Limit price', limitPriceBn.toNumber());
-    console.log('maxQuoteQtyBn', maxQuoteQtyNativeBn.toNumber());
-    console.log('maxBaseQtyBn', maxBaseQtyBn.toNumber());
-    return this.instruction.mintWithZoDepository(
-      maxBaseQtyBn,
-      maxQuoteQtyNativeBn,
-      limitPriceBn,
-      {
-        accounts: {
-          user,
-          payer: payer ?? user,
-          controller: controller.pda,
-          depository: depository.pda,
-          redeemableMint: controller.redeemableMintPda,
-          userCollateral: userCollateralATA,
-          userRedeemable: userRedeemableATA,
-          zoAccount: depository.zoAccountPda,
-          zoState: zo.state.pubkey,
-          zoStateSigner: zo.state.signer,
-          zoCache: zo.state.cache.pubkey,
-          zoVault: zo.state.getVaultCollateralByMint(
-            depository.collateralMint
-          )[0],
-          zoControl: marginAccount.control.pubkey,
-          zoOpenOrders:
-            await depository.getZoAccountCollateralOpenOrdersAccountKey(
-              zo,
-              marginAccount.control.pubkey
-            ),
-          zoDexMarket: market.address,
-          zoReqQ: market.requestQueueAddress,
-          zoEventQ: market.eventQueueAddress,
-          zoMarketBids: market.bidsAddress,
-          zoMarketAsks: market.asksAddress,
-          zoDexProgram: zo.dexProgramId,
-          systemProgram: SystemProgram.programId,
-          tokenProgram: TOKEN_PROGRAM_ID,
-          zoProgram: zo.program.programId,
-          rent: SYSVAR_RENT_PUBKEY,
-        },
-        options: options,
-      }
-    );
-  }
-
-  public async createRedeemFromZoDepositoryInstruction(
-    redeemableAmount: number,
-    slippage: number,
-    controller: Controller,
-    depository: ZoDepository,
-    zo: Zo,
-    user: PublicKey,
-    options: ConfirmOptions,
-    payer?: PublicKey
-  ): Promise<TransactionInstruction> {
-    const marginAccount = await zo.loadMarginAccount(depository.pda);
-    const userCollateralATA = await utils.token.associatedAddress({
-      mint: depository.collateralMint,
-      owner: user,
-    });
-    const userRedeemableATA = await utils.token.associatedAddress({
-      mint: controller.redeemableMintPda,
-      owner: user,
-    });
-    const perpPrice = depository.getPerpPriceUI(zo);
-    const limitPrice = depository.getLimitPrice(slippage, 'long', zo);
-    const market = await zo.state.getMarketBySymbol(
-      depository.collateralMintSymbol + '-PERP'
-    );
-
-    console.log('redeemableAmount', redeemableAmount);
-    const perpPriceBn = market.priceNumberToLots(perpPrice);
-    const limitPriceBn = market.priceNumberToLots(limitPrice);
-    const feeMultiplier = 1 - ZO_FUTURE_TAKER_FEE;
-    // We reduce the max quote by the max fees amount so that they can be collected on top of the redeemed amount of token
-    // (See program redeem instruction comment for more infos)
-    const maxQuoteQtyLotPurchaseBn = market.quoteSizeNumberToLots(
-      redeemableAmount * feeMultiplier
-    );
-    const maxBaseQtyBn = new BN(
-      Math.round(maxQuoteQtyLotPurchaseBn.div(perpPriceBn).toNumber())
-    );
-    console.log('Limit price', limitPriceBn.toNumber());
-    console.log(
-      'maxQuoteQtyLotPurchaseBn',
-      maxQuoteQtyLotPurchaseBn.toNumber()
-    );
-    console.log('maxBaseQtyBn', maxBaseQtyBn.toNumber());
-    return this.instruction.redeemFromZoDepository(
-      maxBaseQtyBn,
-      maxQuoteQtyLotPurchaseBn,
-      limitPriceBn,
-      {
-        accounts: {
-          user,
-          payer: payer ?? user,
-          controller: controller.pda,
-          depository: depository.pda,
-          redeemableMint: controller.redeemableMintPda,
-          userCollateral: userCollateralATA,
-          userRedeemable: userRedeemableATA,
-          zoAccount: depository.zoAccountPda,
-          zoState: zo.state.pubkey,
-          zoStateSigner: zo.state.signer,
-          zoCache: zo.state.cache.pubkey,
-          zoVault: zo.state.getVaultCollateralByMint(
-            depository.collateralMint
-          )[0],
-          zoControl: marginAccount.control.pubkey,
-          zoOpenOrders:
-            await depository.getZoAccountCollateralOpenOrdersAccountKey(
-              zo,
-              marginAccount.control.pubkey
-            ),
-          zoDexMarket: market.address,
-          zoReqQ: market.requestQueueAddress,
-          zoEventQ: market.eventQueueAddress,
-          zoMarketBids: market.bidsAddress,
-          zoMarketAsks: market.asksAddress,
-          zoDexProgram: zo.dexProgramId,
-          systemProgram: SystemProgram.programId,
-          tokenProgram: TOKEN_PROGRAM_ID,
-          zoProgram: zo.program.programId,
-          rent: SYSVAR_RENT_PUBKEY,
-        },
-        options: options,
-      }
-    );
-  }
-
-  public async createDepositInsuranceToZoDepositoryInstruction(
-    insuranceDepositedAmount: number,
-    controller: Controller,
-    depository: ZoDepository,
-    zo: Zo,
-    authority: PublicKey,
-    options: ConfirmOptions
-  ): Promise<TransactionInstruction> {
-    const authorityQuoteATA = await utils.token.associatedAddress({
-      mint: depository.quoteMint,
-      owner: authority,
-    });
-    const insuranceAmountBN = uiToNative(
-      insuranceDepositedAmount,
-      depository.quoteMintDecimals
-    );
-    return this.instruction.depositInsuranceToZoDepository(insuranceAmountBN, {
-      accounts: {
-        authority: authority,
-        controller: controller.pda,
-        depository: depository.pda,
-        authorityQuote: authorityQuoteATA,
-        // Zo accounts for CPI
-        zoAccount: depository.zoAccountPda,
-        zoState: zo.state.pubkey,
-        zoStateSigner: zo.state.signer,
-        zoCache: zo.state.cache.pubkey,
-        zoVault: zo.state.getVaultCollateralByMint(depository.quoteMint)[0],
-        //
-        tokenProgram: TOKEN_PROGRAM_ID,
-        zoProgram: zo.program.programId,
-      },
-      options: options,
-    });
-  }
-
-  public async createWithdrawInsuranceFromZoDepositoryInstruction(
-    insuranceWithdrawnAmount: number,
-    controller: Controller,
-    depository: ZoDepository,
-    zo: Zo,
-    authority: PublicKey,
-    options: ConfirmOptions
-  ): Promise<TransactionInstruction> {
-    const marginAccount = await zo.loadMarginAccount(depository.pda);
-    const authorityQuoteATA = await utils.token.associatedAddress({
-      mint: depository.quoteMint,
-      owner: authority,
-    });
-
-    const insuranceAmountBN = uiToNative(
-      insuranceWithdrawnAmount,
-      depository.quoteMintDecimals
-    );
-    return this.instruction.withdrawInsuranceFromZoDepository(
-      insuranceAmountBN,
-      {
-        accounts: {
-          authority: authority,
-          controller: controller.pda,
-          depository: depository.pda,
-          authorityQuote: authorityQuoteATA,
-          // Zo accounts for CPI
-          zoAccount: depository.zoAccountPda,
-          zoControl: marginAccount.control.pubkey,
-          zoState: zo.state.pubkey,
-          zoStateSigner: zo.state.signer,
-          zoCache: zo.state.cache.pubkey,
-          zoVault: zo.state.getVaultCollateralByMint(depository.quoteMint)[0],
-          //
-          tokenProgram: TOKEN_PROGRAM_ID,
-          zoProgram: zo.program.programId,
         },
         options: options,
       }
@@ -899,13 +591,13 @@ export class UXDClient {
     );
   }
 
-  public async createSetMangoDepositoryQuoteMintAndRedeemFeeInstruction(
+  public createSetMangoDepositoryQuoteMintAndRedeemFeeInstruction(
     quoteFee: number,
     controller: Controller,
     depository: MangoDepository,
     authority: PublicKey,
     options: ConfirmOptions
-  ): Promise<TransactionInstruction> {
+  ): TransactionInstruction {
     return this.instruction.setMangoDepositoryQuoteMintAndRedeemFee(quoteFee, {
       accounts: {
         authority: authority,

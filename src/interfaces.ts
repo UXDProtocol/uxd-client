@@ -74,22 +74,3 @@ export enum PnLPolarity {
   Positive = `Positive`,
   Negative = `Negative`,
 }
-
-export class ZoDepositoryAccount {
-  bump!: number; // u8
-  zoAccountBump!: number; // u8
-  version!: number; // u8
-  isInitialized!: boolean;
-  zoDexMarket!: PublicKey;
-  collateralMint!: PublicKey;
-  collateralMintDecimals!: PublicKey;
-  quoteMint!: PublicKey;
-  quoteMintDecimals!: PublicKey;
-  zoAccount!: PublicKey;
-  controller!: PublicKey;
-  insuranceAmountDeposited!: BN; // u128
-  collateralAmountDeposited!: BN; // u128
-  redeemableAmountUnderManagement!: BN; // u128
-  totalAmountRebalanced!: BN; // u128
-  totalAmountPaidTakerFee!: BN; // u128
-}
