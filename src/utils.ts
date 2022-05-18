@@ -9,7 +9,6 @@ import {
   Commitment,
   TransactionInstruction,
 } from '@solana/web3.js';
-import { utils } from '@project-serum/anchor';
 
 // Constants
 export const BTC_DECIMALS = 6;
@@ -48,11 +47,6 @@ export const ETH_DEVNET = new PublicKey(
   'Cu84KB3tDL6SbFgToHMLYVDJJXdJjenNzSKikeAvzmkA'
 );
 
-// abbreviation for too long name
-// note this returns the array
-export const findAddrSync = utils.publicKey.findProgramAddressSync;
-export const findAddr = PublicKey.findProgramAddress;
-
 // returns an instruction to create the associated account for a wallet and mint
 export function createAssocTokenIx(
   wallet: PublicKey,
@@ -69,17 +63,7 @@ export function createAssocTokenIx(
   );
 }
 
-export function findATAAddr(
-  wallet: PublicKey,
-  mintAddress: PublicKey
-): Promise<[PublicKey, number]> {
-  const seeds = [
-    wallet.toBuffer(),
-    TOKEN_PROGRAM_ID.toBuffer(),
-    mintAddress.toBuffer(),
-  ];
-  return findAddr(seeds, ASSOCIATED_TOKEN_PROGRAM_ID);
-}
+const TOKEN_PROGRAM_ID_BUFFER = TOKEN_PROGRAM_ID.toBuffer();
 
 export function findATAAddrSync(
   wallet: PublicKey,
@@ -87,10 +71,25 @@ export function findATAAddrSync(
 ): [PublicKey, number] {
   const seeds = [
     wallet.toBuffer(),
-    TOKEN_PROGRAM_ID.toBuffer(),
+    TOKEN_PROGRAM_ID_BUFFER,
     mintAddress.toBuffer(),
   ];
-  return findAddrSync(seeds, ASSOCIATED_TOKEN_PROGRAM_ID);
+  return PublicKey.findProgramAddressSync(seeds, ASSOCIATED_TOKEN_PROGRAM_ID);
+}
+
+export function findMultipleATAAddSync(
+  wallet: PublicKey,
+  mintAddresses: PublicKey[]
+) {
+  const walletBuffer = wallet.toBuffer();
+  return mintAddresses.map((mintAddress) => {
+    const seeds = [
+      walletBuffer,
+      TOKEN_PROGRAM_ID_BUFFER,
+      mintAddress.toBuffer(),
+    ];
+    return PublicKey.findProgramAddressSync(seeds, ASSOCIATED_TOKEN_PROGRAM_ID);
+  });
 }
 
 export async function getBalance(
@@ -101,8 +100,7 @@ export async function getBalance(
   const res = await connection.getTokenAccountBalance(tokenAccount, commitment);
   const value = res['value']['uiAmount'];
   if (!value) {
-    const balanceNotFound = 'Could not find balance';
-    throw balanceNotFound;
+    throw new Error('Unable to retrieve token account balance');
   }
   return value;
 }

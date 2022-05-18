@@ -5,7 +5,6 @@ import {
   PublicKey,
   TokenAmount,
 } from '@solana/web3.js';
-import { findAddrSync } from './utils';
 import { IDL } from './idl';
 import { ControllerAccount } from './interfaces';
 
@@ -22,8 +21,11 @@ export class Controller {
   ) {
     this.redeemableMintDecimals = mintDecimals;
     this.redeemableMintSymbol = mintSymbol;
-    [this.pda] = findAddrSync([Buffer.from('CONTROLLER')], uxdProgramId);
-    [this.redeemableMintPda] = findAddrSync(
+    [this.pda] = PublicKey.findProgramAddressSync(
+      [Buffer.from('CONTROLLER')],
+      uxdProgramId
+    );
+    [this.redeemableMintPda] = PublicKey.findProgramAddressSync(
       [Buffer.from('REDEEMABLE')],
       uxdProgramId
     );

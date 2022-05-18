@@ -33,5 +33,4 @@ export {
   ETH_DEVNET,
   createAssocTokenIx,
   findATAAddrSync,
-  findAddrSync,
 } from './utils';

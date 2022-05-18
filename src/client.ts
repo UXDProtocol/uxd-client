@@ -1,5 +1,5 @@
 import { uiToNative } from '@blockworks-foundation/mango-client';
-import { BN, InstructionNamespace, utils } from '@project-serum/anchor';
+import { BN, InstructionNamespace } from '@project-serum/anchor';
 import {
   ASSOCIATED_TOKEN_PROGRAM_ID,
   TOKEN_PROGRAM_ID,
@@ -14,7 +14,7 @@ import {
 import { Controller } from './controller';
 import { MangoDepository } from './mango/depository';
 import { Mango } from './mango';
-import { findATAAddrSync } from './utils';
+import { findATAAddrSync, findMultipleATAAddSync } from './utils';
 import NamespaceFactory from './namespace';
 import { IDL as UXD_IDL } from './idl';
 import { PnLPolarity } from './interfaces';
@@ -133,20 +133,10 @@ export class UXDClient {
     options: ConfirmOptions,
     payer?: PublicKey
   ): Promise<TransactionInstruction> {
-    const perpSide = polarity === PnLPolarity.Positive ? 'short' : 'long'; //'sell' : 'buy';
-
-    const [userCollateralATA, userQuoteATA, limitPriceI80F48] =
-      await Promise.all([
-        utils.token.associatedAddress({
-          mint: depository.collateralMint,
-          owner: user,
-        }),
-        utils.token.associatedAddress({
-          mint: depository.quoteMint,
-          owner: user,
-        }),
-        depository.getLimitPrice(I80F48.fromNumber(slippage), perpSide, mango),
-      ]);
+    const [[userCollateralATA], [userQuoteATA]] = findMultipleATAAddSync(user, [
+      depository.collateralMint,
+      depository.quoteMint,
+    ]);
 
     const mangoGroupSigner = mango.group.signerKey;
     const mangoCacheAccount = mango.getMangoCacheAccount();
@@ -179,10 +169,19 @@ export class UXDClient {
       depository.quoteMintDecimals
     );
 
+    const perpSide = polarity === PnLPolarity.Positive ? 'short' : 'long'; //'sell' : 'buy';
+    const limitPrice = (
+      await depository.getLimitPrice(
+        I80F48.fromNumber(slippage),
+        perpSide,
+        mango
+      )
+    ).toNumber();
+
     return this.instruction.rebalanceMangoDepositoryLite(
       maxRebalancingAmountNative,
       polarity == PnLPolarity.Positive ? { positive: {} } : { negative: {} },
-      limitPriceI80F48.toNumber(),
+      limitPrice,
       {
         accounts: {
           user,
@@ -217,14 +216,14 @@ export class UXDClient {
     );
   }
 
-  public async createDepositInsuranceToMangoDepositoryInstruction(
+  public createDepositInsuranceToMangoDepositoryInstruction(
     insuranceDepositedAmount: number,
     controller: Controller,
     depository: MangoDepository,
     mango: Mango,
     authority: PublicKey,
     options: ConfirmOptions
-  ): Promise<TransactionInstruction> {
+  ): TransactionInstruction {
     const depositedTokenIndex = mango.group.getTokenIndex(depository.quoteMint);
     const mangoCacheAccount = mango.getMangoCacheAccount();
     const mangoRootBankAccount = mango.getRootBankForToken(depositedTokenIndex);
@@ -233,10 +232,10 @@ export class UXDClient {
       depository.quoteMint
     );
     const mangoDepositedVaultAccount = mango.getVaultFor(depositedTokenIndex);
-    const authorityQuoteATA = await utils.token.associatedAddress({
-      mint: depository.quoteMint,
-      owner: authority,
-    });
+    const [authorityQuoteATA] = findATAAddrSync(
+      authority,
+      depository.quoteMint
+    );
     const insuranceAmountBN = uiToNative(
       insuranceDepositedAmount,
       depository.quoteMintDecimals
@@ -326,18 +325,10 @@ export class UXDClient {
     options: ConfirmOptions,
     payer?: PublicKey
   ): Promise<TransactionInstruction> {
-    const [userCollateralATA, userRedeemableATA, limitPriceI80F48] =
-      await Promise.all([
-        utils.token.associatedAddress({
-          mint: depository.collateralMint,
-          owner: user,
-        }),
-        utils.token.associatedAddress({
-          mint: controller.redeemableMintPda,
-          owner: user,
-        }),
-        depository.getLimitPrice(I80F48.fromNumber(slippage), 'short', mango),
-      ]);
+    const [[userCollateralATA], [userRedeemableATA]] = findMultipleATAAddSync(
+      user,
+      [depository.collateralMint, controller.redeemableMintPda]
+    );
 
     const depositedTokenIndex = mango.group.getTokenIndex(
       depository.collateralMint
@@ -358,9 +349,17 @@ export class UXDClient {
       depository.collateralMintDecimals
     );
 
+    const limitPrice = (
+      await depository.getLimitPrice(
+        I80F48.fromNumber(slippage),
+        'short',
+        mango
+      )
+    ).toNumber();
+
     return this.instruction.mintWithMangoDepository(
       collateralAmountBN,
-      limitPriceI80F48.toNumber(),
+      limitPrice,
       {
         accounts: {
           user,
@@ -401,18 +400,10 @@ export class UXDClient {
     options: ConfirmOptions,
     payer?: PublicKey
   ): Promise<TransactionInstruction> {
-    const [userCollateralATA, userRedeemableATA, limitPriceI80F48] =
-      await Promise.all([
-        utils.token.associatedAddress({
-          mint: depository.collateralMint,
-          owner: user,
-        }),
-        utils.token.associatedAddress({
-          mint: controller.redeemableMintPda,
-          owner: user,
-        }),
-        depository.getLimitPrice(I80F48.fromNumber(slippage), 'long', mango),
-      ]);
+    const [[userCollateralATA], [userRedeemableATA]] = findMultipleATAAddSync(
+      user,
+      [depository.collateralMint, controller.redeemableMintPda]
+    );
 
     const depositedTokenIndex = mango.group.getTokenIndex(
       depository.collateralMint
@@ -433,9 +424,13 @@ export class UXDClient {
       controller.redeemableMintDecimals
     );
 
+    const limitPrice = (
+      await depository.getLimitPrice(I80F48.fromNumber(slippage), 'long', mango)
+    ).toNumber();
+
     return this.instruction.redeemFromMangoDepository(
       redeemAmountBN,
-      limitPriceI80F48.toNumber(),
+      limitPrice,
       {
         accounts: {
           user,
@@ -470,7 +465,7 @@ export class UXDClient {
     );
   }
 
-  public async createQuoteMintWithMangoDepositoryInstruction(
+  public createQuoteMintWithMangoDepositoryInstruction(
     quoteAmount: number,
     controller: Controller,
     depository: MangoDepository,
@@ -478,7 +473,7 @@ export class UXDClient {
     user: PublicKey,
     options: ConfirmOptions,
     payer?: PublicKey
-  ): Promise<TransactionInstruction> {
+  ): TransactionInstruction {
     const depositedTokenIndex = mango.group.getTokenIndex(depository.quoteMint);
     const mangoCacheAccount = mango.getMangoCacheAccount();
     const mangoRootBankAccount = mango.getRootBankForToken(depositedTokenIndex);
@@ -527,7 +522,7 @@ export class UXDClient {
     });
   }
 
-  public async createQuoteRedeemWithMangoDepositoryInstruction(
+  public createQuoteRedeemWithMangoDepositoryInstruction(
     redeemableAmount: number,
     controller: Controller,
     depository: MangoDepository,
@@ -535,7 +530,7 @@ export class UXDClient {
     user: PublicKey,
     options: ConfirmOptions,
     payer?: PublicKey
-  ): Promise<TransactionInstruction> {
+  ): TransactionInstruction {
     const depositedTokenIndex = mango.group.getTokenIndex(depository.quoteMint);
     const mangoCacheAccount = mango.getMangoCacheAccount();
     const mangoGroupSigner = mango.group.signerKey;
@@ -553,9 +548,11 @@ export class UXDClient {
       user,
       controller.redeemableMintPda
     )[0];
-    const redeemableAmountNativeBN = new BN(
-      redeemableAmount * 10 ** controller.redeemableMintDecimals
+    const redeemableAmountNativeBN = uiToNative(
+      redeemableAmount,
+      controller.redeemableMintDecimals
     );
+
     return this.instruction.quoteRedeemFromMangoDepository(
       redeemableAmountNativeBN,
       {
