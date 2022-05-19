@@ -34,24 +34,7 @@ export class MangoDepositoryAccountV1 {
   totalAmountPaidTakerFee!: BN; // u128
 }
 
-// V2 with ZO no USDC
-export class MangoDepositoryAccountV2 {
-  version!: number; // u8
-  collateralMint!: PublicKey;
-  mangoAccount!: PublicKey;
-  controller!: PublicKey;
-  insuranceAmountDeposited!: BN; // u128
-  collateralAmountDeposited!: BN; // u128
-  redeemableAmountUnderManagement!: BN; // u128
-  totalAmountPaidTakerFee!: BN; // u128
-  quoteMint!: PublicKey;
-  quoteMintDecimals!: number; // u8
-  totalAmountRebalanced!: BN; // u128
-  registeredZoDepositories!: PublicKey[]; // 4 entries max currently
-  registeredZoDepositoriesCount!: number; // u8
-}
-
-// V3 with USDC no ZO
+// V2
 export class MangoDepositoryAccount {
   version!: number; // u8
   collateralMint!: PublicKey;

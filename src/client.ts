@@ -1,4 +1,4 @@
-import { uiToNative } from '@blockworks-foundation/mango-client';
+import { uiToNative, I80F48 } from '@blockworks-foundation/mango-client';
 import { BN, InstructionNamespace } from '@project-serum/anchor';
 import {
   ASSOCIATED_TOKEN_PROGRAM_ID,
@@ -18,7 +18,6 @@ import { findATAAddrSync, findMultipleATAAddSync } from './utils';
 import NamespaceFactory from './namespace';
 import { IDL as UXD_IDL } from './idl';
 import { PnLPolarity } from './interfaces';
-import { I80F48 } from './index';
 
 export class UXDClient {
   public instruction: InstructionNamespace<typeof UXD_IDL>;
