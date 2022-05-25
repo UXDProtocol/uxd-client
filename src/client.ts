@@ -18,6 +18,7 @@ import { findATAAddrSync, findMultipleATAAddSync } from './utils';
 import NamespaceFactory from './namespace';
 import { IDL as UXD_IDL } from './idl';
 import { PnLPolarity } from './interfaces';
+import { SafetyVault } from './mango/safetyVault';
 
 export class UXDClient {
   public instruction: InstructionNamespace<typeof UXD_IDL>;
@@ -620,4 +621,118 @@ export class UXDClient {
       options: options,
     });
   }
+
+  public async createInitializeSafetyVaultInstruction(
+    controller: Controller,
+    depository: MangoDepository,
+    safetyVault: SafetyVault,
+    authority: PublicKey,
+    options: ConfirmOptions,
+    payer?: PublicKey,
+  ): Promise<TransactionInstruction> {
+    return this.instruction.initializeSafetyVault(
+      {
+        accounts: {
+          authority: authority,
+          payer: payer ?? authority,
+          controller: controller.pda,
+          depository: depository.pda,
+          safetyVault: safetyVault.pda,
+          quoteVault: safetyVault.quoteVaultPda,
+          collateralVault: safetyVault.collateralVaultPda,
+          quoteMint: depository.quoteMint,
+          collateralMint: depository.collateralMint,
+          systemProgram: SystemProgram.programId,
+          tokenProgram: TOKEN_PROGRAM_ID,
+          rent: SYSVAR_RENT_PUBKEY,
+        },
+        options: options,
+      }
+    );
+  }
+
+  public async createLiquidationKillSwitchInstruction(
+    targetCollateral: number,
+    slippage: number,
+    controller: Controller,
+    depository: MangoDepository,
+    safetyVault: SafetyVault,
+    mango: Mango,
+    authority: PublicKey,
+    options: ConfirmOptions,
+    payer?: PublicKey,
+  ): Promise<TransactionInstruction> {
+    
+    const depositedTokenIndex = mango.group.getTokenIndex(
+      depository.collateralMint
+    );
+    const mangoCacheAccount = mango.getMangoCacheAccount();
+    const mangoGroupSigner = mango.group.signerKey;
+    const mangoRootBankAccount = mango.getRootBankForToken(depositedTokenIndex);
+    const mangoNodeBankAccount = mango.getNodeBankFor(
+      depositedTokenIndex,
+      depository.collateralMint
+    );
+    const mangoDepositedVaultAccount = mango.getVaultFor(depositedTokenIndex);
+    const mangoPerpMarketConfig = mango.getPerpMarketConfig(
+      depository.collateralMintSymbol
+    );
+    const targetCollateralBN = uiToNative(
+      targetCollateral,
+      depository.collateralMintDecimals
+    );
+    const limitPrice = (
+      await depository.getLimitPrice(I80F48.fromNumber(slippage), 'long', mango)
+    ).toNumber();
+
+    return this.instruction.liquidationKillSwitch(
+      targetCollateralBN,
+      limitPrice,
+      {
+        accounts: {
+          authority: authority,
+          controller: controller.pda,
+          depository: depository.pda,
+          safetyVault: safetyVault.pda,
+          quoteVault: safetyVault.quoteVaultPda,
+          collateralVault: safetyVault.collateralVaultPda,
+          mangoAccount: depository.mangoAccountPda,
+          // mango stuff
+          mangoGroup: mango.group.publicKey,
+          mangoCache: mangoCacheAccount,
+          mangoSigner: mangoGroupSigner,
+          mangoRootBank: mangoRootBankAccount,
+          mangoNodeBank: mangoNodeBankAccount,
+          mangoVault: mangoDepositedVaultAccount,
+          mangoPerpMarket: mangoPerpMarketConfig.publicKey,
+          mangoBids: mangoPerpMarketConfig.bidsKey,
+          mangoAsks: mangoPerpMarketConfig.asksKey,
+          mangoEventQueue: mangoPerpMarketConfig.eventsKey,
+          // raydium stuff
+          // amm:
+          // ammAuthority:
+          // ammOpenOrders:
+          // ammTargetOrders:
+          // poolCoinTokenAccount:
+          // poolPcTokenAccount:
+          // serumProgram:
+          // serumMarket:
+          // serumBids:
+          // serumAsks:
+          // serumEventQueue:
+          // serumCoinVaultAccount:
+          // serumPcVaultAccount:
+          // serumVaultSigner:
+          // splTokenProgram:
+          //
+          systemProgram: SystemProgram.programId,
+          tokenProgram: TOKEN_PROGRAM_ID,
+          mangoProgram: mango.programId,
+          // raydiumProgram: 
+        },
+        options: options,
+      }
+    );
+  }
+
 }
