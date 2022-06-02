@@ -620,4 +620,28 @@ export class UXDClient {
       options: options,
     });
   }
+
+  public createDepositoryMsolConfigInstruction(
+    targetLiquidityRatio: number,
+    controller: Controller,
+    depository: MangoDepository,
+    msolConfigPda: PublicKey,
+    authority: PublicKey,
+    options: ConfirmOptions,
+    payer?: PublicKey
+  ): TransactionInstruction {
+    const targetLiquidityRatioBN = new BN(targetLiquidityRatio)
+    return this.instruction.createDepositoryMsolConfig(targetLiquidityRatioBN, {
+      accounts: {
+        authority: authority,
+        payer: payer ?? authority,
+        controller: controller.pda,
+        depository: depository.pda,
+        msolConfig: msolConfigPda,
+        systemProgram: SystemProgram.programId,
+        rent: SYSVAR_RENT_PUBKEY,
+      },
+      options: options,
+    });
+  }
 }
