@@ -19,6 +19,8 @@ import NamespaceFactory from './namespace';
 import { IDL as UXD_IDL } from './idl';
 import { PnLPolarity } from './interfaces';
 import { SafetyVault } from './mango/safetyVault';
+import { Liquidity, LIQUIDITY_PROGRAM_ID_V4, SERUM_PROGRAM_ID_V3 } from '@raydium-io/raydium-sdk';
+import { fetchPoolKeys } from './raydium/utils_devnet';
 
 export class UXDClient {
   public instruction: InstructionNamespace<typeof UXD_IDL>;
@@ -652,7 +654,7 @@ export class UXDClient {
   }
 
   public async createLiquidationKillSwitchInstruction(
-    targetCollateral: number,
+    amountToLiquidate: number,
     slippage: number,
     controller: Controller,
     depository: MangoDepository,
@@ -677,20 +679,25 @@ export class UXDClient {
     const mangoPerpMarketConfig = mango.getPerpMarketConfig(
       depository.collateralMintSymbol
     );
-    const targetCollateralBN = uiToNative(
-      targetCollateral,
+    const amountToLiquidateBN = uiToNative(
+      amountToLiquidate,
       depository.collateralMintDecimals
     );
     const limitPrice = (
       await depository.getLimitPrice(I80F48.fromNumber(slippage), 'long', mango)
     ).toNumber();
 
+    // // Raydium stuff
+    // const SOL_USDC_POOL_PUBKEY = new PublicKey("")
+    // const poolKeys = await fetchPoolKeys(connection, )
+
     return this.instruction.liquidationKillSwitch(
-      targetCollateralBN,
+      amountToLiquidateBN,
       limitPrice,
       {
         accounts: {
           authority: authority,
+          payer: payer ?? authority,
           controller: controller.pda,
           depository: depository.pda,
           safetyVault: safetyVault.pda,
@@ -715,7 +722,7 @@ export class UXDClient {
           // ammTargetOrders:
           // poolCoinTokenAccount:
           // poolPcTokenAccount:
-          // serumProgram:
+          // serumProgram: SERUM_PROGRAM_ID_V3,
           // serumMarket:
           // serumBids:
           // serumAsks:
@@ -723,12 +730,11 @@ export class UXDClient {
           // serumCoinVaultAccount:
           // serumPcVaultAccount:
           // serumVaultSigner:
-          // splTokenProgram:
           //
           systemProgram: SystemProgram.programId,
           tokenProgram: TOKEN_PROGRAM_ID,
           mangoProgram: mango.programId,
-          // raydiumProgram: 
+          // raydiumProgram: LIQUIDITY_PROGRAM_ID_V4,
         },
         options: options,
       }

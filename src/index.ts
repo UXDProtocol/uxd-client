@@ -15,6 +15,7 @@ export {
 } from './interfaces';
 export { Mango, createAndInitializeMango } from './mango';
 export { MangoDepository } from './mango/depository';
+export { SafetyVault } from './mango/safetyVault';
 export {
   ETH_DECIMALS,
   BTC_DECIMALS,
