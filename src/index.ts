@@ -15,6 +15,7 @@ export {
 } from './interfaces';
 export { Mango, createAndInitializeMango } from './mango';
 export { MangoDepository } from './mango/depository';
+export { MsolConfig } from './mango/msol_config';
 export {
   ETH_DECIMALS,
   BTC_DECIMALS,
@@ -31,6 +32,7 @@ export {
   BTC_DEVNET,
   ETH,
   ETH_DEVNET,
+  MSOL,
   createAssocTokenIx,
   findATAAddrSync,
 } from './utils';
