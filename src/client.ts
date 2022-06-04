@@ -18,6 +18,7 @@ import { findATAAddrSync, findMultipleATAAddSync, MSOL } from './utils';
 import NamespaceFactory from './namespace';
 import { IDL as UXD_IDL } from './idl';
 import { PnLPolarity } from './interfaces';
+import { Marinade, MarinadeConfig } from '@marinade.finance/marinade-ts-sdk';
 
 export class UXDClient {
   public instruction: InstructionNamespace<typeof UXD_IDL>;
@@ -645,15 +646,16 @@ export class UXDClient {
     });
   }
 
-  public swapDepositoryMsolInstruction(
+  public async swapDepositoryMsolInstruction(
     controller: Controller,
     depository: MangoDepository,
     msolConfigPda: PublicKey,
     mango: Mango,
+    marinadeConfig: MarinadeConfig,
     options: ConfirmOptions,
     user: PublicKey,
     payer?: PublicKey
-  ): TransactionInstruction {
+  ): Promise<TransactionInstruction> {
     const mangoCacheAccount = mango.getMangoCacheAccount();
 
     const msolTokenIndex = mango.group.getTokenIndex(MSOL);
@@ -674,6 +676,9 @@ export class UXDClient {
       MSOL,
     ]);
 
+    const marinade = new Marinade(marinadeConfig);
+    const marinadeState = await marinade.getMarinadeState();
+
     return this.instruction.swapDepositoryMsol({
       accounts: {
         user: user,
@@ -692,33 +697,17 @@ export class UXDClient {
         mangoMsolNodeBank: mangoMsolNodeBankAccount,
         mangoMsolVault: mangoMsolDepositedVaultAccount,
         mangoProgram: mango.programId,
-        marinadeState: new PublicKey(
-          '8szGkuLTAux9XMgZ2vtY39jVSowEcpBfFfD8hXSEqdGC'
-        ),
+        marinadeState: marinadeState.marinadeStateAddress,
         msolMint: MSOL,
-        msolMintAuthority: new PublicKey(
-          '3JLPCS1qM2zRw3Dp6V4hZnYHd4toMNPkNesXdX9tg6KM'
-        ),
-        liqPoolSolLegPda: new PublicKey(
-          'UefNb6z6yvArqe4cJHTXCqStRsKmWhGxnZzuHbikP5Q'
-        ),
-        liqPoolMsolLeg: new PublicKey(
-          '7GgPYjS5Dza89wV6FpZ23kUJRG5vbQ1GM25ezspYFSoE'
-        ),
-        liqPoolMsolLegAuthority: new PublicKey(
-          'EyaSjUtSgo9aRD1f8LWXwdvkpDTmXAW54yoSHZRF14WL'
-        ),
-        treasuryMsolAccount: new PublicKey(
-          'Bcr3rbZq1g7FsPz8tawDzT6fCzN1pvADthcv3CtTpd3b'
-        ),
-        reservePda: new PublicKey(
-          'Du3Ysj1wKbxPKkuPPnvzQLQh8oMSVifs3jGZjJWXFmHN'
-        ),
+        msolMintAuthority: await marinadeState.mSolMintAuthority(),
+        liqPoolSolLegPda: await marinadeState.solLeg(),
+        liqPoolMsolLeg: marinadeState.mSolLeg,
+        liqPoolMsolLegAuthority: await marinadeState.mSolLegAuthority(),
+        treasuryMsolAccount: marinadeState.treasuryMsolAccount,
+        reservePda: await marinadeState.reserveAddress(),
         solPassthroughAta: userWsolATA,
         msolPassthroughAta: userMsolATA,
-        marinadeFinanceProgram: new PublicKey(
-          'MarBmsSgKXdrN1egZf5sqe1TMai9K1rChYNDJgjq7aD'
-        ),
+        marinadeFinanceProgram: marinadeState.marinadeFinanceProgramId,
         systemProgram: SystemProgram.programId,
         tokenProgram: TOKEN_PROGRAM_ID,
       },
