@@ -1153,7 +1153,7 @@ export const IDL: Idl = {
         },
         {
           name: 'mangoMsolRootBank',
-          isMut: false,
+          isMut: true,
           isSigner: false,
         },
         {

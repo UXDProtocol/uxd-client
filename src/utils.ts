@@ -32,6 +32,9 @@ export const BTC = new PublicKey(
 export const ETH = new PublicKey(
   '2FPyTwcZLUg1MDrwsyoP4D6s1tM7hAkHYRjkNb5w6Pxk'
 );
+export const MSOL = new PublicKey(
+  'mSoLzYCxHdYgdzU16g5QSh3i5K3z3KZK7ytfqcJm7So'
+);
 
 export const UXD_DEVNET = new PublicKey(
   'GhFRARKh28888Cn6LkHu11L38pgf84TaeaVFJfuTPFUH'
