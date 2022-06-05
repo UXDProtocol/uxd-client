@@ -559,6 +559,71 @@ export const IDL: Idl = {
           isMut: false,
           isSigner: false,
         },
+        {
+          name: 'msolConfig',
+          isMut: false,
+          isSigner: false,
+        },
+        {
+          name: 'mangoMsolRootBank',
+          isMut: true,
+          isSigner: false,
+        },
+        {
+          name: 'mangoMsolNodeBank',
+          isMut: true,
+          isSigner: false,
+        },
+        {
+          name: 'mangoMsolVault',
+          isMut: true,
+          isSigner: false,
+        },
+        {
+          name: 'marinadeState',
+          isMut: true,
+          isSigner: false,
+        },
+        {
+          name: 'msolMint',
+          isMut: true,
+          isSigner: false,
+        },
+        {
+          name: 'msolMintAuthority',
+          isMut: false,
+          isSigner: false,
+        },
+        {
+          name: 'liqPoolSolLegPda',
+          isMut: true,
+          isSigner: false,
+        },
+        {
+          name: 'liqPoolMsolLeg',
+          isMut: true,
+          isSigner: false,
+        },
+        {
+          name: 'liqPoolMsolLegAuthority',
+          isMut: false,
+          isSigner: false,
+        },
+        {
+          name: 'reservePda',
+          isMut: true,
+          isSigner: false,
+        },
+        {
+          name: 'msolPassthroughAta',
+          isMut: true,
+          isSigner: false,
+        },
+        {
+          name: 'marinadeFinanceProgram',
+          isMut: false,
+          isSigner: false,
+        },
       ],
       args: [
         {

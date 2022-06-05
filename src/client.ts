@@ -322,12 +322,14 @@ export class UXDClient {
     depository: MangoDepository,
     mango: Mango,
     user: PublicKey,
+    msolConfigPda: PublicKey,
+    marinadeConfig: MarinadeConfig,
     options: ConfirmOptions,
-    payer?: PublicKey
+    payer?: PublicKey,
   ): Promise<TransactionInstruction> {
-    const [[userCollateralATA], [userRedeemableATA]] = findMultipleATAAddSync(
+    const [[userCollateralATA], [userRedeemableATA], [userMsolATA]] = findMultipleATAAddSync(
       user,
-      [depository.collateralMint, controller.redeemableMintPda]
+      [depository.collateralMint, controller.redeemableMintPda, MSOL]
     );
 
     const depositedTokenIndex = mango.group.getTokenIndex(
@@ -357,6 +359,15 @@ export class UXDClient {
       )
     ).toNumber();
 
+    // msol
+    const msolTokenIndex = mango.group.getTokenIndex(MSOL);
+    const mangoMsolRootBankAccount = mango.getRootBankForToken(msolTokenIndex);
+    const mangoMsolNodeBankAccount = mango.getNodeBankFor(msolTokenIndex, MSOL);
+    const mangoMsolDepositedVaultAccount = mango.getVaultFor(msolTokenIndex);
+
+    const marinade = new Marinade(marinadeConfig);
+    const marinadeState = await marinade.getMarinadeState();
+
     return this.instruction.mintWithMangoDepository(
       collateralAmountBN,
       limitPrice,
@@ -384,6 +395,20 @@ export class UXDClient {
           systemProgram: SystemProgram.programId,
           tokenProgram: TOKEN_PROGRAM_ID,
           mangoProgram: mango.programId,
+          //msol
+          msolConfig: msolConfigPda,
+          mangoMsolRootBank: mangoMsolRootBankAccount,
+          mangoMsolNodeBank: mangoMsolNodeBankAccount,
+          mangoMsolVault: mangoMsolDepositedVaultAccount,
+          marinadeState: marinadeState.marinadeStateAddress,
+          msolMint: MSOL,
+          msolMintAuthority: await marinadeState.mSolMintAuthority(),
+          liqPoolSolLegPda: await marinadeState.solLeg(),
+          liqPoolMsolLeg: marinadeState.mSolLeg,
+          liqPoolMsolLegAuthority: await marinadeState.mSolLegAuthority(),
+          reservePda: await marinadeState.reserveAddress(),
+          msolPassthroughAta: userMsolATA,
+          marinadeFinanceProgram: marinadeState.marinadeFinanceProgramId,
         },
         options: options,
       }
