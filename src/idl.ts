@@ -1437,6 +1437,23 @@ export const IDL: Idl = {
         ],
       },
     },
+    {
+      name: 'MsolSwapRoute',
+      type: {
+        kind: 'enum',
+        variants: [
+          {
+            name: 'Deposit',
+          },
+          {
+            name: 'LiquidUnstake',
+          },
+          {
+            name: 'NoSwapRequired',
+          },
+        ],
+      },
+    },
   ],
   events: [
     {
