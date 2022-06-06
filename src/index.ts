@@ -14,8 +14,9 @@ export {
   PnLPolarity,
 } from './interfaces';
 export { Mango, createAndInitializeMango } from './mango';
+export { createMarinadeConfig } from './msol';
 export { MangoDepository } from './mango/depository';
-export { MsolConfig } from './mango/msol_config';
+export { MsolConfig } from './msol/msol_config';
 export {
   ETH_DECIMALS,
   BTC_DECIMALS,
