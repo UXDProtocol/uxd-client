@@ -53,6 +53,19 @@ export class MangoDepositoryAccount {
   mintingDisabled!: boolean;
 }
 
+export class SafetyVaultAccount {
+  bump!: number; // u8
+  quoteVaultBump!: number; // u8
+  collateralVaultBump!: number; // u8
+  version!: number; // u8
+  authority!: PublicKey;
+  depository!: PublicKey;
+  quoteVault!: PublicKey;
+  collateralVault!: PublicKey;
+  collateralLiquidated!: BN; // u128
+  quoteVaultBalance!: BN; // u128
+}
+
 export enum PnLPolarity {
   Positive = `Positive`,
   Negative = `Negative`,
