@@ -295,19 +295,8 @@ export class MangoDepository {
     );
   }
 
-  // Return the price of 1 base native unit expressed in quote native units
-  // This is the format of the on chain program input parameter
-  async getCollateralPerpPriceNativeQuotePerNativeBase(
-    mango: Mango
-  ): Promise<I80F48> {
-    const mangoCache = await mango.getCache();
-    const pmc = this.getPerpMarketConfig(mango); // perpMarketConfig
-    const pmi = pmc.marketIndex; // perpMarketIndex
-    return mango.group.getPriceNative(pmi, mangoCache);
-  }
-
   // The side of the taker (the user)
-  async getLimitPrice(
+  public async getLimitPrice(
     slippage: I80F48,
     perpOrderTakerSide: 'short' | 'long',
     mango: Mango
@@ -325,4 +314,16 @@ export class MangoDepository {
       }
     }
   }
+
+  // Return the price of 1 base native unit expressed in quote native units
+  // This is the format of the on chain program input parameter
+  async getCollateralPerpPriceNativeQuotePerNativeBase(
+    mango: Mango
+  ): Promise<I80F48> {
+    const mangoCache = await mango.getCache();
+    const pmc = this.getPerpMarketConfig(mango); // perpMarketConfig
+    const pmi = pmc.marketIndex; // perpMarketIndex
+    return mango.group.getPriceNative(pmi, mangoCache);
+  }
+
 }
