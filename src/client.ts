@@ -107,7 +107,7 @@ export class UXDClient {
         depository: depository.pda,
         collateralMint: depository.collateralMint,
         quoteMint: depository.quoteMint,
-        depositoryMangoAccount: depository.mangoAccountPda,
+        mangoAccount: depository.mangoAccountPda,
         mangoGroup: mango.group.publicKey,
         systemProgram: SystemProgram.programId,
         tokenProgram: TOKEN_PROGRAM_ID,
@@ -177,7 +177,7 @@ export class UXDClient {
           quoteMint: depository.quoteMint,
           userCollateral: userCollateralATA,
           userQuote: userQuoteATA,
-          depositoryMangoAccount: depository.mangoAccountPda,
+          mangoAccount: depository.mangoAccountPda,
           mangoSigner: mangoGroupSigner,
           mangoGroup: mango.group.publicKey,
           mangoCache: mangoCacheAccount,
@@ -239,7 +239,7 @@ export class UXDClient {
           collateralMint: depository.collateralMint,
           quoteMint: depository.quoteMint,
           authorityQuote: authorityQuoteATA,
-          depositoryMangoAccount: depository.mangoAccountPda,
+          mangoAccount: depository.mangoAccountPda,
           // mango accounts for CPI
           mangoGroup: mango.group.publicKey,
           mangoCache: mangoCacheAccount,
@@ -289,7 +289,7 @@ export class UXDClient {
           collateralMint: depository.collateralMint,
           quoteMint: depository.quoteMint,
           authorityQuote: authorityQuoteATA,
-          depositoryMangoAccount: depository.mangoAccountPda,
+          mangoAccount: depository.mangoAccountPda,
           // mango accounts for CPI
           mangoGroup: mango.group.publicKey,
           mangoCache: mangoCacheAccount,
@@ -357,7 +357,7 @@ export class UXDClient {
           redeemableMint: controller.redeemableMintPda,
           userCollateral: userCollateralATA,
           userRedeemable: userRedeemableATA,
-          depositoryMangoAccount: depository.mangoAccountPda,
+          mangoAccount: depository.mangoAccountPda,
           // mango accounts for CPI
           mangoGroup: mango.group.publicKey,
           mangoCache: mangoCacheAccount,
@@ -427,7 +427,7 @@ export class UXDClient {
         redeemableMint: controller.redeemableMintPda,
         userCollateral: userCollateralATA,
         userRedeemable: userRedeemableATA,
-        depositoryMangoAccount: depository.mangoAccountPda,
+        mangoAccount: depository.mangoAccountPda,
         // mango stuff
         mangoGroup: mango.group.publicKey,
         mangoCache: mangoCacheAccount,
@@ -448,6 +448,144 @@ export class UXDClient {
         mangoProgram: mango.programId,
         //
         rent: SYSVAR_RENT_PUBKEY,
+      },
+      options: options,
+    });
+  }
+
+  public async createQuoteMintWithMangoDepositoryInstruction(
+    quoteAmount: number,
+    controller: Controller,
+    depository: MangoDepository,
+    mango: Mango,
+    user: PublicKey,
+    options: ConfirmOptions,
+    payer?: PublicKey
+  ): Promise<TransactionInstruction> {
+    const depositedTokenIndex = mango.group.getTokenIndex(depository.quoteMint);
+    const mangoCacheAccount = mango.getMangoCacheAccount();
+    const mangoRootBankAccount = mango.getRootBankForToken(depositedTokenIndex);
+    const mangoNodeBankAccount = mango.getNodeBankFor(
+      depositedTokenIndex,
+      depository.quoteMint
+    );
+    const mangoDepositedVaultAccount = mango.getVaultFor(depositedTokenIndex);
+    const mangoPerpMarketConfig = mango.getPerpMarketConfig(
+      depository.collateralMintSymbol
+    );
+    const userQuoteATA = findATAAddrSync(user, depository.quoteMint)[0];
+    const userRedeemableATA = findATAAddrSync(
+      user,
+      controller.redeemableMintPda
+    )[0];
+    const quoteAmountNativeBN = new BN(
+      quoteAmount * 10 ** depository.collateralMintDecimals
+    );
+    return this.instruction.quoteMintWithMangoDepository(quoteAmountNativeBN, {
+      accounts: {
+        user: user,
+        payer: payer ?? user,
+        controller: controller.pda,
+        depository: depository.pda,
+        redeemableMint: controller.redeemableMintPda,
+        userQuote: userQuoteATA,
+        userRedeemable: userRedeemableATA,
+        mangoAccount: depository.mangoAccountPda,
+        // mango accounts for CPI
+        mangoGroup: mango.group.publicKey,
+        mangoCache: mangoCacheAccount,
+        mangoRootBank: mangoRootBankAccount,
+        mangoNodeBank: mangoNodeBankAccount,
+        mangoVault: mangoDepositedVaultAccount,
+        mangoPerpMarket: mangoPerpMarketConfig.publicKey,
+        //
+        systemProgram: SystemProgram.programId,
+        tokenProgram: TOKEN_PROGRAM_ID,
+        associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+        mangoProgram: mango.programId,
+        //
+        rent: SYSVAR_RENT_PUBKEY,
+      },
+      options: options,
+    });
+  }
+
+  public async createQuoteRedeemWithMangoDepositoryInstruction(
+    redeemableAmount: number,
+    controller: Controller,
+    depository: MangoDepository,
+    mango: Mango,
+    user: PublicKey,
+    options: ConfirmOptions,
+    payer?: PublicKey
+  ): Promise<TransactionInstruction> {
+    const depositedTokenIndex = mango.group.getTokenIndex(depository.quoteMint);
+    const mangoCacheAccount = mango.getMangoCacheAccount();
+    const mangoGroupSigner = mango.group.signerKey;
+    const mangoRootBankAccount = mango.getRootBankForToken(depositedTokenIndex);
+    const mangoNodeBankAccount = mango.getNodeBankFor(
+      depositedTokenIndex,
+      depository.quoteMint
+    );
+    const mangoDepositedVaultAccount = mango.getVaultFor(depositedTokenIndex);
+    const mangoPerpMarketConfig = mango.getPerpMarketConfig(
+      depository.collateralMintSymbol
+    );
+    const userQuoteATA = findATAAddrSync(user, depository.quoteMint)[0];
+    const userRedeemableATA = findATAAddrSync(
+      user,
+      controller.redeemableMintPda
+    )[0];
+    const redeemableAmountNativeBN = new BN(
+      redeemableAmount * 10 ** controller.redeemableMintDecimals
+    );
+    return this.instruction.quoteRedeemFromMangoDepository(
+      redeemableAmountNativeBN,
+      {
+        accounts: {
+          user: user,
+          payer: payer ?? user,
+          controller: controller.pda,
+          depository: depository.pda,
+          redeemableMint: controller.redeemableMintPda,
+          quoteMint: depository.quoteMint,
+          userQuote: userQuoteATA,
+          userRedeemable: userRedeemableATA,
+          mangoAccount: depository.mangoAccountPda,
+          // mango stuff
+          mangoGroup: mango.group.publicKey,
+          mangoCache: mangoCacheAccount,
+          mangoSigner: mangoGroupSigner,
+          // -- for the withdraw
+          mangoRootBank: mangoRootBankAccount,
+          mangoNodeBank: mangoNodeBankAccount,
+          mangoVault: mangoDepositedVaultAccount,
+          mangoPerpMarket: mangoPerpMarketConfig.publicKey,
+          //
+          systemProgram: SystemProgram.programId,
+          tokenProgram: TOKEN_PROGRAM_ID,
+          associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+          mangoProgram: mango.programId,
+          //
+          rent: SYSVAR_RENT_PUBKEY,
+        },
+        options: options,
+      }
+    );
+  }
+
+  public async createSetMangoDepositoryQuoteMintAndRedeemFeeInstruction(
+    quoteFee: number,
+    controller: Controller,
+    depository: MangoDepository,
+    authority: PublicKey,
+    options: ConfirmOptions
+  ): Promise<TransactionInstruction> {
+    return this.instruction.setMangoDepositoryQuoteMintAndRedeemFee(quoteFee, {
+      accounts: {
+        authority: authority,
+        controller: controller.pda,
+        depository: depository.pda,
       },
       options: options,
     });
