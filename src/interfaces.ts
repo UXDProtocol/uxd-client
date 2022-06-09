@@ -13,6 +13,7 @@ export class ControllerAccount {
   redeemableGlobalSupplyCap!: BN; // u128
   mangoDepositoriesRedeemableSoftCap!: BN; // u64
   redeemableCirculatingSupply!: BN; // u128
+  mangoDepositoriesQuoteRedeemableSoftCap!: BN; // u64
 }
 
 // V1
