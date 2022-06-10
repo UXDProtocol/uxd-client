@@ -30,10 +30,12 @@ npm install --save @uxd-protocol/uxd-client
 ```javascript
 import { Controller } from '@uxd-protocol/uxd-client';
 
+const mainnetProgramId = new PublicKey('UXD8m9cvwk4RcSxnX2HZ9VudQCEeDH6fRnB4CAP57Dr');
+
 const controller = new Controller(
   'UXD',
-  6
-  'UXD8m9cvwk4RcSxnX2HZ9VudQCEeDH6fRnB4CAP57Dr'
+  6,
+  mainnetProgramId
 );
 ```
 
@@ -66,15 +68,16 @@ import {
   USDC_DECIMALS,
   MangoDepository,
 } from '@uxd-protocol/uxd-client';
+const mainnetProgramId = new PublicKey('UXD8m9cvwk4RcSxnX2HZ9VudQCEeDH6fRnB4CAP57Dr');
 
-return new MangoDepository(
-  WSOL,
+const depository = new MangoDepository(
+  WSOL, 
   'SOL',
   SOL_DECIMALS,
   USDC, // Use mainnet mint, must be matching the program used (see USDC_DEVNET)
   'USDC',
   USDC_DECIMALS,
-  'UXD8m9cvwk4RcSxnX2HZ9VudQCEeDH6fRnB4CAP57Dr' // Mainnet program
+  mainnetProgramId
 );
 ```
 
@@ -83,7 +86,9 @@ return new MangoDepository(
 ```javascript
 import { UXDClient } from '@uxd-protocol/uxd-client';
 
-const client = new UXDClient('UXD8m9cvwk4RcSxnX2HZ9VudQCEeDH6fRnB4CAP57Dr');
+const mainnetProgramId = new PublicKey('UXD8m9cvwk4RcSxnX2HZ9VudQCEeDH6fRnB4CAP57Dr');
+
+const client = new UXDClient(mainnetProgramId);
 ```
 
 ### Mint 1 SOL worth of UXD on the SOL Mango Depository
@@ -167,4 +172,56 @@ const rebalanceLiteMangoDepositoryIx =
 transaction.add(redeemFromMangoDepositoryIx)
 
 // sign, send & confirm transaction
+```
+
+### Retrieve the price of the depository Perp (mid price)
+
+```javascript
+const perpPrice = await depository.getCollateralPerpPriceUI(mango);
+```
+
+### Retrieve the price impact and minting/redeeming estimates
+
+To determine the estimates about a minting operation :
+
+```javascript
+// User wants to mint `collateralQuantity` (Collateral -> UXD)
+const collateralQuantity = 5; // 5 SOL
+const mintingPriceImpact = await depository.getMintingPriceImpact(
+  collateralQuantity,
+  mango
+);
+console.log("Minting price impact", mintingPriceImpact);
+
+const mintingEstimates = depository.getMintingEstimates(
+  collateralQuantity,
+  perpPrice,
+  mintingPriceImpact,
+  mango,
+);
+console.log("Will mint", mintingEstimates.yield, "UXD");
+console.log("(fees:", mintingEstimates.fees, ", slippage:", mintingEstimates.slippage, ")");
+```
+
+and for redeeming :
+
+```javascript
+// User wants to redeem `redeemableQuantity` of UXD (UXD -> Collateral)
+const redeemableQuantity = 100; // 100 UXD
+const redeemingPriceImpact = await depository.getRedeemingPriceImpact(
+  redeemableQuantity,
+  perpPrice,
+  mango
+);
+console.log("Redeeming price impact", redeemingPriceImpact);
+
+const redeemingEstimates = depository.getRedeemingEstimates(
+  redeemableQuantity,
+  perpPrice,
+  redeemingPriceImpact,
+  mango,
+);
+console.log("Will redeem", redeemingEstimates.yield, "Collateral");
+console.log("(fees:", redeemingEstimates.fees, ", slippage:", redeemingEstimates.slippage, ")");
+
 ```
