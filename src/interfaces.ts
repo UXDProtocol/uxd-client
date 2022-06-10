@@ -13,6 +13,7 @@ export class ControllerAccount {
   redeemableGlobalSupplyCap!: BN; // u128
   mangoDepositoriesRedeemableSoftCap!: BN; // u64
   redeemableCirculatingSupply!: BN; // u128
+  mangoDepositoriesQuoteRedeemableSoftCap!: BN; // u64
 }
 
 // V1
@@ -65,6 +66,7 @@ export class MangoDepositoryAccount {
   netQuoteMinted!: BN; // i128
   quoteMintAndRedeemFee!: number; // u8
   totalQuoteMintAndRedeemFees!: BN; // u128
+  mintingDisabled!: boolean;
 }
 
 export enum PnLPolarity {

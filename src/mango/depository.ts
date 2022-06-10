@@ -10,9 +10,11 @@ import {
 import { BorshAccountsCoder } from '@project-serum/anchor';
 import { ConfirmOptions, Connection, PublicKey } from '@solana/web3.js';
 import { Mango } from '.';
-import { findAddrSync, UXD_DECIMALS } from '../utils';
+import { UXD_DECIMALS } from '../utils';
 import { IDL } from '../idl';
 import { MangoDepositoryAccount } from '../interfaces';
+
+export const SLIPPAGE_BASIS = 1000;
 
 export class MangoDepository {
   public pda: PublicKey;
@@ -41,11 +43,11 @@ export class MangoDepository {
     this.quoteMint = quoteMint;
     this.quoteMintSymbol = quoteMintName;
     this.quoteMintDecimals = quoteMintDecimals;
-    [this.pda] = findAddrSync(
+    [this.pda] = PublicKey.findProgramAddressSync(
       [Buffer.from('MANGODEPOSITORY'), mint.toBuffer()],
       uxdProgramId
     );
-    [this.mangoAccountPda] = findAddrSync(
+    [this.mangoAccountPda] = PublicKey.findProgramAddressSync(
       [Buffer.from('MANGOACCOUNT'), mint.toBuffer()],
       uxdProgramId
     );
@@ -80,7 +82,7 @@ export class MangoDepository {
       this.mangoAccount = await mango.load(this.mangoAccountPda);
       return this.mangoAccount;
     } else {
-      return await mango.reload(this.mangoAccount);
+      return mango.reload(this.mangoAccount);
     }
   }
 
@@ -165,7 +167,7 @@ export class MangoDepository {
     ).toNumber();
   }
 
-  public async getInsuranceBalance(mango: Mango): Promise<I80F48> {
+  public getInsuranceBalance(mango: Mango): Promise<I80F48> {
     return this.getQuoteBalance(mango);
     // const ma = await this.getMangoAccount(mango);
     // return mango.mangoAccountSpotBalanceFor(
@@ -194,19 +196,21 @@ export class MangoDepository {
     return mango.group.perpMarkets[perpMarketIndex].baseLotSize.toNumber();
   }
 
-  public async getMinTradingSizeCollateralUI(mango: Mango): Promise<number> {
+  public getMinTradingSizeCollateralUI(mango: Mango): number {
     const perpBaseLotSize = this.getCollateralPerpBaseLotSize(mango);
     return nativeToUi(perpBaseLotSize, this.collateralMintDecimals);
   }
 
   public async getMinTradingSizeQuoteUI(mango: Mango): Promise<number> {
-    const collateralPerpPriceUI = await this.getCollateralPerpPriceUI(mango);
-    return (
-      (await this.getMinTradingSizeCollateralUI(mango)) * collateralPerpPriceUI
-    );
+    const [collateralPerpPriceUI, minTradingSizeCollateralUI] =
+      await Promise.all([
+        this.getCollateralPerpPriceUI(mango),
+        this.getMinTradingSizeCollateralUI(mango),
+      ]);
+    return minTradingSizeCollateralUI * collateralPerpPriceUI;
   }
 
-  public async getMinMintSizeQuoteUI(mango: Mango): Promise<number> {
+  public getMinMintSizeQuoteUI(mango: Mango): Promise<number> {
     return this.getMinTradingSizeQuoteUI(mango);
   }
 
@@ -314,5 +318,36 @@ export class MangoDepository {
       price,
       payer
     );
+  }
+
+  // Return the price of 1 base native unit expressed in quote native units
+  // This is the format of the on chain program input parameter
+  async getCollateralPerpPriceNativeQuotePerNativeBase(
+    mango: Mango
+  ): Promise<I80F48> {
+    const mangoCache = await mango.getCache();
+    const pmc = this.getPerpMarketConfig(mango); // perpMarketConfig
+    const pmi = pmc.marketIndex; // perpMarketIndex
+    return mango.group.getPriceNative(pmi, mangoCache);
+  }
+
+  // The side of the taker (the user)
+  async getLimitPrice(
+    slippage: I80F48,
+    perpOrderTakerSide: 'short' | 'long',
+    mango: Mango
+  ): Promise<I80F48> {
+    const price = await this.getCollateralPerpPriceNativeQuotePerNativeBase(
+      mango
+    );
+    const delta = price.mul(slippage.div(I80F48.fromNumber(SLIPPAGE_BASIS)));
+    switch (perpOrderTakerSide) {
+      case 'short': {
+        return price.sub(delta);
+      }
+      case 'long': {
+        return price.add(delta);
+      }
+    }
   }
 }
