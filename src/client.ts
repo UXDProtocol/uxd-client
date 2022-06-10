@@ -614,10 +614,10 @@ export class UXDClient {
     const softCapNativeBN = new BN(softCap).mul(new BN(10).pow(new BN(depository.quoteMintDecimals)));
     return this.instruction.setMangoDepositoryQuoteMintAndRedeemSoftCap(softCapNativeBN, {
       accounts: {
-        authority: authority,
+        authority,
         controller: controller.pda,
       },
-      options: options,
+      options,
     });
   }
 

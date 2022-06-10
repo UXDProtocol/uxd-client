@@ -338,6 +338,8 @@ export class MangoDepository {
         return price.add(delta);
       }
     }
+  }
+
   // Estimated amount of Redeemable (UXD) that will be given for Minting (Mint or RebalancingLite when PnlPolarity is positive)
   // `collateralQuantity` : In Collateral UI units
   //  Output -> breakdown of estimated costs
