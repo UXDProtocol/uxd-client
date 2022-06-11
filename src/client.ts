@@ -14,10 +14,11 @@ import {
 import { Controller } from './controller';
 import { MangoDepository } from './mango/depository';
 import { Mango } from './mango';
-import { findATAAddrSync, findMultipleATAAddSync } from './utils';
+import { findATAAddrSync, findMultipleATAAddSync, MSOL } from './utils';
 import NamespaceFactory from './namespace';
 import { IDL as UXD_IDL } from './idl';
 import { PnLPolarity } from './interfaces';
+import { Marinade, MarinadeConfig } from '@marinade.finance/marinade-ts-sdk';
 
 export class UXDClient {
   public instruction: InstructionNamespace<typeof UXD_IDL>;
@@ -616,6 +617,142 @@ export class UXDClient {
         authority: authority,
         controller: controller.pda,
         depository: depository.pda,
+      },
+      options: options,
+    });
+  }
+
+  public createDepositoryMsolConfigInstruction(
+    targetLiquidityRatio: number,
+    controller: Controller,
+    depository: MangoDepository,
+    msolConfigPda: PublicKey,
+    authority: PublicKey,
+    options: ConfirmOptions,
+    payer?: PublicKey
+  ): TransactionInstruction {
+    const targetLiquidityRatioBN = new BN(targetLiquidityRatio);
+    return this.instruction.createDepositoryMsolConfig(targetLiquidityRatioBN, {
+      accounts: {
+        authority: authority,
+        payer: payer ?? authority,
+        controller: controller.pda,
+        depository: depository.pda,
+        msolConfig: msolConfigPda,
+        systemProgram: SystemProgram.programId,
+        rent: SYSVAR_RENT_PUBKEY,
+      },
+      options: options,
+    });
+  }
+
+  public async swapDepositoryMsolInstruction(
+    controller: Controller,
+    depository: MangoDepository,
+    msolConfigPda: PublicKey,
+    mango: Mango,
+    marinadeConfig: MarinadeConfig,
+    options: ConfirmOptions,
+    user: PublicKey,
+    payer?: PublicKey
+  ): Promise<TransactionInstruction> {
+    const mangoCacheAccount = mango.getMangoCacheAccount();
+
+    const msolTokenIndex = mango.group.getTokenIndex(MSOL);
+    const mangoMsolRootBankAccount = mango.getRootBankForToken(msolTokenIndex);
+    const mangoMsolNodeBankAccount = mango.getNodeBankFor(msolTokenIndex, MSOL);
+    const mangoMsolDepositedVaultAccount = mango.getVaultFor(msolTokenIndex);
+
+    const wsolTokenIndex = mango.group.getTokenIndex(depository.collateralMint);
+    const mangoWsolRootBankAccount = mango.getRootBankForToken(wsolTokenIndex);
+    const mangoWsolNodeBankAccount = mango.getNodeBankFor(
+      wsolTokenIndex,
+      depository.collateralMint
+    );
+    const mangoWsolDepositedVaultAccount = mango.getVaultFor(wsolTokenIndex);
+
+    const [[userWsolATA], [userMsolATA]] = findMultipleATAAddSync(user, [
+      depository.collateralMint,
+      MSOL,
+    ]);
+
+    const marinade = new Marinade(marinadeConfig);
+    const marinadeState = await marinade.getMarinadeState();
+
+    return this.instruction.swapDepositoryMsol({
+      accounts: {
+        user: user,
+        payer: payer ?? user,
+        controller: controller.pda,
+        depository: depository.pda,
+        msolConfig: msolConfigPda,
+        mangoAccount: depository.mangoAccountPda,
+        mangoGroup: mango.group.publicKey,
+        mangoCache: mangoCacheAccount,
+        mangoSigner: mango.group.signerKey,
+        mangoSolRootBank: mangoWsolRootBankAccount,
+        mangoSolNodeBank: mangoWsolNodeBankAccount,
+        mangoSolVault: mangoWsolDepositedVaultAccount,
+        mangoMsolRootBank: mangoMsolRootBankAccount,
+        mangoMsolNodeBank: mangoMsolNodeBankAccount,
+        mangoMsolVault: mangoMsolDepositedVaultAccount,
+        mangoProgram: mango.programId,
+        marinadeState: marinadeState.marinadeStateAddress,
+        msolMint: MSOL,
+        msolMintAuthority: await marinadeState.mSolMintAuthority(),
+        liqPoolSolLegPda: await marinadeState.solLeg(),
+        liqPoolMsolLeg: marinadeState.mSolLeg,
+        liqPoolMsolLegAuthority: await marinadeState.mSolLegAuthority(),
+        treasuryMsolAccount: marinadeState.treasuryMsolAccount,
+        reservePda: await marinadeState.reserveAddress(),
+        solPassthroughAta: userWsolATA,
+        msolPassthroughAta: userMsolATA,
+        marinadeFinanceProgram: marinadeState.marinadeFinanceProgramId,
+        systemProgram: SystemProgram.programId,
+        tokenProgram: TOKEN_PROGRAM_ID,
+      },
+      options: options,
+    });
+  }
+
+  public enableMsolSwapInstruction(
+    enable: boolean,
+    controller: Controller,
+    depository: MangoDepository,
+    msolConfigPda: PublicKey,
+    authority: PublicKey,
+    options: ConfirmOptions,
+    payer?: PublicKey
+  ): TransactionInstruction {
+    return this.instruction.enableMsolSwap(enable, {
+      accounts: {
+        authority: authority,
+        payer: payer ?? authority,
+        controller: controller.pda,
+        depository: depository.pda,
+        msolConfig: msolConfigPda,
+      },
+      options: options,
+    });
+  }
+
+  public setMsolLiquidityRatioInstruction(
+    targetLiquidityRatio: number, // in basis 10000
+    controller: Controller,
+    depository: MangoDepository,
+    msolConfigPda: PublicKey,
+    authority: PublicKey,
+    options: ConfirmOptions,
+    payer?: PublicKey
+  ): TransactionInstruction {
+    const targetLiquidityRatioBN = new BN(targetLiquidityRatio);
+    return this.instruction.setMsolLiquidityRatio(targetLiquidityRatioBN, {
+      accounts: {
+        authority: authority,
+        payer: payer ?? authority,
+        controller: controller.pda,
+        depository: depository.pda,
+        msolConfig: msolConfigPda,
       },
       options: options,
     });
