@@ -612,7 +612,6 @@ export class UXDClient {
     authority: PublicKey,
     options: ConfirmOptions
   ): TransactionInstruction {
-    // const softCapNativeBN = new BN(softCap).mul(new BN(10).pow(new BN(depository.quoteMintDecimals)));
     const softCapNativeBN = uiToNative(softCap, depository.quoteMintDecimals);
     return this.instruction.setMangoDepositoryQuoteMintAndRedeemSoftCap(
       softCapNativeBN,
