@@ -489,7 +489,10 @@ export class UXDClient {
       user,
       controller.redeemableMintPda
     )[0];
-    const quoteAmountNativeBN = uiToNative(quoteAmount, depository.quoteMintDecimals);
+    const quoteAmountNativeBN = uiToNative(
+      quoteAmount,
+      depository.quoteMintDecimals
+    );
     return this.instruction.quoteMintWithMangoDepository(quoteAmountNativeBN, {
       accounts: {
         user: user,
@@ -611,13 +614,16 @@ export class UXDClient {
   ): TransactionInstruction {
     // const softCapNativeBN = new BN(softCap).mul(new BN(10).pow(new BN(depository.quoteMintDecimals)));
     const softCapNativeBN = uiToNative(softCap, depository.quoteMintDecimals);
-    return this.instruction.setMangoDepositoryQuoteMintAndRedeemSoftCap(softCapNativeBN, {
-      accounts: {
-        authority: authority,
-        controller: controller.pda,
-      },
-      options: options,
-    });
+    return this.instruction.setMangoDepositoryQuoteMintAndRedeemSoftCap(
+      softCapNativeBN,
+      {
+        accounts: {
+          authority: authority,
+          controller: controller.pda,
+        },
+        options: options,
+      }
+    );
   }
 
   public createDisableDepositoryMintingInstruction(
