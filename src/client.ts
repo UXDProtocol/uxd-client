@@ -611,14 +611,19 @@ export class UXDClient {
     authority: PublicKey,
     options: ConfirmOptions
   ): TransactionInstruction {
-    const softCapNativeBN = new BN(softCap).mul(new BN(10).pow(new BN(depository.quoteMintDecimals)));
-    return this.instruction.setMangoDepositoryQuoteMintAndRedeemSoftCap(softCapNativeBN, {
-      accounts: {
-        authority,
-        controller: controller.pda,
-      },
-      options,
-    });
+    const softCapNativeBN = new BN(softCap).mul(
+      new BN(10).pow(new BN(depository.quoteMintDecimals))
+    );
+    return this.instruction.setMangoDepositoryQuoteMintAndRedeemSoftCap(
+      softCapNativeBN,
+      {
+        accounts: {
+          authority,
+          controller: controller.pda,
+        },
+        options,
+      }
+    );
   }
 
   public createDisableDepositoryMintingInstruction(
