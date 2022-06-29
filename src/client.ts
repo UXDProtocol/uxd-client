@@ -604,6 +604,28 @@ export class UXDClient {
     });
   }
 
+  public createSetMangoDepositoryQuoteMintAndRedeemSoftCapInstruction(
+    softCap: number,
+    controller: Controller,
+    depository: MangoDepository,
+    authority: PublicKey,
+    options: ConfirmOptions
+  ): TransactionInstruction {
+    const softCapNativeBN = new BN(softCap).mul(
+      new BN(10).pow(new BN(depository.quoteMintDecimals))
+    );
+    return this.instruction.setMangoDepositoryQuoteMintAndRedeemSoftCap(
+      softCapNativeBN,
+      {
+        accounts: {
+          authority,
+          controller: controller.pda,
+        },
+        options,
+      }
+    );
+  }
+
   public createEnableMangoDepositoryRedeemOnlyModeInstruction(
     enable: boolean,
     controller: Controller,
