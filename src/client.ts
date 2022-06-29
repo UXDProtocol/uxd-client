@@ -489,8 +489,9 @@ export class UXDClient {
       user,
       controller.redeemableMintPda
     )[0];
-    const quoteAmountNativeBN = new BN(
-      quoteAmount * 10 ** depository.collateralMintDecimals
+    const quoteAmountNativeBN = uiToNative(
+      quoteAmount,
+      depository.quoteMintDecimals
     );
     return this.instruction.quoteMintWithMangoDepository(quoteAmountNativeBN, {
       accounts: {
