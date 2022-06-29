@@ -36,21 +36,6 @@ export class MangoDepositoryAccountV1 {
 }
 
 // V2
-export class MangoDepositoryAccountV2 {
-  version!: number; // u8
-  collateralMint!: PublicKey;
-  mangoAccount!: PublicKey;
-  controller!: PublicKey;
-  insuranceAmountDeposited!: BN; // u128
-  collateralAmountDeposited!: BN; // u128
-  redeemableAmountUnderManagement!: BN; // u128
-  totalAmountPaidTakerFee!: BN; // u128
-  quoteMint!: PublicKey;
-  quoteMintDecimals!: number; // u8
-  totalAmountRebalanced!: BN; // u128
-}
-
-// V3
 export class MangoDepositoryAccount {
   version!: number; // u8
   collateralMint!: PublicKey;
