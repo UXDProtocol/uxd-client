@@ -966,7 +966,7 @@ export const IDL: Idl = {
       ],
     },
     {
-      name: 'enableMangoDepositoryRedeemOnlyMode',
+      name: 'disableDepositoryMinting',
       accounts: [
         {
           name: 'authority',
@@ -986,7 +986,7 @@ export const IDL: Idl = {
       ],
       args: [
         {
-          name: 'enable',
+          name: 'disableMinting',
           type: 'bool',
         },
       ],
@@ -1143,7 +1143,7 @@ export const IDL: Idl = {
             type: 'u128',
           },
           {
-            name: 'redeemOnlyModeEnabled',
+            name: 'mintingDisabled',
             type: 'bool',
           },
         ],
@@ -1778,13 +1778,13 @@ export const IDL: Idl = {
     },
     {
       code: 6038,
-      name: 'InRedeemOnlyMode',
-      msg: 'Only redeem is allowed for the current mango depository',
+      name: 'MintingDisabled',
+      msg: 'Minting is disabled for the current depository',
     },
     {
       code: 6039,
-      name: 'RedeemOnlyModeHasAlreadyDisabledOrEnabled',
-      msg: 'Redeem only mode has already disabled/enabled.',
+      name: 'MintingAlreadyDisabledOrEnabled',
+      msg: 'Minting is already disabled/enabled',
     },
     {
       code: 6040,

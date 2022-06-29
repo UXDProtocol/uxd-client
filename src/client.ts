@@ -625,14 +625,14 @@ export class UXDClient {
     );
   }
 
-  public createEnableMangoDepositoryRedeemOnlyModeInstruction(
-    enable: boolean,
+  public createDisableDepositoryMintingInstruction(
+    disableMinting: boolean,
     controller: Controller,
     depository: MangoDepository,
     authority: PublicKey,
     options: ConfirmOptions
   ): TransactionInstruction {
-    return this.instruction.enableMangoDepositoryRedeemOnlyMode(enable, {
+    return this.instruction.disableDepositoryMinting(disableMinting, {
       accounts: {
         authority: authority,
         controller: controller.pda,
