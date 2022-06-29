@@ -57,12 +57,13 @@ export class MangoDepository {
     this.quoteMint = quoteMint;
     this.quoteMintSymbol = quoteMintName;
     this.quoteMintDecimals = quoteMintDecimals;
+    const mintBuffer = mint.toBuffer();
     [this.pda] = PublicKey.findProgramAddressSync(
-      [Buffer.from('MANGODEPOSITORY'), mint.toBuffer()],
+      [Buffer.from('MANGODEPOSITORY'), mintBuffer],
       uxdProgramId
     );
     [this.mangoAccountPda] = PublicKey.findProgramAddressSync(
-      [Buffer.from('MANGOACCOUNT'), mint.toBuffer()],
+      [Buffer.from('MANGOACCOUNT'), mintBuffer],
       uxdProgramId
     );
   }
@@ -215,11 +216,9 @@ export class MangoDepository {
   }
 
   public async getMinTradingSizeQuoteUI(mango: Mango): Promise<number> {
-    const [collateralPerpPriceUI, minTradingSizeCollateralUI] =
-      await Promise.all([
-        this.getCollateralPerpPriceUI(mango),
-        this.getMinTradingSizeCollateralUI(mango),
-      ]);
+    const collateralPerpPriceUI = await this.getCollateralPerpPriceUI(mango);
+    const minTradingSizeCollateralUI =
+      this.getMinTradingSizeCollateralUI(mango);
     return minTradingSizeCollateralUI * collateralPerpPriceUI;
   }
 
