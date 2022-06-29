@@ -11,9 +11,11 @@ import {
 import { BorshAccountsCoder } from '@project-serum/anchor';
 import { ConfirmOptions, Connection, PublicKey } from '@solana/web3.js';
 import { Mango } from '.';
-import { findAddrSync, UXD_DECIMALS } from '../utils';
+import { UXD_DECIMALS } from '../utils';
 import { IDL } from '../idl';
 import { MangoDepositoryAccount } from '../interfaces';
+
+export const SLIPPAGE_BASIS = 1000;
 
 export enum OrderBookSide {
   Bid,
@@ -55,12 +57,13 @@ export class MangoDepository {
     this.quoteMint = quoteMint;
     this.quoteMintSymbol = quoteMintName;
     this.quoteMintDecimals = quoteMintDecimals;
-    [this.pda] = findAddrSync(
-      [Buffer.from('MANGODEPOSITORY'), mint.toBuffer()],
+    const mintBuffer = mint.toBuffer();
+    [this.pda] = PublicKey.findProgramAddressSync(
+      [Buffer.from('MANGODEPOSITORY'), mintBuffer],
       uxdProgramId
     );
-    [this.mangoAccountPda] = findAddrSync(
-      [Buffer.from('MANGOACCOUNT'), mint.toBuffer()],
+    [this.mangoAccountPda] = PublicKey.findProgramAddressSync(
+      [Buffer.from('MANGOACCOUNT'), mintBuffer],
       uxdProgramId
     );
   }
@@ -93,9 +96,8 @@ export class MangoDepository {
     if (!this.mangoAccount) {
       this.mangoAccount = await mango.load(this.mangoAccountPda);
       return this.mangoAccount;
-    } else {
-      return await mango.reload(this.mangoAccount);
     }
+    return mango.reload(this.mangoAccount);
   }
 
   getPerpMarketConfig(mango: Mango): PerpMarketConfig {
@@ -179,7 +181,7 @@ export class MangoDepository {
     ).toNumber();
   }
 
-  public async getInsuranceBalance(mango: Mango): Promise<I80F48> {
+  public getInsuranceBalance(mango: Mango): Promise<I80F48> {
     return this.getQuoteBalance(mango);
     // const ma = await this.getMangoAccount(mango);
     // return mango.mangoAccountSpotBalanceFor(
@@ -208,19 +210,19 @@ export class MangoDepository {
     return mango.group.perpMarkets[perpMarketIndex].baseLotSize.toNumber();
   }
 
-  public async getMinTradingSizeCollateralUI(mango: Mango): Promise<number> {
+  public getMinTradingSizeCollateralUI(mango: Mango): number {
     const perpBaseLotSize = this.getCollateralPerpBaseLotSize(mango);
     return nativeToUi(perpBaseLotSize, this.collateralMintDecimals);
   }
 
   public async getMinTradingSizeQuoteUI(mango: Mango): Promise<number> {
     const collateralPerpPriceUI = await this.getCollateralPerpPriceUI(mango);
-    return (
-      (await this.getMinTradingSizeCollateralUI(mango)) * collateralPerpPriceUI
-    );
+    const minTradingSizeCollateralUI =
+      this.getMinTradingSizeCollateralUI(mango);
+    return minTradingSizeCollateralUI * collateralPerpPriceUI;
   }
 
-  public async getMinMintSizeQuoteUI(mango: Mango): Promise<number> {
+  public getMinMintSizeQuoteUI(mango: Mango): Promise<number> {
     return this.getMinTradingSizeQuoteUI(mango);
   }
 
@@ -232,15 +234,18 @@ export class MangoDepository {
   public async getDeltaNeutralPositionNotionalSizeUI(
     mango: Mango
   ): Promise<number> {
-    const ma = await this.getMangoAccount(mango); // mangoAccount
+    const [ma, pm, indexPrice] = await Promise.all([
+      this.getMangoAccount(mango),
+      this.getPerpMarket(mango),
+      this.getCollateralOraclePriceUI(mango),
+    ]);
+
     const pmc = this.getPerpMarketConfig(mango); // perpMarketConfig
-    const pm = await this.getPerpMarket(mango); // perpMarket
     const pa = ma.perpAccounts[pmc.marketIndex]; // perpAccount
     // Need to use the base and taker base as it might not be settled yet
     const basePosition = pm?.baseLotsToNumber(
       pa.basePosition.add(pa.takerBase)
     );
-    const indexPrice = await this.getCollateralPerpPriceUI(mango);
     return Math.abs(basePosition * indexPrice);
   }
 
@@ -249,30 +254,58 @@ export class MangoDepository {
     mango: Mango,
     options: ConfirmOptions
   ): Promise<number> {
-    // Do the lengthy operation first to have the most up to date price
-    const depositoryOnchainAccount = await this.getOnchainAccount(
-      mango.client.connection,
-      options
-    );
+    const [depositoryOnchainAccount, deltaNeutralPositionNotionalSize] =
+      await Promise.all([
+        this.getOnchainAccount(mango.client.connection, options),
+        this.getDeltaNeutralPositionNotionalSizeUI(mango),
+      ]);
+
     const redeemableAmountUnderManagementUi = nativeToUi(
       depositoryOnchainAccount.redeemableAmountUnderManagement.toNumber(),
       UXD_DECIMALS
     ); // Here should inject controller to be nice
 
-    const deltaNeutralPositionNotionalSize =
-      await this.getDeltaNeutralPositionNotionalSizeUI(mango);
     const unrealizedPnl =
       redeemableAmountUnderManagementUi - deltaNeutralPositionNotionalSize;
     return unrealizedPnl;
   }
 
+  public async getOffsetUnrealizedPnl(
+    mango: Mango,
+    options: ConfirmOptions
+  ): Promise<number> {
+    const [depositoryOnchainAccount, deltaNeutralPositionNotionalSize] =
+      await Promise.all([
+        this.getOnchainAccount(mango.client.connection, options),
+        this.getDeltaNeutralPositionNotionalSizeUI(mango),
+      ]);
+
+    const redeemableAmountUnderManagementUi = nativeToUi(
+      depositoryOnchainAccount.redeemableAmountUnderManagement.toNumber(),
+      UXD_DECIMALS
+    );
+
+    const unrealizedPnl =
+      redeemableAmountUnderManagementUi - deltaNeutralPositionNotionalSize;
+    const netQuoteMintedUi = nativeToUi(
+      depositoryOnchainAccount.netQuoteMinted.toNumber(),
+      UXD_DECIMALS
+    );
+    return unrealizedPnl + netQuoteMintedUi;
+  }
+
   public async getFundingRate(mango: Mango): Promise<number> {
-    const pmc = this.getPerpMarketConfig(mango); // perpMarketConfig
-    const pm = await this.getPerpMarket(mango); // perpMarket
-    const mc = await mango.getCache();
+    const [pm, mc] = await Promise.all([
+      this.getPerpMarket(mango),
+      mango.getCache(),
+    ]);
+    const [bids, asks] = await Promise.all([
+      pm.loadBids(mango.client.connection),
+      pm.loadAsks(mango.client.connection),
+    ]);
+
+    const pmc = this.getPerpMarketConfig(mango);
     const pmi = pmc.marketIndex;
-    const bids = await pm.loadBids(mango.client.connection);
-    const asks = await pm.loadAsks(mango.client.connection);
 
     return pm.getCurrentFundingRate(mango.group, mc, pmi, bids, asks);
   }
@@ -283,15 +316,18 @@ export class MangoDepository {
     payer: Payer,
     mango: Mango
   ): Promise<string | null> {
-    const ma = await mango.load(this.mangoAccountPda); // mangoAccount
-    const pmc = this.getPerpMarketConfig(mango); // perpMarketConfig
-    const mc = await mango.group.loadCache(mango.client.connection); // mangoCache
-    const pm = await mango.client.getPerpMarket(
-      pmc.publicKey,
-      pmc.baseDecimals,
-      pmc.quoteDecimals
-    ); // perpMarket
-    const quoteRootBank = await mango.getQuoteRootBank();
+    const pmc = this.getPerpMarketConfig(mango);
+    const [ma, mc, pm, quoteRootBank] = await Promise.all([
+      mango.load(this.mangoAccountPda),
+      mango.group.loadCache(mango.client.connection),
+      mango.client.getPerpMarket(
+        pmc.publicKey,
+        pmc.baseDecimals,
+        pmc.quoteDecimals
+      ),
+      mango.getQuoteRootBank(),
+    ]);
+
     const price = mc.priceCache[pmc.marketIndex].price;
 
     return mango.client.settlePnl(
@@ -303,6 +339,37 @@ export class MangoDepository {
       price,
       payer
     );
+  }
+
+  // Return the price of 1 base native unit expressed in quote native units
+  // This is the format of the on chain program input parameter
+  async getCollateralPerpPriceNativeQuotePerNativeBase(
+    mango: Mango
+  ): Promise<I80F48> {
+    const mangoCache = await mango.getCache();
+    const pmc = this.getPerpMarketConfig(mango); // perpMarketConfig
+    const pmi = pmc.marketIndex; // perpMarketIndex
+    return mango.group.getPriceNative(pmi, mangoCache);
+  }
+
+  // The side of the taker (the user)
+  async getLimitPrice(
+    slippage: I80F48,
+    perpOrderTakerSide: 'short' | 'long',
+    mango: Mango
+  ): Promise<I80F48> {
+    const price = await this.getCollateralPerpPriceNativeQuotePerNativeBase(
+      mango
+    );
+    const delta = price.mul(slippage.div(I80F48.fromNumber(SLIPPAGE_BASIS)));
+    switch (perpOrderTakerSide) {
+      case 'short': {
+        return price.sub(delta);
+      }
+      case 'long': {
+        return price.add(delta);
+      }
+    }
   }
 
   // Estimated amount of Redeemable (UXD) that will be given for Minting (Mint or RebalancingLite when PnlPolarity is positive)

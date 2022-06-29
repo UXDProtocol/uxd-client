@@ -3,10 +3,11 @@
     "esModuleInterop": true,
     "moduleResolution": "node",
     "lib": ["es2019"],
+    "baseUrl": "",
     "paths": {
       "*": ["./typings/*"]
     },
-    "types": ["big.js", "jest"],
+    "types": ["jest", "node"],
     "resolveJsonModule": true,
     "strict": true,
     "sourceMap": true,

@@ -98,7 +98,7 @@ import { Transaction } from '@solana/web3.js';
 
 const transaction = new Transaction();
 const mintWithMangoDepositoryIx =
-  client.createMintWithMangoDepositoryInstruction(
+  await client.createMintWithMangoDepositoryInstruction(
     1, // UI amount of collateral to use to mint UXD
     5, // 0.5% slippage in points
     controller,
@@ -121,7 +121,7 @@ import { Transaction } from '@solana/web3.js';
 
 const transaction = new Transaction();
 const redeemFromMangoDepositoryIx =
-  client.createRedeemFromMangoDepositoryInstruction(
+  await client.createRedeemFromMangoDepositoryInstruction(
     10, // UI amount of UXD to redeem (returned as the provided depository Collateral, here SOL))
     5, // 0.5% slippage in points
     controller,
@@ -157,7 +157,7 @@ const polarity = unrealizedPnl > 0 ? PnLPolarity.Positive : PnLPolarity.Negative
 
 const transaction = new Transaction();
 const rebalanceLiteMangoDepositoryIx =
-  client.createRebalanceMangoDepositoryLiteInstruction(
+  await client.createRebalanceMangoDepositoryLiteInstruction(
     10, // UI amount in Quote to rebalance (Quote on mango is USDC)
     5, // 0.5% slippage in points
     PnLPolarity.positive, // The polarity of the PnL, the expected direction of the swap (can be enforce program side but here to be explicit)
