@@ -95,9 +95,8 @@ export class MangoDepository {
     if (!this.mangoAccount) {
       this.mangoAccount = await mango.load(this.mangoAccountPda);
       return this.mangoAccount;
-    } else {
-      return mango.reload(this.mangoAccount);
     }
+    return mango.reload(this.mangoAccount);
   }
 
   getPerpMarketConfig(mango: Mango): PerpMarketConfig {
@@ -236,15 +235,18 @@ export class MangoDepository {
   public async getDeltaNeutralPositionNotionalSizeUI(
     mango: Mango
   ): Promise<number> {
-    const ma = await this.getMangoAccount(mango); // mangoAccount
+    const [ma, pm, indexPrice] = await Promise.all([
+      this.getMangoAccount(mango),
+      this.getPerpMarket(mango),
+      this.getCollateralOraclePriceUI(mango),
+    ]);
+
     const pmc = this.getPerpMarketConfig(mango); // perpMarketConfig
-    const pm = await this.getPerpMarket(mango); // perpMarket
     const pa = ma.perpAccounts[pmc.marketIndex]; // perpAccount
     // Need to use the base and taker base as it might not be settled yet
     const basePosition = pm?.baseLotsToNumber(
       pa.basePosition.add(pa.takerBase)
     );
-    const indexPrice = await this.getCollateralPerpPriceUI(mango);
     return Math.abs(basePosition * indexPrice);
   }
 
@@ -253,18 +255,17 @@ export class MangoDepository {
     mango: Mango,
     options: ConfirmOptions
   ): Promise<number> {
-    // Do the lengthy operation first to have the most up to date price
-    const depositoryOnchainAccount = await this.getOnchainAccount(
-      mango.client.connection,
-      options
-    );
+    const [depositoryOnchainAccount, deltaNeutralPositionNotionalSize] =
+      await Promise.all([
+        this.getOnchainAccount(mango.client.connection, options),
+        this.getDeltaNeutralPositionNotionalSizeUI(mango),
+      ]);
+
     const redeemableAmountUnderManagementUi = nativeToUi(
       depositoryOnchainAccount.redeemableAmountUnderManagement.toNumber(),
       UXD_DECIMALS
     ); // Here should inject controller to be nice
 
-    const deltaNeutralPositionNotionalSize =
-      await this.getDeltaNeutralPositionNotionalSizeUI(mango);
     const unrealizedPnl =
       redeemableAmountUnderManagementUi - deltaNeutralPositionNotionalSize;
     return unrealizedPnl;
@@ -274,18 +275,17 @@ export class MangoDepository {
     mango: Mango,
     options: ConfirmOptions
   ): Promise<number> {
-    // Do the lengthy operation first to have the most up to date price
-    const depositoryOnchainAccount = await this.getOnchainAccount(
-      mango.client.connection,
-      options
-    );
+    const [depositoryOnchainAccount, deltaNeutralPositionNotionalSize] =
+      await Promise.all([
+        this.getOnchainAccount(mango.client.connection, options),
+        this.getDeltaNeutralPositionNotionalSizeUI(mango),
+      ]);
+
     const redeemableAmountUnderManagementUi = nativeToUi(
       depositoryOnchainAccount.redeemableAmountUnderManagement.toNumber(),
       UXD_DECIMALS
-    ); // Here should inject controller to be nice
+    );
 
-    const deltaNeutralPositionNotionalSize =
-      await this.getDeltaNeutralPositionNotionalSizeUI(mango);
     const unrealizedPnl =
       redeemableAmountUnderManagementUi - deltaNeutralPositionNotionalSize;
     const netQuoteMintedUi = nativeToUi(
@@ -296,12 +296,17 @@ export class MangoDepository {
   }
 
   public async getFundingRate(mango: Mango): Promise<number> {
-    const pmc = this.getPerpMarketConfig(mango); // perpMarketConfig
-    const pm = await this.getPerpMarket(mango); // perpMarket
-    const mc = await mango.getCache();
+    const [pm, mc] = await Promise.all([
+      this.getPerpMarket(mango),
+      mango.getCache(),
+    ]);
+    const [bids, asks] = await Promise.all([
+      pm.loadBids(mango.client.connection),
+      pm.loadAsks(mango.client.connection),
+    ]);
+
+    const pmc = this.getPerpMarketConfig(mango);
     const pmi = pmc.marketIndex;
-    const bids = await pm.loadBids(mango.client.connection);
-    const asks = await pm.loadAsks(mango.client.connection);
 
     return pm.getCurrentFundingRate(mango.group, mc, pmi, bids, asks);
   }
@@ -312,15 +317,18 @@ export class MangoDepository {
     payer: Payer,
     mango: Mango
   ): Promise<string | null> {
-    const ma = await mango.load(this.mangoAccountPda); // mangoAccount
-    const pmc = this.getPerpMarketConfig(mango); // perpMarketConfig
-    const mc = await mango.group.loadCache(mango.client.connection); // mangoCache
-    const pm = await mango.client.getPerpMarket(
-      pmc.publicKey,
-      pmc.baseDecimals,
-      pmc.quoteDecimals
-    ); // perpMarket
-    const quoteRootBank = await mango.getQuoteRootBank();
+    const pmc = this.getPerpMarketConfig(mango);
+    const [ma, mc, pm, quoteRootBank] = await Promise.all([
+      mango.load(this.mangoAccountPda),
+      mango.group.loadCache(mango.client.connection),
+      mango.client.getPerpMarket(
+        pmc.publicKey,
+        pmc.baseDecimals,
+        pmc.quoteDecimals
+      ),
+      mango.getQuoteRootBank(),
+    ]);
+
     const price = mc.priceCache[pmc.marketIndex].price;
 
     return mango.client.settlePnl(
