@@ -280,10 +280,10 @@ export class UXDClient {
       depository.quoteMint
     );
     const mangoDepositedVaultAccount = mango.getVaultFor(withdrawnTokenIndex);
-    const authorityQuoteATA = findATAAddrSync(
+    const [authorityQuoteATA] = findATAAddrSync(
       authority,
       depository.quoteMint
-    )[0];
+    );
     const insuranceAmountBN = uiToNative(
       insuranceWithdrawnAmount,
       depository.quoteMintDecimals
@@ -484,11 +484,10 @@ export class UXDClient {
     const mangoPerpMarketConfig = mango.getPerpMarketConfig(
       depository.collateralMintSymbol
     );
-    const userQuoteATA = findATAAddrSync(user, depository.quoteMint)[0];
-    const userRedeemableATA = findATAAddrSync(
-      user,
-      controller.redeemableMintPda
-    )[0];
+    const [[userQuoteATA], [userRedeemableATA]] = findMultipleATAAddSync(user, [
+      depository.quoteMint,
+      controller.redeemableMintPda,
+    ]);
     const quoteAmountNativeBN = uiToNative(
       quoteAmount,
       depository.quoteMintDecimals
@@ -543,11 +542,10 @@ export class UXDClient {
     const mangoPerpMarketConfig = mango.getPerpMarketConfig(
       depository.collateralMintSymbol
     );
-    const userQuoteATA = findATAAddrSync(user, depository.quoteMint)[0];
-    const userRedeemableATA = findATAAddrSync(
-      user,
-      controller.redeemableMintPda
-    )[0];
+    const [[userQuoteATA], [userRedeemableATA]] = findMultipleATAAddSync(user, [
+      depository.quoteMint,
+      controller.redeemableMintPda,
+    ]);
     const redeemableAmountNativeBN = uiToNative(
       redeemableAmount,
       controller.redeemableMintDecimals
