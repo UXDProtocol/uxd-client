@@ -203,12 +203,12 @@ export const IDL: Idl = {
         },
         {
           name: 'mangoCache',
-          isMut: false,
+          isMut: true,
           isSigner: false,
         },
         {
           name: 'mangoRootBank',
-          isMut: false,
+          isMut: true,
           isSigner: false,
         },
         {
@@ -390,12 +390,12 @@ export const IDL: Idl = {
         },
         {
           name: 'mangoCache',
-          isMut: false,
+          isMut: true,
           isSigner: false,
         },
         {
           name: 'mangoRootBankQuote',
-          isMut: false,
+          isMut: true,
           isSigner: false,
         },
         {
@@ -410,7 +410,7 @@ export const IDL: Idl = {
         },
         {
           name: 'mangoRootBankCollateral',
-          isMut: false,
+          isMut: true,
           isSigner: false,
         },
         {
@@ -541,12 +541,12 @@ export const IDL: Idl = {
         },
         {
           name: 'mangoCache',
-          isMut: false,
+          isMut: true,
           isSigner: false,
         },
         {
           name: 'mangoRootBank',
-          isMut: false,
+          isMut: true,
           isSigner: false,
         },
         {
@@ -964,9 +964,6 @@ export const IDL: Idl = {
           },
           {
             name: 'InstructionMangoDexRebalanceMangoDepositoryLite',
-          },
-          {
-            name: 'InstructionMangoDexMigrateMangoDepositoryToV2',
           },
         ],
       },
@@ -1635,11 +1632,6 @@ export const IDL: Idl = {
       code: 6007,
       name: 'InvalidRedeemableMint',
       msg: "The Redeemable Mint provided does not match the Controller's one.",
-    },
-    {
-      code: 6008,
-      name: 'UnsupportedDepositoryVersion',
-      msg: "The instruction doesn't support this version of the Depository. Migrate first.",
     },
   ],
 };
