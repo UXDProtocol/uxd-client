@@ -966,7 +966,7 @@ export const IDL: Idl = {
       ],
     },
     {
-      name: 'disableDepositoryMinting',
+      name: 'disableDepositoryRegularMinting',
       accounts: [
         {
           name: 'authority',
@@ -986,7 +986,7 @@ export const IDL: Idl = {
       ],
       args: [
         {
-          name: 'disableMinting',
+          name: 'disable',
           type: 'bool',
         },
       ],
@@ -1143,7 +1143,7 @@ export const IDL: Idl = {
             type: 'u128',
           },
           {
-            name: 'mintingDisabled',
+            name: 'regularMintingDisabled',
             type: 'bool',
           },
         ],
@@ -1779,12 +1779,12 @@ export const IDL: Idl = {
     {
       code: 6038,
       name: 'MintingDisabled',
-      msg: 'Minting is disabled for the current depository',
+      msg: 'Minting is disabled for the current depository.',
     },
     {
       code: 6039,
       name: 'MintingAlreadyDisabledOrEnabled',
-      msg: 'Minting is already disabled/enabled',
+      msg: 'Minting is already disabled/enabled.',
     },
     {
       code: 6040,
