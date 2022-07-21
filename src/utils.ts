@@ -1,7 +1,7 @@
 import {
   TOKEN_PROGRAM_ID,
   ASSOCIATED_TOKEN_PROGRAM_ID,
-  createAssociatedTokenAccountInstruction,
+  Token,
 } from '@solana/spl-token';
 import {
   PublicKey,
@@ -53,7 +53,7 @@ export function createAssocTokenIx(
   account: PublicKey,
   mint: PublicKey
 ): TransactionInstruction {
-  return createAssociatedTokenAccountInstruction(
+  return Token.createAssociatedTokenAccountInstruction(
     ASSOCIATED_TOKEN_PROGRAM_ID,
     TOKEN_PROGRAM_ID,
     mint,
