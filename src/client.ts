@@ -1,8 +1,6 @@
 import { uiToNative, I80F48 } from '@blockworks-foundation/mango-client';
 import { BN, InstructionNamespace } from '@project-serum/anchor';
-import {
-  TOKEN_PROGRAM_ID,
-} from '@solana/spl-token';
+import { TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import {
   SystemProgram,
   SYSVAR_RENT_PUBKEY,
