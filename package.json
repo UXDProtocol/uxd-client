@@ -39,10 +39,10 @@
   },
   "dependencies": {
     "@blockworks-foundation/mango-client": "3.4.7",
-    "camelcase": "5.3.1",
     "@project-serum/anchor": "0.24.2",
     "@solana/spl-token": "0.1.8",
-    "@solana/web3.js": "1.48.0"
+    "@solana/web3.js": "1.48.0",
+    "camelcase": "5.3.1"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.17.12",
