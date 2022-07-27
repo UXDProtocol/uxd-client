@@ -1,6 +1,6 @@
 {
   "name": "@uxd-protocol/uxd-client",
-  "version": "2.0.2",
+  "version": "3.0.0-beta.1",
   "description": "JavaScript Client for the UXD Solana Program",
   "keywords": [
     "solana",
@@ -41,7 +41,7 @@
     "@blockworks-foundation/mango-client": "3.4.7",
     "@project-serum/anchor": "0.24.2",
     "@solana/spl-token": "0.1.8",
-    "@solana/web3.js": "1.42.0",
+    "@solana/web3.js": "1.48.0",
     "camelcase": "5.3.1"
   },
   "devDependencies": {
@@ -51,6 +51,7 @@
     "@types/bn.js": "^5.1.0",
     "@types/jest": "^27.5.1",
     "@types/node": "^17.0.34",
+    "@types/node-fetch": "^2.6.2",
     "@typescript-eslint/eslint-plugin": "^5.25.0",
     "@typescript-eslint/parser": "^5.25.0",
     "eslint": "^8.15.0",
