@@ -641,4 +641,38 @@ export class UXDClient {
       options: options,
     });
   }
+
+  public createSetMangoDepositoryRegularMintFeeInstruction(
+    fee: number,
+    controller: Controller,
+    depository: MangoDepository,
+    authority: PublicKey,
+    options: ConfirmOptions
+  ): TransactionInstruction {
+    return this.instruction.setMangoDepositoryRegularMintFee(fee, {
+      accounts: {
+        authority: authority,
+        controller: controller.pda,
+        depository: depository.pda,
+      },
+      options: options,
+    });
+  }
+
+  public createSetMangoDepositoryRegularRedeemFeeInstruction(
+    fee: number,
+    controller: Controller,
+    depository: MangoDepository,
+    authority: PublicKey,
+    options: ConfirmOptions
+  ): TransactionInstruction {
+    return this.instruction.setMangoDepositoryRegularRedeemFee(fee, {
+      accounts: {
+        authority: authority,
+        controller: controller.pda,
+        depository: depository.pda,
+      },
+      options: options,
+    });
+  }
 }
