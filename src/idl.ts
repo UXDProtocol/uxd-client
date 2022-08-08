@@ -801,11 +801,6 @@ export const IDL: Idl = {
           isSigner: false,
         },
         {
-          name: 'associatedTokenProgram',
-          isMut: false,
-          isSigner: false,
-        },
-        {
           name: 'mangoProgram',
           isMut: false,
           isSigner: false,
@@ -917,11 +912,6 @@ export const IDL: Idl = {
           isSigner: false,
         },
         {
-          name: 'associatedTokenProgram',
-          isMut: false,
-          isSigner: false,
-        },
-        {
           name: 'mangoProgram',
           isMut: false,
           isSigner: false,
@@ -961,6 +951,58 @@ export const IDL: Idl = {
       args: [
         {
           name: 'quoteFee',
+          type: 'u8',
+        },
+      ],
+    },
+    {
+      name: 'setMangoDepositoryRegularMintFee',
+      accounts: [
+        {
+          name: 'authority',
+          isMut: false,
+          isSigner: true,
+        },
+        {
+          name: 'controller',
+          isMut: true,
+          isSigner: false,
+        },
+        {
+          name: 'depository',
+          isMut: true,
+          isSigner: false,
+        },
+      ],
+      args: [
+        {
+          name: 'fee',
+          type: 'u8',
+        },
+      ],
+    },
+    {
+      name: 'setMangoDepositoryRegularRedeemFee',
+      accounts: [
+        {
+          name: 'authority',
+          isMut: false,
+          isSigner: true,
+        },
+        {
+          name: 'controller',
+          isMut: true,
+          isSigner: false,
+        },
+        {
+          name: 'depository',
+          isMut: true,
+          isSigner: false,
+        },
+      ],
+      args: [
+        {
+          name: 'fee',
           type: 'u8',
         },
       ],
@@ -1145,6 +1187,22 @@ export const IDL: Idl = {
           {
             name: 'regularMintingDisabled',
             type: 'bool',
+          },
+          {
+            name: 'regularMintFee',
+            type: 'u8',
+          },
+          {
+            name: 'regularRedeemFee',
+            type: 'u8',
+          },
+          {
+            name: 'totalRegularMintFees',
+            type: 'u128',
+          },
+          {
+            name: 'totalRegularRedeemFees',
+            type: 'u128',
           },
         ],
       },
@@ -1461,14 +1519,19 @@ export const IDL: Idl = {
           index: false,
         },
         {
-          name: 'feeDelta',
+          name: 'dexFeeDelta',
           type: 'i64',
+          index: false,
+        },
+        {
+          name: 'mintFeeDelta',
+          type: 'u64',
           index: false,
         },
       ],
     },
     {
-      name: 'RedeemFromDepositoryEvent',
+      name: 'RedeemFromMangoDepositoryEvent',
       fields: [
         {
           name: 'version',
@@ -1513,6 +1576,11 @@ export const IDL: Idl = {
         {
           name: 'feeDelta',
           type: 'i64',
+          index: false,
+        },
+        {
+          name: 'redeemFeeDelta',
+          type: 'u64',
           index: false,
         },
       ],
