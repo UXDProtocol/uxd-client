@@ -54,6 +54,20 @@ export class MangoDepositoryAccount {
   regularMintingDisabled!: boolean;
 }
 
+// V1
+export class MercurialVaultDepositoryAccount {
+  bump!: number; // u8
+  version!: number; // u8
+  collateralMint!: PublicKey;
+  collateralMintDecimals!: number; //u8
+  controller!: PublicKey;
+  collateralAmountDeposited!: BN; // u128
+  vTokenMint!: PublicKey;
+  vTokenDecimals!: number; //u8
+  vTokensVault!: PublicKey;
+  vTokensVaultBump!: number; //u8
+}
+
 export enum PnLPolarity {
   Positive = `Positive`,
   Negative = `Negative`,
