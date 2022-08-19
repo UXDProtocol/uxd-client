@@ -10,14 +10,16 @@ import {
 } from '@solana/web3.js';
 import { Controller } from './controller';
 import { MangoDepository } from './mango/depository';
+import { MercurialVaultDepository } from './mercurial/depository';
 import { Mango } from './mango';
 import { findATAAddrSync, findMultipleATAAddSync } from './utils';
 import NamespaceFactory from './namespace';
 import { IDL as UXD_IDL } from './idl';
+import type { Uxd as UXD_IDL_TYPE } from './idl';
 import { PnLPolarity } from './interfaces';
 
 export class UXDClient {
-  public instruction: InstructionNamespace<typeof UXD_IDL>;
+  public instruction: InstructionNamespace<UXD_IDL_TYPE>;
 
   public constructor(programId: PublicKey) {
     this.instruction = NamespaceFactory.buildInstructionNamespace(
@@ -32,8 +34,7 @@ export class UXDClient {
     options: ConfirmOptions,
     payer?: PublicKey
   ): TransactionInstruction {
-    const redeemableMintDecimals = new BN(controller.redeemableMintDecimals);
-    return this.instruction.initializeController(redeemableMintDecimals, {
+    return this.instruction.initializeController(controller.redeemableMintDecimals, {
       accounts: {
         authority,
         payer: payer ?? authority,
@@ -43,7 +44,7 @@ export class UXDClient {
         tokenProgram: TOKEN_PROGRAM_ID,
         rent: SYSVAR_RENT_PUBKEY,
       },
-      options: options,
+      options,
     });
   }
 
@@ -68,9 +69,9 @@ export class UXDClient {
     const fields = {
       quoteMintAndRedeemSoftCap: quoteMintAndRedeemSoftCap
         ? uiToNative(
-            quoteMintAndRedeemSoftCap.value,
-            quoteMintAndRedeemSoftCap.depository.quoteMintDecimals // special case
-          )
+          quoteMintAndRedeemSoftCap.value,
+          quoteMintAndRedeemSoftCap.depository.quoteMintDecimals // special case
+        )
         : null,
       redeemableSoftCap:
         redeemableSoftCap !== undefined
@@ -79,9 +80,9 @@ export class UXDClient {
       redeemableGlobalSupplyCap:
         redeemableGlobalSupplyCap !== undefined
           ? uiToNative(
-              redeemableGlobalSupplyCap,
-              controller.redeemableMintDecimals
-            )
+            redeemableGlobalSupplyCap,
+            controller.redeemableMintDecimals
+          )
           : null,
     };
     return this.instruction.editController(fields, {
@@ -116,7 +117,32 @@ export class UXDClient {
         mangoProgram: mango.programId,
         rent: SYSVAR_RENT_PUBKEY,
       },
-      options: options,
+      options,
+    });
+  }
+
+  public createRegisterMercurialVaultDepositoryInstruction(
+    controller: Controller,
+    depository: MercurialVaultDepository,
+    authority: PublicKey,
+    options: ConfirmOptions,
+    payer?: PublicKey
+  ): TransactionInstruction {
+    return this.instruction.registerMercurialVaultDepository({
+      accounts: {
+        authority,
+        payer: payer ?? authority,
+        controller: controller.pda,
+        depository: depository.pda,
+        mercurialVault: depository.mercurialVault,
+        mercurialVaultLpMint: depository.mercurialVaultLpMint,
+        collateralMint: depository.collateralMint,
+        depositoryVTokenVault: depository.depositoryVTokenVault,
+        systemProgram: SystemProgram.programId,
+        tokenProgram: TOKEN_PROGRAM_ID,
+        rent: SYSVAR_RENT_PUBKEY,
+      },
+      options,
     });
   }
 
@@ -209,7 +235,7 @@ export class UXDClient {
           tokenProgram: TOKEN_PROGRAM_ID,
           mangoProgram: mango.programId,
         },
-        options: options,
+        options,
       }
     );
   }
@@ -257,7 +283,7 @@ export class UXDClient {
           tokenProgram: TOKEN_PROGRAM_ID,
           mangoProgram: mango.programId,
         },
-        options: options,
+        options,
       }
     );
   }
@@ -308,7 +334,7 @@ export class UXDClient {
           tokenProgram: TOKEN_PROGRAM_ID,
           mangoProgram: mango.programId,
         },
-        options: options,
+        options,
       }
     );
   }
@@ -383,7 +409,7 @@ export class UXDClient {
           tokenProgram: TOKEN_PROGRAM_ID,
           mangoProgram: mango.programId,
         },
-        options: options,
+        options,
       }
     );
   }
@@ -458,7 +484,7 @@ export class UXDClient {
           tokenProgram: TOKEN_PROGRAM_ID,
           mangoProgram: mango.programId,
         },
-        options: options,
+        options,
       }
     );
   }
@@ -513,7 +539,7 @@ export class UXDClient {
         tokenProgram: TOKEN_PROGRAM_ID,
         mangoProgram: mango.programId,
       },
-      options: options,
+      options,
     });
   }
 
@@ -574,7 +600,7 @@ export class UXDClient {
           tokenProgram: TOKEN_PROGRAM_ID,
           mangoProgram: mango.programId,
         },
-        options: options,
+        options,
       }
     );
   }
@@ -615,7 +641,7 @@ export class UXDClient {
         controller: controller.pda,
         depository: depository.pda,
       },
-      options: options,
+      options,
     });
   }
 
