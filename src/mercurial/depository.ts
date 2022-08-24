@@ -1,14 +1,9 @@
-import { getVaultPdas, PROGRAM_ID } from '@mercurial-finance/vault-sdk';
+import { StaticTokenListResolutionStrategy } from "@solana/spl-token-registry";
+import VaultImpl, { PROGRAM_ID } from '@mercurial-finance/vault-sdk';
 import { BorshAccountsCoder } from '@project-serum/anchor';
 import { Cluster, ConfirmOptions, Connection, PublicKey } from '@solana/web3.js';
 import { IDL } from '../idl';
 import { MercurialVaultDepositoryAccount } from '../interfaces';
-
-// Same PublicKey used for mainnet and devnet
-const MERCURIAL_VAULT_PROGRAM_ID_MAINNET = new PublicKey(PROGRAM_ID);
-const MERCURIAL_VAULT_PROGRAM_ID_DEVNET = new PublicKey(PROGRAM_ID);
-
-const invalidClusterError = 'Invalid cluster';
 
 export class MercurialVaultDepository {
     public constructor(
@@ -19,10 +14,14 @@ export class MercurialVaultDepository {
         public readonly collateralMintDecimals: number,
         public readonly mercurialVault: PublicKey,
         public readonly mercurialVaultLpMint: PublicKey,
-        public readonly depositoryVTokenVault: PublicKey,
+        public readonly mercurialVaultLpMinDecimals: number,
+        public readonly depositoryLpTokenVault: PublicKey,
+        public readonly mercurialVaultProgramCollateralTokenVault: PublicKey,
+        public readonly mercurialVaultProgram: PublicKey,
     ) { }
 
-    public async initialize({
+    public static async initialize({
+        connection,
         collateralMintName,
         collateralMintSymbol,
         collateralMint,
@@ -30,6 +29,7 @@ export class MercurialVaultDepository {
         uxdProgramId,
         cluster,
     }: {
+        connection: Connection,
         collateralMintName: string;
         collateralMintSymbol: string;
         collateralMint: PublicKey;
@@ -37,24 +37,20 @@ export class MercurialVaultDepository {
         uxdProgramId: PublicKey;
         cluster: Cluster;
     }): Promise<MercurialVaultDepository> {
-        let mercurialVaultProgramId: PublicKey;
+        const tokenMap = new StaticTokenListResolutionStrategy().resolve();
+        const tokenInfo = tokenMap.find(token => token.address === collateralMint.toBase58());
 
-        switch (cluster) {
-            case 'mainnet-beta':
-                mercurialVaultProgramId = MERCURIAL_VAULT_PROGRAM_ID_MAINNET;
-                break;
-            case 'devnet':
-                mercurialVaultProgramId = MERCURIAL_VAULT_PROGRAM_ID_DEVNET;
-                break;
-            default: {
-                throw invalidClusterError;
-            }
+        if (!tokenInfo) {
+            throw new Error(`Cannot find token infos about provided collateral mint ${collateralMint.toBase58()}`);
         }
 
-        const {
-            vaultPda: mercurialVault,
-            lpMintPda: mercurialVaultLpMint,
-        } = await getVaultPdas(collateralMint, mercurialVaultProgramId);
+        const mercurialVault = await VaultImpl.create(
+            connection,
+            tokenInfo,
+            {
+                cluster,
+            },
+        );
 
         const [pda] = PublicKey.findProgramAddressSync(
             [
@@ -68,10 +64,12 @@ export class MercurialVaultDepository {
             [
                 Buffer.from('MERCURIALVAULTDEPOSITORY'),
                 collateralMint.toBuffer(),
-                mercurialVaultLpMint.toBuffer(),
+                mercurialVault.vaultState.lpMint.toBuffer(),
             ],
             uxdProgramId,
         );
+
+        mercurialVault.vaultState.lpMint
 
         return new MercurialVaultDepository(
             pda,
@@ -79,9 +77,13 @@ export class MercurialVaultDepository {
             collateralMintSymbol,
             collateralMint,
             collateralMintDecimals,
-            mercurialVault,
-            mercurialVaultLpMint,
+            mercurialVault.vaultPda,
+            mercurialVault.vaultState.lpMint,
+            // TODO: get the lpMint decimals dynamically
+            9,
             depositoryVTokenVault,
+            mercurialVault.vaultState.tokenVault,
+            new PublicKey(PROGRAM_ID),
         );
     }
 
@@ -100,7 +102,7 @@ export class MercurialVaultDepository {
             ['collateralMintDecimals']: this.collateralMintDecimals.toString(),
             ['mercurialVault']: this.mercurialVault.toBase58(),
             ['mercurialVaultLpMint']: this.mercurialVaultLpMint.toBase58(),
-            ['depositoryVTokenVault']: this.depositoryVTokenVault.toBase58(),
+            ['depositoryLpTokenVault']: this.depositoryLpTokenVault.toBase58(),
         });
         console.groupEnd();
     }
