@@ -137,10 +137,53 @@ export class UXDClient {
         mercurialVault: depository.mercurialVault,
         mercurialVaultLpMint: depository.mercurialVaultLpMint,
         collateralMint: depository.collateralMint,
-        depositoryVTokenVault: depository.depositoryVTokenVault,
+        depositoryLpTokenVault: depository.depositoryLpTokenVault,
         systemProgram: SystemProgram.programId,
         tokenProgram: TOKEN_PROGRAM_ID,
         rent: SYSVAR_RENT_PUBKEY,
+      },
+      options,
+    });
+  }
+
+  public createMintWithMercurialVaultInstruction(
+    controller: Controller,
+    depository: MercurialVaultDepository,
+    authority: PublicKey,
+    collateralAmount: number,
+    minimumLpTokenAmount: number,
+    options: ConfirmOptions,
+    payer?: PublicKey
+  ): TransactionInstruction {
+    // TODO, do not use toNumber() to avoid overflow
+    const nativeCollateralAmount = new BN(I80F48.fromNumber(collateralAmount).mul(I80F48.fromNumber(10 ** depository.collateralMintDecimals)).toNumber());
+    const nativeMinimumLpTokenAmount = new BN(I80F48.fromNumber(minimumLpTokenAmount).mul(I80F48.fromNumber(10 ** depository.mercurialVaultLpMinDecimals)).toNumber());
+
+    const [
+      [userCollateralATA],
+      [userRedeemableATA],
+    ] = findMultipleATAAddSync(authority, [
+      depository.collateralMint,
+      controller.redeemableMintPda,
+    ]);
+
+    return this.instruction.mintWithMercurialVault(nativeCollateralAmount, nativeMinimumLpTokenAmount, {
+      accounts: {
+        user: authority,
+        payer: payer ?? authority,
+        controller: controller.pda,
+        depository: depository.pda,
+        redeemableMint: controller.redeemableMintPda,
+        userCollateral: userCollateralATA,
+        userRedeemable: userRedeemableATA,
+        mercurialVault: depository.mercurialVault,
+        mercurialVaultLpMint: depository.mercurialVaultLpMint,
+        collateralMint: depository.collateralMint,
+        depositoryLpTokenVault: depository.depositoryLpTokenVault,
+        mercurialVaultProgramCollateralTokenVault: depository.mercurialVaultProgramCollateralTokenVault,
+        systemProgram: SystemProgram.programId,
+        tokenProgram: TOKEN_PROGRAM_ID,
+        mercurialVaultProgram: depository.mercurialVaultProgram,
       },
       options,
     });
