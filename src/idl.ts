@@ -51,7 +51,7 @@ export const IDL: Idl = {
       ],
     },
     {
-      name: 'setRedeemableGlobalSupplyCap',
+      name: 'editController',
       accounts: [
         {
           name: 'authority',
@@ -66,50 +66,10 @@ export const IDL: Idl = {
       ],
       args: [
         {
-          name: 'redeemableGlobalSupplyCap',
-          type: 'u128',
-        },
-      ],
-    },
-    {
-      name: 'setMangoDepositoriesRedeemableSoftCap',
-      accounts: [
-        {
-          name: 'authority',
-          isMut: false,
-          isSigner: true,
-        },
-        {
-          name: 'controller',
-          isMut: true,
-          isSigner: false,
-        },
-      ],
-      args: [
-        {
-          name: 'redeemableSoftCap',
-          type: 'u64',
-        },
-      ],
-    },
-    {
-      name: 'setMangoDepositoryQuoteMintAndRedeemSoftCap',
-      accounts: [
-        {
-          name: 'authority',
-          isMut: false,
-          isSigner: true,
-        },
-        {
-          name: 'controller',
-          isMut: true,
-          isSigner: false,
-        },
-      ],
-      args: [
-        {
-          name: 'quoteMintAndRedeemSoftCap',
-          type: 'u64',
+          name: 'fields',
+          type: {
+            defined: 'EditControllerFields',
+          },
         },
       ],
     },
@@ -940,7 +900,7 @@ export const IDL: Idl = {
       ],
     },
     {
-      name: 'setMangoDepositoryQuoteMintAndRedeemFee',
+      name: 'editMangoDepository',
       accounts: [
         {
           name: 'authority',
@@ -960,8 +920,10 @@ export const IDL: Idl = {
       ],
       args: [
         {
-          name: 'quoteFee',
-          type: 'u8',
+          name: 'fields',
+          type: {
+            defined: 'EditMangoDepositoryFields',
+          },
         },
       ],
     },
@@ -994,7 +956,7 @@ export const IDL: Idl = {
   ],
   accounts: [
     {
-      name: 'controller',
+      name: 'Controller',
       type: {
         kind: 'struct',
         fields: [
@@ -1052,7 +1014,7 @@ export const IDL: Idl = {
       },
     },
     {
-      name: 'mangoDepository',
+      name: 'MangoDepository',
       type: {
         kind: 'struct',
         fields: [
@@ -1151,6 +1113,46 @@ export const IDL: Idl = {
     },
   ],
   types: [
+    {
+      name: 'EditControllerFields',
+      type: {
+        kind: 'struct',
+        fields: [
+          {
+            name: 'quoteMintAndRedeemSoftCap',
+            type: {
+              option: 'u64',
+            },
+          },
+          {
+            name: 'redeemableSoftCap',
+            type: {
+              option: 'u64',
+            },
+          },
+          {
+            name: 'redeemableGlobalSupplyCap',
+            type: {
+              option: 'u128',
+            },
+          },
+        ],
+      },
+    },
+    {
+      name: 'EditMangoDepositoryFields',
+      type: {
+        kind: 'struct',
+        fields: [
+          {
+            name: 'quoteMintAndRedeemFee',
+            type: {
+              option: 'u8',
+            },
+          },
+        ],
+      },
+    },
     {
       name: 'PnlPolarity',
       type: {

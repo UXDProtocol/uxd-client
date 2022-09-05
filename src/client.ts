@@ -18,6 +18,7 @@ import { findATAAddrSync, findMultipleATAAddSync } from './utils';
 import NamespaceFactory from './namespace';
 import { IDL as UXD_IDL } from './idl';
 import { PnLPolarity } from './interfaces';
+import { format } from 'path';
 
 export class UXDClient {
   public instruction: InstructionNamespace<typeof UXD_IDL>;
@@ -50,43 +51,36 @@ export class UXDClient {
     });
   }
 
-  public createSetRedeemableGlobalSupplyCapInstruction(
+  public createEditControllerInstruction(
     controller: Controller,
     authority: PublicKey,
-    supplyCapAmount: number,
+    uiFields: {
+      quoteMintAndRedeemSoftCap: number | undefined;
+      redeemableSoftCap: number | undefined;
+      redeemableGlobalSupplyCap: number | undefined;
+    },
     options: ConfirmOptions
-  ): TransactionInstruction {
-    const supplyCapAmountNativeUnits = uiToNative(
-      supplyCapAmount,
-      controller.redeemableMintDecimals
-    );
-    return this.instruction.setRedeemableGlobalSupplyCap(
-      supplyCapAmountNativeUnits,
+  ) {
+    const uiToNativeOption = (value?: number) => {
+      if (value !== undefined) {
+        return uiToNative(value, controller.redeemableMintDecimals);
+      } else {
+        return undefined;
+      }
+    };
+    return this.instruction.editController(
+      {
+        quoteMintAndRedeemSoftCap: uiToNativeOption(
+          uiFields.quoteMintAndRedeemSoftCap
+        ),
+        redeemableSoftCap: uiToNativeOption(uiFields.redeemableSoftCap),
+        redeemableGlobalSupplyCap: uiToNativeOption(
+          uiFields.redeemableGlobalSupplyCap
+        ),
+      },
       {
         accounts: {
           authority,
-          controller: controller.pda,
-        },
-        options: options,
-      }
-    );
-  }
-
-  public createSetMangoDepositoriesRedeemableSoftCapInstruction(
-    controller: Controller,
-    authority: PublicKey,
-    supplySoftCapAmount: number,
-    options: ConfirmOptions
-  ): TransactionInstruction {
-    const supplySoftCapAmountNativeUnits = uiToNative(
-      supplySoftCapAmount,
-      controller.redeemableMintDecimals
-    );
-    return this.instruction.setMangoDepositoriesRedeemableSoftCap(
-      supplySoftCapAmountNativeUnits,
-      {
-        accounts: {
-          authority: authority,
           controller: controller.pda,
         },
         options: options,
@@ -586,21 +580,28 @@ export class UXDClient {
     );
   }
 
-  public createSetMangoDepositoryQuoteMintAndRedeemFeeInstruction(
-    quoteFee: number,
+  public createEditMangoDepositoryInstruction(
+    fields: {
+      quoteMintAndRedeemFee: number;
+    },
     controller: Controller,
     depository: MangoDepository,
     authority: PublicKey,
     options: ConfirmOptions
   ): TransactionInstruction {
-    return this.instruction.setMangoDepositoryQuoteMintAndRedeemFee(quoteFee, {
-      accounts: {
-        authority: authority,
-        controller: controller.pda,
-        depository: depository.pda,
+    return this.instruction.editMangoDepository(
+      {
+        quoteMintAndRedeemFee: fields.quoteMintAndRedeemFee,
       },
-      options: options,
-    });
+      {
+        accounts: {
+          authority: authority,
+          controller: controller.pda,
+          depository: depository.pda,
+        },
+        options: options,
+      }
+    );
   }
 
   public createSetMangoDepositoryQuoteMintAndRedeemSoftCapInstruction(

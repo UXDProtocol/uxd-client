@@ -58,3 +58,7 @@ export enum PnLPolarity {
   Positive = `Positive`,
   Negative = `Negative`,
 }
+
+export interface EditMangoDepositoryFields {
+  quoteMintAndRedeemFee?: BN;
+}
