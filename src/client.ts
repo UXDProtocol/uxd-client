@@ -18,7 +18,6 @@ import { findATAAddrSync, findMultipleATAAddSync } from './utils';
 import NamespaceFactory from './namespace';
 import { IDL as UXD_IDL } from './idl';
 import { PnLPolarity } from './interfaces';
-import { format } from 'path';
 
 export class UXDClient {
   public instruction: InstructionNamespace<typeof UXD_IDL>;
@@ -55,15 +54,15 @@ export class UXDClient {
     controller: Controller,
     authority: PublicKey,
     uiFields: {
-      quoteMintAndRedeemSoftCap: number | undefined;
-      redeemableSoftCap: number | undefined;
-      redeemableGlobalSupplyCap: number | undefined;
+      quoteMintAndRedeemSoftCap?: number;
+      redeemableSoftCap?: number;
+      redeemableGlobalSupplyCap?: number;
     },
     options: ConfirmOptions
   ) {
-    const uiToNativeOption = (value?: number) => {
+    const uiToNativeOption = (value: number | undefined, decimals: number) => {
       if (value !== undefined) {
-        return uiToNative(value, controller.redeemableMintDecimals);
+        return uiToNative(value, decimals);
       } else {
         return undefined;
       }
@@ -71,11 +70,16 @@ export class UXDClient {
     return this.instruction.editController(
       {
         quoteMintAndRedeemSoftCap: uiToNativeOption(
-          uiFields.quoteMintAndRedeemSoftCap
+          uiFields.quoteMintAndRedeemSoftCap,
+          controller.redeemableMintDecimals
         ),
-        redeemableSoftCap: uiToNativeOption(uiFields.redeemableSoftCap),
+        redeemableSoftCap: uiToNativeOption(
+          uiFields.redeemableSoftCap,
+          controller.redeemableMintDecimals // should this be: depository.quoteMintDecimals
+        ),
         redeemableGlobalSupplyCap: uiToNativeOption(
-          uiFields.redeemableGlobalSupplyCap
+          uiFields.redeemableGlobalSupplyCap,
+          controller.redeemableMintDecimals
         ),
       },
       {
@@ -600,28 +604,6 @@ export class UXDClient {
           depository: depository.pda,
         },
         options: options,
-      }
-    );
-  }
-
-  public createSetMangoDepositoryQuoteMintAndRedeemSoftCapInstruction(
-    softCap: number,
-    controller: Controller,
-    depository: MangoDepository,
-    authority: PublicKey,
-    options: ConfirmOptions
-  ): TransactionInstruction {
-    const softCapNativeBN = new BN(softCap).mul(
-      new BN(10).pow(new BN(depository.quoteMintDecimals))
-    );
-    return this.instruction.setMangoDepositoryQuoteMintAndRedeemSoftCap(
-      softCapNativeBN,
-      {
-        accounts: {
-          authority,
-          controller: controller.pda,
-        },
-        options,
       }
     );
   }
