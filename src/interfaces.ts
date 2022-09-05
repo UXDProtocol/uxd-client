@@ -55,17 +55,18 @@ export class MangoDepositoryAccount {
 }
 
 // V1
-export class MercurialVaultDepositoryAccount {
+export class MercurialPoolDepositoryAccount {
   bump!: number; // u8
   version!: number; // u8
   collateralMint!: PublicKey;
   collateralMintDecimals!: number; //u8
   controller!: PublicKey;
   collateralAmountDeposited!: BN; // u128
-  vTokenMint!: PublicKey;
-  vTokenDecimals!: number; //u8
-  vTokensVault!: PublicKey;
-  vTokensVaultBump!: number; //u8
+  mercurialPool!: PublicKey;
+  poolLpMint!: PublicKey;
+  poolLpMintDecimals!: number; //u8
+  poolLpTokenVault!: PublicKey;
+  poolLpTokenVaultBump!: number; //u8
 }
 
 export enum PnLPolarity {

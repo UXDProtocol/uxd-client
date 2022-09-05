@@ -10,7 +10,7 @@ import {
 } from '@solana/web3.js';
 import { Controller } from './controller';
 import { MangoDepository } from './mango/depository';
-import { MercurialVaultDepository } from './mercurial/depository';
+import { MercurialPoolDepository } from './mercurial/depository';
 import { Mango } from './mango';
 import { findATAAddrSync, findMultipleATAAddSync } from './utils';
 import NamespaceFactory from './namespace';
@@ -121,23 +121,23 @@ export class UXDClient {
     });
   }
 
-  public createRegisterMercurialVaultDepositoryInstruction(
+  public createRegisterMercurialPoolDepositoryInstruction(
     controller: Controller,
-    depository: MercurialVaultDepository,
+    depository: MercurialPoolDepository,
     authority: PublicKey,
     options: ConfirmOptions,
     payer?: PublicKey
   ): TransactionInstruction {
-    return this.instruction.registerMercurialVaultDepository({
+    return this.instruction.registerMercurialPoolDepository({
       accounts: {
         authority,
         payer: payer ?? authority,
         controller: controller.pda,
         depository: depository.pda,
-        mercurialVault: depository.mercurialVault,
-        mercurialVaultLpMint: depository.mercurialVaultLpMint,
-        collateralMint: depository.collateralMint,
-        depositoryLpTokenVault: depository.depositoryLpTokenVault,
+        collateralMint: depository.collateralMint.mint,
+        mercurialPool: depository.mercurialPool,
+        mercurialPoolLpMint: depository.mercurialPoolLpMint.mint,
+        depositoryPoolLpTokenVault: depository.depositoryPoolLpTokenVault,
         systemProgram: SystemProgram.programId,
         tokenProgram: TOKEN_PROGRAM_ID,
         rent: SYSVAR_RENT_PUBKEY,
@@ -146,44 +146,107 @@ export class UXDClient {
     });
   }
 
-  public createMintWithMercurialVaultInstruction(
+  public createMintWithMercurialPoolInstruction(
     controller: Controller,
-    depository: MercurialVaultDepository,
+    depository: MercurialPoolDepository,
     authority: PublicKey,
     collateralAmount: number,
-    minimumLpTokenAmount: number,
+    minimumRedeemableAmount: number,
     options: ConfirmOptions,
     payer?: PublicKey
   ): TransactionInstruction {
     // TODO, do not use toNumber() to avoid overflow
-    const nativeCollateralAmount = new BN(I80F48.fromNumber(collateralAmount).mul(I80F48.fromNumber(10 ** depository.collateralMintDecimals)).toNumber());
-    const nativeMinimumLpTokenAmount = new BN(I80F48.fromNumber(minimumLpTokenAmount).mul(I80F48.fromNumber(10 ** depository.mercurialVaultLpMinDecimals)).toNumber());
+    const nativeCollateralAmount = new BN(I80F48.fromNumber(collateralAmount).mul(I80F48.fromNumber(10 ** depository.collateralMint.decimals)).toNumber());
+    const nativeMinimumRedeemableAmount = new BN(I80F48.fromNumber(minimumRedeemableAmount).mul(I80F48.fromNumber(10 ** controller.redeemableMintDecimals)).toNumber());
 
     const [
       [userCollateralATA],
       [userRedeemableATA],
+      [userMercurialPoolSecondaryTokenATA],
     ] = findMultipleATAAddSync(authority, [
-      depository.collateralMint,
+      depository.collateralMint.mint,
       controller.redeemableMintPda,
+      depository.mercurialPoolSecondaryToken.mint,
     ]);
 
-    return this.instruction.mintWithMercurialVault(nativeCollateralAmount, nativeMinimumLpTokenAmount, {
+    return this.instruction.mintWithMercurialPool(nativeCollateralAmount, nativeMinimumRedeemableAmount, {
       accounts: {
         user: authority,
         payer: payer ?? authority,
         controller: controller.pda,
         depository: depository.pda,
         redeemableMint: controller.redeemableMintPda,
-        userCollateral: userCollateralATA,
         userRedeemable: userRedeemableATA,
-        mercurialVault: depository.mercurialVault,
-        mercurialVaultLpMint: depository.mercurialVaultLpMint,
-        collateralMint: depository.collateralMint,
-        depositoryLpTokenVault: depository.depositoryLpTokenVault,
-        mercurialVaultProgramCollateralTokenVault: depository.mercurialVaultProgramCollateralTokenVault,
+        userCollateral: userCollateralATA,
+        collateralMint: depository.collateralMint.mint,
+        userMercurialPoolSecondaryToken: userMercurialPoolSecondaryTokenATA,
+        depositoryPoolLpTokenVault: depository.depositoryPoolLpTokenVault,
+        mercurialPool: depository.mercurialPool,
+        mercurialPoolLpMint: depository.mercurialPoolLpMint.mint,
+        mercurialVaultA: depository.pool.vaultA.vaultPda,
+        mercurialVaultALp: depository.pool.poolState.aVaultLp,
+        mercurialVaultALpMint: depository.pool.vaultA.vaultState.lpMint,
+        mercurialVaultATokenVault: depository.pool.vaultA.tokenVaultPda,
+        mercurialVaultB: depository.pool.vaultB.vaultPda,
+        mercurialVaultBLpMint: depository.pool.vaultB.vaultState.lpMint,
+        mercurialVaultBLp: depository.pool.poolState.bVaultLp,
+        mercurialVaultBTokenVault: depository.pool.vaultB.tokenVaultPda,
+        mercurialVaultProgram: depository.mercurialVaultProgram,
         systemProgram: SystemProgram.programId,
         tokenProgram: TOKEN_PROGRAM_ID,
+        mercurialPoolProgram: depository.mercurialPoolProgram,
+      },
+      options,
+    });
+  }
+
+  public createRedeemFromMercurialPoolInstruction(
+    controller: Controller,
+    depository: MercurialPoolDepository,
+    authority: PublicKey,
+    redeemableAmount: number,
+    options: ConfirmOptions,
+    payer?: PublicKey
+  ): TransactionInstruction {
+    // TODO, do not use toNumber() to avoid overflow
+    const nativeRedeemableAmount = new BN(I80F48.fromNumber(redeemableAmount).mul(I80F48.fromNumber(10 ** controller.redeemableMintDecimals)).toNumber());
+
+    const [
+      [userCollateralATA],
+      [userRedeemableATA],
+      [userMercurialPoolSecondaryTokenATA],
+    ] = findMultipleATAAddSync(authority, [
+      depository.collateralMint.mint,
+      controller.redeemableMintPda,
+      depository.mercurialPoolSecondaryToken.mint,
+    ]);
+
+    return this.instruction.redeemFromMercurialPool(nativeRedeemableAmount, {
+      accounts: {
+        user: authority,
+        payer: payer ?? authority,
+        controller: controller.pda,
+        depository: depository.pda,
+        redeemableMint: controller.redeemableMintPda,
+        userRedeemable: userRedeemableATA,
+        userCollateral: userCollateralATA,
+        collateralMint: depository.collateralMint.mint,
+        userMercurialPoolSecondaryToken: userMercurialPoolSecondaryTokenATA,
+        depositoryPoolLpTokenVault: depository.depositoryPoolLpTokenVault,
+        mercurialPool: depository.mercurialPool,
+        mercurialPoolLpMint: depository.mercurialPoolLpMint.mint,
+        mercurialVaultA: depository.pool.vaultA.vaultPda,
+        mercurialVaultALp: depository.pool.poolState.aVaultLp,
+        mercurialVaultALpMint: depository.pool.vaultA.vaultState.lpMint,
+        mercurialVaultATokenVault: depository.pool.vaultA.tokenVaultPda,
+        mercurialVaultB: depository.pool.vaultB.vaultPda,
+        mercurialVaultBLpMint: depository.pool.vaultB.vaultState.lpMint,
+        mercurialVaultBLp: depository.pool.poolState.bVaultLp,
+        mercurialVaultBTokenVault: depository.pool.vaultB.tokenVaultPda,
         mercurialVaultProgram: depository.mercurialVaultProgram,
+        systemProgram: SystemProgram.programId,
+        tokenProgram: TOKEN_PROGRAM_ID,
+        mercurialPoolProgram: depository.mercurialPoolProgram,
       },
       options,
     });

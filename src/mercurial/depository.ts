@@ -1,108 +1,116 @@
-import { StaticTokenListResolutionStrategy } from "@solana/spl-token-registry";
-import VaultImpl, { PROGRAM_ID } from '@mercurial-finance/vault-sdk';
+import AmmImpl, { PROGRAM_ID } from '@mercurial-finance/dynamic-amm-sdk';
 import { BorshAccountsCoder } from '@project-serum/anchor';
 import { Cluster, ConfirmOptions, Connection, PublicKey } from '@solana/web3.js';
 import { IDL } from '../idl';
-import { MercurialVaultDepositoryAccount } from '../interfaces';
+import { MercurialPoolDepositoryAccount } from '../interfaces';
+import { VAULT_PROGRAM_ID } from "@mercurial-finance/dynamic-amm-sdk/dist/cjs/src/amm/constants";
 
-export class MercurialVaultDepository {
+export class MercurialPoolDepository {
     public constructor(
         public readonly pda: PublicKey,
-        public readonly collateralMintName: string,
-        public readonly collateralMintSymbol: string,
-        public readonly collateralMint: PublicKey,
-        public readonly collateralMintDecimals: number,
-        public readonly mercurialVault: PublicKey,
-        public readonly mercurialVaultLpMint: PublicKey,
-        public readonly mercurialVaultLpMinDecimals: number,
-        public readonly depositoryLpTokenVault: PublicKey,
-        public readonly mercurialVaultProgramCollateralTokenVault: PublicKey,
+        public readonly collateralMint: {
+            mint: PublicKey;
+            name: string;
+            symbol: string;
+            decimals: number;
+        },
+        public readonly mercurialPool: PublicKey,
+        public readonly mercurialPoolLpMint: {
+            mint: PublicKey;
+            decimals: number;
+        },
+        public readonly depositoryPoolLpTokenVault: PublicKey,
+        public readonly mercurialPoolProgram: PublicKey,
         public readonly mercurialVaultProgram: PublicKey,
+        public readonly pool: AmmImpl,
+        public readonly mercurialPoolSecondaryToken: {
+            mint: PublicKey;
+            decimals: number;
+        },
     ) { }
 
     public static async initialize({
         connection,
-        collateralMintName,
-        collateralMintSymbol,
         collateralMint,
-        collateralMintDecimals,
+        mercurialPool,
         uxdProgramId,
         cluster,
     }: {
         connection: Connection,
-        collateralMintName: string;
-        collateralMintSymbol: string;
-        collateralMint: PublicKey;
-        collateralMintDecimals: number;
+        collateralMint: {
+            mint: PublicKey;
+            name: string;
+            symbol: string;
+            decimals: number;
+        },
+        mercurialPool: PublicKey;
         uxdProgramId: PublicKey;
         cluster: Cluster;
-    }): Promise<MercurialVaultDepository> {
-        const tokenMap = new StaticTokenListResolutionStrategy().resolve();
-        const tokenInfo = tokenMap.find(token => token.address === collateralMint.toBase58());
-
-        if (!tokenInfo) {
-            throw new Error(`Cannot find token infos about provided collateral mint ${collateralMint.toBase58()}`);
-        }
-
-        const mercurialVault = await VaultImpl.create(
-            connection,
-            tokenInfo,
-            {
-                cluster,
-            },
-        );
+    }): Promise<MercurialPoolDepository> {
+        const pool = await AmmImpl.create(connection, mercurialPool, {
+            cluster,
+        });
 
         const [pda] = PublicKey.findProgramAddressSync(
             [
-                Buffer.from('MERCURIALVAULTDEPOSITORY'),
-                collateralMint.toBuffer(),
+                Buffer.from('MERCURIALPOOLDEPOSITORY'),
+                mercurialPool.toBuffer(),
+                collateralMint.mint.toBuffer(),
             ],
             uxdProgramId,
         );
 
-        const [depositoryVTokenVault] = PublicKey.findProgramAddressSync(
+        const [depositoryPoolLpTokenVault] = PublicKey.findProgramAddressSync(
             [
-                Buffer.from('MERCURIALVAULTDEPOSITORY'),
-                collateralMint.toBuffer(),
-                mercurialVault.vaultState.lpMint.toBuffer(),
+                Buffer.from('MERCURIALPOOLDEPOSITORYLPVAULT'),
+                mercurialPool.toBuffer(),
+                collateralMint.mint.toBuffer(),
             ],
             uxdProgramId,
         );
 
-        mercurialVault.vaultState.lpMint
+        const mercurialPoolLpMint = {
+            mint: pool.poolState.lpMint,
+            decimals: pool.decimals,
+        };
 
-        return new MercurialVaultDepository(
+        const mercurialPoolSecondaryToken = pool.tokenA.address === collateralMint.mint.toBase58() ? {
+            mint: new PublicKey(pool.tokenB.address),
+            decimals: pool.tokenB.decimals,
+        } : {
+            mint: new PublicKey(pool.tokenA.address),
+            decimals: pool.tokenA.decimals,
+        };
+
+        return new MercurialPoolDepository(
             pda,
-            collateralMintName,
-            collateralMintSymbol,
             collateralMint,
-            collateralMintDecimals,
-            mercurialVault.vaultPda,
-            mercurialVault.vaultState.lpMint,
-            // TODO: get the lpMint decimals dynamically
-            9,
-            depositoryVTokenVault,
-            mercurialVault.vaultState.tokenVault,
+            mercurialPool,
+            mercurialPoolLpMint,
+            depositoryPoolLpTokenVault,
             new PublicKey(PROGRAM_ID),
+            new PublicKey(VAULT_PROGRAM_ID),
+            pool,
+            mercurialPoolSecondaryToken,
         );
     }
 
     public info() {
         console.groupCollapsed(
             '[Mercurial Vault Depository debug info - Collateral mint:',
-            this.collateralMintSymbol,
+            this.collateralMint.symbol,
             ' - decimals',
-            this.collateralMintDecimals,
+            this.collateralMint.decimals,
             ']'
         );
         console.table({
             ['pda']: this.pda.toBase58(),
-            ['collateralMint']: this.collateralMint.toBase58(),
-            ['collateralMintSymbol']: this.collateralMintSymbol.toString(),
-            ['collateralMintDecimals']: this.collateralMintDecimals.toString(),
-            ['mercurialVault']: this.mercurialVault.toBase58(),
-            ['mercurialVaultLpMint']: this.mercurialVaultLpMint.toBase58(),
-            ['depositoryLpTokenVault']: this.depositoryLpTokenVault.toBase58(),
+            ['collateralMint']: this.collateralMint.mint.toBase58(),
+            ['collateralMintSymbol']: this.collateralMint.symbol.toString(),
+            ['collateralMintDecimals']: this.collateralMint.decimals.toString(),
+            ['mercurialPool']: this.mercurialPool.toBase58(),
+            ['mercurialPoolLpMint']: this.mercurialPoolLpMint.mint.toBase58(),
+            ['depositoryPoolLpTokenVault']: this.depositoryPoolLpTokenVault.toBase58(),
         });
         console.groupEnd();
     }
@@ -110,15 +118,18 @@ export class MercurialVaultDepository {
     public async getOnchainAccount(
         connection: Connection,
         options: ConfirmOptions
-    ): Promise<MercurialVaultDepositoryAccount> {
+    ): Promise<MercurialPoolDepositoryAccount> {
         const coder = new BorshAccountsCoder(IDL);
+
         const result = await connection.getAccountInfo(
             this.pda,
             options.commitment
         );
+
         if (!result) {
-            throw new Error('mercurialVaultDepositoryAccount not found');
+            throw new Error('mercurialPoolDepository not found');
         }
-        return coder.decode('mercurialVaultDepository', result.data);
+
+        return coder.decode('mercurialPoolDepository', result.data);
     }
 }
