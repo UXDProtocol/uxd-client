@@ -54,33 +54,35 @@ export class UXDClient {
     controller: Controller,
     authority: PublicKey,
     uiFields: {
-      quoteMintAndRedeemSoftCap?: number;
+      quoteMintAndRedeemSoftCap?: {
+        value: number;
+        depository: MangoDepository;
+      };
       redeemableSoftCap?: number;
       redeemableGlobalSupplyCap?: number;
     },
     options: ConfirmOptions
   ) {
-    const uiToNativeOption = (value: number | undefined, decimals: number) => {
-      if (value !== undefined) {
-        return uiToNative(value, decimals);
-      } else {
-        return undefined;
-      }
-    };
+    const quoteMintAndRedeemSoftCap = uiFields.quoteMintAndRedeemSoftCap;
+    const redeemableSoftCap = uiFields.redeemableSoftCap;
+    const redeemableGlobalSupplyCap = uiFields.redeemableGlobalSupplyCap;
     return this.instruction.editController(
       {
-        quoteMintAndRedeemSoftCap: uiToNativeOption(
-          uiFields.quoteMintAndRedeemSoftCap,
-          controller.redeemableMintDecimals
-        ),
-        redeemableSoftCap: uiToNativeOption(
-          uiFields.redeemableSoftCap,
-          controller.redeemableMintDecimals // should this be: depository.quoteMintDecimals
-        ),
-        redeemableGlobalSupplyCap: uiToNativeOption(
-          uiFields.redeemableGlobalSupplyCap,
-          controller.redeemableMintDecimals
-        ),
+        quoteMintAndRedeemSoftCap: quoteMintAndRedeemSoftCap
+          ? uiToNative(
+              quoteMintAndRedeemSoftCap.value,
+              quoteMintAndRedeemSoftCap.depository.quoteMintDecimals // special case
+            )
+          : undefined,
+        redeemableSoftCap: redeemableSoftCap
+          ? uiToNative(redeemableSoftCap, controller.redeemableMintDecimals)
+          : undefined,
+        redeemableGlobalSupplyCap: redeemableGlobalSupplyCap
+          ? uiToNative(
+              redeemableGlobalSupplyCap,
+              controller.redeemableMintDecimals
+            )
+          : undefined,
       },
       {
         accounts: {
@@ -585,12 +587,12 @@ export class UXDClient {
   }
 
   public createEditMangoDepositoryInstruction(
-    fields: {
-      quoteMintAndRedeemFee: number;
-    },
     controller: Controller,
     depository: MangoDepository,
     authority: PublicKey,
+    fields: {
+      quoteMintAndRedeemFee: number;
+    },
     options: ConfirmOptions
   ): TransactionInstruction {
     return this.instruction.editMangoDepository(
@@ -623,5 +625,95 @@ export class UXDClient {
       },
       options: options,
     });
+  }
+
+  /**
+   * @deprecated
+   * for backward compatibility only
+   * please use createEditControllerInstruction instead
+   */
+  public createSetRedeemableGlobalSupplyCapInstruction(
+    controller: Controller,
+    authority: PublicKey,
+    redeemableGlobalSupplyCap: number,
+    options: ConfirmOptions
+  ): TransactionInstruction {
+    return this.createEditControllerInstruction(
+      controller,
+      authority,
+      {
+        redeemableGlobalSupplyCap: redeemableGlobalSupplyCap,
+      },
+      options
+    );
+  }
+
+  /**
+   * @deprecated
+   * for backward compatibility only
+   * please use createEditControllerInstruction instead
+   */
+  public createSetMangoDepositoriesRedeemableSoftCapInstruction(
+    controller: Controller,
+    authority: PublicKey,
+    redeemableSoftCap: number,
+    options: ConfirmOptions
+  ): TransactionInstruction {
+    return this.createEditControllerInstruction(
+      controller,
+      authority,
+      {
+        redeemableSoftCap: redeemableSoftCap,
+      },
+      options
+    );
+  }
+
+  /**
+   * @deprecated
+   * for backward compatibility only
+   * please use createEditMangoDepositoryInstruction instead
+   */
+  public createSetMangoDepositoryQuoteMintAndRedeemFeeInstruction(
+    quoteMintAndRedeemFee: number,
+    controller: Controller,
+    depository: MangoDepository,
+    authority: PublicKey,
+    options: ConfirmOptions
+  ): TransactionInstruction {
+    return this.createEditMangoDepositoryInstruction(
+      controller,
+      depository,
+      authority,
+      {
+        quoteMintAndRedeemFee: quoteMintAndRedeemFee,
+      },
+      options
+    );
+  }
+
+  /**
+   * @deprecated
+   * for backward compatibility only
+   * please use createEditMangoDepositoryInstruction instead
+   */
+  public createSetMangoDepositoryQuoteMintAndRedeemSoftCapInstruction(
+    quoteMintAndRedeemSoftCap: number,
+    controller: Controller,
+    depository: MangoDepository,
+    authority: PublicKey,
+    options: ConfirmOptions
+  ): TransactionInstruction {
+    return this.createEditControllerInstruction(
+      controller,
+      authority,
+      {
+        quoteMintAndRedeemSoftCap: {
+          value: quoteMintAndRedeemSoftCap,
+          depository: depository,
+        },
+      },
+      options
+    );
   }
 }
