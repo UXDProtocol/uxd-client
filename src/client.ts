@@ -1,9 +1,6 @@
 import { uiToNative, I80F48 } from '@blockworks-foundation/mango-client';
 import { BN, InstructionNamespace } from '@project-serum/anchor';
-import {
-  ASSOCIATED_TOKEN_PROGRAM_ID,
-  TOKEN_PROGRAM_ID,
-} from '@solana/spl-token';
+import { TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import {
   SystemProgram,
   SYSVAR_RENT_PUBKEY,
@@ -512,7 +509,6 @@ export class UXDClient {
         //
         systemProgram: SystemProgram.programId,
         tokenProgram: TOKEN_PROGRAM_ID,
-        associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
         mangoProgram: mango.programId,
         //
         rent: SYSVAR_RENT_PUBKEY,
@@ -576,7 +572,6 @@ export class UXDClient {
           //
           systemProgram: SystemProgram.programId,
           tokenProgram: TOKEN_PROGRAM_ID,
-          associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
           mangoProgram: mango.programId,
           //
           rent: SYSVAR_RENT_PUBKEY,
