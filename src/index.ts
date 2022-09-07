@@ -12,11 +12,11 @@ export {
   ControllerAccount,
   MangoDepositoryAccount,
   PnLPolarity,
-  MercurialPoolDepositoryAccount,
+  MercurialVaultDepositoryAccount,
 } from './interfaces';
 export { Mango, createAndInitializeMango } from './mango';
 export { MangoDepository } from './mango/depository';
-export { MercurialPoolDepository } from './mercurial/depository';
+export { MercurialVaultDepository } from './mercurial/depository';
 export {
   ETH_DECIMALS,
   BTC_DECIMALS,
