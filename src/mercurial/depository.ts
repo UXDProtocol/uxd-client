@@ -1,11 +1,12 @@
-import AmmImpl, { PROGRAM_ID } from '@mercurial-finance/dynamic-amm-sdk';
+import VaultImpl, { PROGRAM_ID } from '@mercurial-finance/vault-sdk';
 import { BorshAccountsCoder } from '@project-serum/anchor';
-import { Cluster, ConfirmOptions, Connection, PublicKey } from '@solana/web3.js';
+import { Cluster, ConfirmOptions, Connection, PublicKey, Signer } from '@solana/web3.js';
 import { IDL } from '../idl';
-import { MercurialPoolDepositoryAccount } from '../interfaces';
-import { VAULT_PROGRAM_ID } from "@mercurial-finance/dynamic-amm-sdk/dist/cjs/src/amm/constants";
+import { MercurialVaultDepositoryAccount } from '../interfaces';
+import { TokenInfo } from "@solana/spl-token-registry"
+import { Token, TOKEN_PROGRAM_ID } from "@solana/spl-token"
 
-export class MercurialPoolDepository {
+export class MercurialVaultDepository {
     public constructor(
         public readonly pda: PublicKey,
         public readonly collateralMint: {
@@ -14,25 +15,20 @@ export class MercurialPoolDepository {
             symbol: string;
             decimals: number;
         },
-        public readonly mercurialPool: PublicKey,
-        public readonly mercurialPoolLpMint: {
+        public readonly mercurialVault: PublicKey,
+        public readonly mercurialVaultLpMint: {
             mint: PublicKey;
             decimals: number;
         },
-        public readonly depositoryPoolLpTokenVault: PublicKey,
-        public readonly mercurialPoolProgram: PublicKey,
+        public readonly depositoryLpTokenVault: PublicKey,
+        public readonly mercurialVaultCollateralTokenSafe: PublicKey,
         public readonly mercurialVaultProgram: PublicKey,
-        public readonly pool: AmmImpl,
-        public readonly mercurialPoolSecondaryToken: {
-            mint: PublicKey;
-            decimals: number;
-        },
+        public readonly vault: VaultImpl,
     ) { }
 
     public static async initialize({
         connection,
         collateralMint,
-        mercurialPool,
         uxdProgramId,
         cluster,
     }: {
@@ -43,55 +39,57 @@ export class MercurialPoolDepository {
             symbol: string;
             decimals: number;
         },
-        mercurialPool: PublicKey;
         uxdProgramId: PublicKey;
         cluster: Cluster;
-    }): Promise<MercurialPoolDepository> {
-        const pool = await AmmImpl.create(connection, mercurialPool, {
+    }): Promise<MercurialVaultDepository> {
+        const vault = await VaultImpl.create(connection, {
+            // Only the address field is used in the TokenInfo structure
+            address: collateralMint.mint.toBase58(),
+        } as TokenInfo, {
             cluster,
         });
 
         const [pda] = PublicKey.findProgramAddressSync(
             [
-                Buffer.from('MERCURIALPOOLDEPOSITORY'),
-                mercurialPool.toBuffer(),
+                Buffer.from('MERCURIALVAULTDEPOSITORY'),
+                vault.vaultPda.toBuffer(),
                 collateralMint.mint.toBuffer(),
             ],
             uxdProgramId,
         );
 
-        const [depositoryPoolLpTokenVault] = PublicKey.findProgramAddressSync(
+        const [depositoryLpTokenVault] = PublicKey.findProgramAddressSync(
             [
-                Buffer.from('MERCURIALPOOLDEPOSITORYLPVAULT'),
-                mercurialPool.toBuffer(),
+                Buffer.from('MERCURIALVAULTDEPOSITORYLPVAULT'),
+                vault.vaultPda.toBuffer(),
                 collateralMint.mint.toBuffer(),
             ],
             uxdProgramId,
         );
 
-        const mercurialPoolLpMint = {
-            mint: pool.poolState.lpMint,
-            decimals: pool.decimals,
+        const lpMintToken = new Token(connection, vault.vaultState.lpMint, TOKEN_PROGRAM_ID, null as unknown as Signer);
+        const lpMintInfo = await lpMintToken.getMintInfo();
+
+        if (!lpMintInfo) {
+            throw new Error('Cannot load vault lp mint info');
+        }
+
+        const mercurialVaultLpMint = {
+            mint: vault.vaultState.lpMint,
+            decimals: lpMintInfo.decimals,
         };
 
-        const mercurialPoolSecondaryToken = pool.tokenA.address === collateralMint.mint.toBase58() ? {
-            mint: new PublicKey(pool.tokenB.address),
-            decimals: pool.tokenB.decimals,
-        } : {
-            mint: new PublicKey(pool.tokenA.address),
-            decimals: pool.tokenA.decimals,
-        };
+        const mercurialVaultCollateralTokenSafe = vault.tokenVaultPda;
 
-        return new MercurialPoolDepository(
+        return new MercurialVaultDepository(
             pda,
             collateralMint,
-            mercurialPool,
-            mercurialPoolLpMint,
-            depositoryPoolLpTokenVault,
+            vault.vaultPda,
+            mercurialVaultLpMint,
+            depositoryLpTokenVault,
+            mercurialVaultCollateralTokenSafe,
             new PublicKey(PROGRAM_ID),
-            new PublicKey(VAULT_PROGRAM_ID),
-            pool,
-            mercurialPoolSecondaryToken,
+            vault,
         );
     }
 
@@ -108,9 +106,9 @@ export class MercurialPoolDepository {
             ['collateralMint']: this.collateralMint.mint.toBase58(),
             ['collateralMintSymbol']: this.collateralMint.symbol.toString(),
             ['collateralMintDecimals']: this.collateralMint.decimals.toString(),
-            ['mercurialPool']: this.mercurialPool.toBase58(),
-            ['mercurialPoolLpMint']: this.mercurialPoolLpMint.mint.toBase58(),
-            ['depositoryPoolLpTokenVault']: this.depositoryPoolLpTokenVault.toBase58(),
+            ['mercurialVault']: this.mercurialVault.toBase58(),
+            ['mercurialVaultLpMint']: this.mercurialVaultLpMint.mint.toBase58(),
+            ['depositoryLpTokenVault']: this.depositoryLpTokenVault.toBase58(),
         });
         console.groupEnd();
     }
@@ -118,7 +116,7 @@ export class MercurialPoolDepository {
     public async getOnchainAccount(
         connection: Connection,
         options: ConfirmOptions
-    ): Promise<MercurialPoolDepositoryAccount> {
+    ): Promise<MercurialVaultDepositoryAccount> {
         const coder = new BorshAccountsCoder(IDL);
 
         const result = await connection.getAccountInfo(
@@ -127,9 +125,9 @@ export class MercurialPoolDepository {
         );
 
         if (!result) {
-            throw new Error('mercurialPoolDepository not found');
+            throw new Error('mercurialVaultDepository not found');
         }
 
-        return coder.decode('mercurialPoolDepository', result.data);
+        return coder.decode('mercurialVaultDepository', result.data);
     }
 }
