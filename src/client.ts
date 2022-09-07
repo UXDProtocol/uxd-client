@@ -68,13 +68,12 @@ export class UXDClient {
     const redeemableGlobalSupplyCap = uiFields.redeemableGlobalSupplyCap;
     return this.instruction.editController(
       {
-        quoteMintAndRedeemSoftCap:
-          quoteMintAndRedeemSoftCap !== undefined
-            ? uiToNative(
-                quoteMintAndRedeemSoftCap.value,
-                quoteMintAndRedeemSoftCap.depository.quoteMintDecimals // special case
-              )
-            : undefined,
+        quoteMintAndRedeemSoftCap: quoteMintAndRedeemSoftCap
+          ? uiToNative(
+              quoteMintAndRedeemSoftCap.value,
+              quoteMintAndRedeemSoftCap.depository.quoteMintDecimals // special case
+            )
+          : undefined,
         redeemableSoftCap:
           redeemableSoftCap !== undefined
             ? uiToNative(redeemableSoftCap, controller.redeemableMintDecimals)
@@ -604,7 +603,7 @@ export class UXDClient {
       },
       {
         accounts: {
-          authority: authority,
+          authority,
           controller: controller.pda,
           depository: depository.pda,
         },
@@ -648,7 +647,7 @@ export class UXDClient {
       {
         quoteMintAndRedeemSoftCap: {
           value: quoteMintAndRedeemSoftCap,
-          depository: depository,
+          depository,
         },
       },
       options
@@ -670,7 +669,7 @@ export class UXDClient {
       controller,
       authority,
       {
-        redeemableGlobalSupplyCap: redeemableGlobalSupplyCap,
+        redeemableGlobalSupplyCap,
       },
       options
     );
@@ -691,7 +690,7 @@ export class UXDClient {
       controller,
       authority,
       {
-        redeemableSoftCap: redeemableSoftCap,
+        redeemableSoftCap,
       },
       options
     );
@@ -714,7 +713,7 @@ export class UXDClient {
       depository,
       authority,
       {
-        quoteMintAndRedeemFee: quoteMintAndRedeemFee,
+        quoteMintAndRedeemFee,
       },
       options
     );
