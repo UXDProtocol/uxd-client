@@ -956,7 +956,7 @@ export const IDL: Idl = {
   ],
   accounts: [
     {
-      name: 'Controller',
+      name: 'controller',
       type: {
         kind: 'struct',
         fields: [
@@ -1014,7 +1014,7 @@ export const IDL: Idl = {
       },
     },
     {
-      name: 'MangoDepository',
+      name: 'mangoDepository',
       type: {
         kind: 'struct',
         fields: [
