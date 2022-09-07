@@ -1038,6 +1038,11 @@ export type Uxd = {
           "isSigner": false
         },
         {
+          "name": "mercurialPoolSecondaryTokenMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "depositoryPoolLpTokenVault",
           "isMut": true,
           "isSigner": false
@@ -1549,12 +1554,10 @@ export type Uxd = {
             "type": "u8"
           },
           {
-            "name": "collateralIsMercurialPoolTokenA",
-            "type": "bool"
-          },
-          {
-            "name": "collateralIsMercurialPoolTokenB",
-            "type": "bool"
+            "name": "isCollateralMercurialPoolTokenAOrB",
+            "type": {
+              "defined": "MercurialPoolToken"
+            }
           }
         ]
       }
@@ -1571,6 +1574,20 @@ export type Uxd = {
           },
           {
             "name": "Negative"
+          }
+        ]
+      }
+    },
+    {
+      "name": "MercurialPoolToken",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "TokenA"
+          },
+          {
+            "name": "TokenB"
           }
         ]
       }
@@ -2263,66 +2280,71 @@ export type Uxd = {
     },
     {
       "code": 6047,
+      "name": "ClockError",
+      "msg": "Cannot access solana clock"
+    },
+    {
+      "code": 6048,
       "name": "InvalidAuthority",
       "msg": "Only the Program initializer authority can access this instructions."
     },
     {
-      "code": 6048,
+      "code": 6049,
       "name": "InvalidController",
       "msg": "The Depository's controller doesn't match the provided Controller."
     },
     {
-      "code": 6049,
+      "code": 6050,
       "name": "InvalidDepository",
       "msg": "The Depository provided is not registered with the Controller."
     },
     {
-      "code": 6050,
+      "code": 6051,
       "name": "InvalidCollateralMint",
       "msg": "The provided collateral mint does not match the depository's collateral mint."
     },
     {
-      "code": 6051,
+      "code": 6052,
       "name": "InvalidQuoteMint",
       "msg": "The provided quote mint does not match the depository's quote mint."
     },
     {
-      "code": 6052,
+      "code": 6053,
       "name": "InvalidMangoAccount",
       "msg": "The Mango Account isn't the Depository one."
     },
     {
-      "code": 6053,
+      "code": 6054,
       "name": "InvalidRedeemableMint",
       "msg": "The Redeemable Mint provided does not match the Controller's one."
     },
     {
-      "code": 6054,
+      "code": 6055,
       "name": "InvalidDexMarket",
       "msg": "The provided perp_market is not the one tied to this Depository."
     },
     {
-      "code": 6055,
+      "code": 6056,
       "name": "InvalidOwner",
       "msg": "The provided token account is not owner by the expected party."
     },
     {
-      "code": 6056,
+      "code": 6057,
       "name": "InvalidMaxBaseQuantity",
       "msg": "The max base quantity must be above 0."
     },
     {
-      "code": 6057,
+      "code": 6058,
       "name": "InvalidMaxQuoteQuantity",
       "msg": "The max quote quantity must be above 0."
     },
     {
-      "code": 6058,
+      "code": 6059,
       "name": "InvalidMercurialPool",
       "msg": "The provided mercurial pool does not match the Depository's one."
     },
     {
-      "code": 6059,
+      "code": 6060,
       "name": "Default",
       "msg": "Default - Check the source code for more info."
     }
@@ -3288,6 +3310,11 @@ export const IDL: Uxd = {
           "isSigner": false
         },
         {
+          "name": "mercurialPoolSecondaryTokenMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
           "name": "depositoryPoolLpTokenVault",
           "isMut": true,
           "isSigner": false
@@ -3800,12 +3827,10 @@ export const IDL: Uxd = {
             "type": "u8"
           },
           {
-            "name": "collateralIsMercurialPoolTokenA",
-            "type": "bool"
-          },
-          {
-            "name": "collateralIsMercurialPoolTokenB",
-            "type": "bool"
+            "name": "isCollateralMercurialPoolTokenAOrB",
+            "type": {
+              "defined": "MercurialPoolToken"
+            }
           }
         ]
       }
@@ -3822,6 +3847,20 @@ export const IDL: Uxd = {
           },
           {
             "name": "Negative"
+          }
+        ]
+      }
+    },
+    {
+      "name": "MercurialPoolToken",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "TokenA"
+          },
+          {
+            "name": "TokenB"
           }
         ]
       }
@@ -4654,66 +4693,71 @@ export const IDL: Uxd = {
     },
     {
       "code": 6047,
+      "name": "ClockError",
+      "msg": "Cannot access solana clock"
+    },
+    {
+      "code": 6048,
       "name": "InvalidAuthority",
       "msg": "Only the Program initializer authority can access this instructions."
     },
     {
-      "code": 6048,
+      "code": 6049,
       "name": "InvalidController",
       "msg": "The Depository's controller doesn't match the provided Controller."
     },
     {
-      "code": 6049,
+      "code": 6050,
       "name": "InvalidDepository",
       "msg": "The Depository provided is not registered with the Controller."
     },
     {
-      "code": 6050,
+      "code": 6051,
       "name": "InvalidCollateralMint",
       "msg": "The provided collateral mint does not match the depository's collateral mint."
     },
     {
-      "code": 6051,
+      "code": 6052,
       "name": "InvalidQuoteMint",
       "msg": "The provided quote mint does not match the depository's quote mint."
     },
     {
-      "code": 6052,
+      "code": 6053,
       "name": "InvalidMangoAccount",
       "msg": "The Mango Account isn't the Depository one."
     },
     {
-      "code": 6053,
+      "code": 6054,
       "name": "InvalidRedeemableMint",
       "msg": "The Redeemable Mint provided does not match the Controller's one."
     },
     {
-      "code": 6054,
+      "code": 6055,
       "name": "InvalidDexMarket",
       "msg": "The provided perp_market is not the one tied to this Depository."
     },
     {
-      "code": 6055,
+      "code": 6056,
       "name": "InvalidOwner",
       "msg": "The provided token account is not owner by the expected party."
     },
     {
-      "code": 6056,
+      "code": 6057,
       "name": "InvalidMaxBaseQuantity",
       "msg": "The max base quantity must be above 0."
     },
     {
-      "code": 6057,
+      "code": 6058,
       "name": "InvalidMaxQuoteQuantity",
       "msg": "The max quote quantity must be above 0."
     },
     {
-      "code": 6058,
+      "code": 6059,
       "name": "InvalidMercurialPool",
       "msg": "The provided mercurial pool does not match the Depository's one."
     },
     {
-      "code": 6059,
+      "code": 6060,
       "name": "Default",
       "msg": "Default - Check the source code for more info."
     }

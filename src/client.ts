@@ -180,6 +180,7 @@ export class UXDClient {
         userCollateral: userCollateralATA,
         collateralMint: depository.collateralMint.mint,
         userMercurialPoolSecondaryToken: userMercurialPoolSecondaryTokenATA,
+        mercurialPoolSecondaryTokenMint: depository.mercurialPoolSecondaryToken.mint,
         depositoryPoolLpTokenVault: depository.depositoryPoolLpTokenVault,
         mercurialPool: depository.mercurialPool,
         mercurialPoolLpMint: depository.mercurialPoolLpMint.mint,
