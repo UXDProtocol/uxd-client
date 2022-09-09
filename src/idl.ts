@@ -162,6 +162,11 @@ export const IDL: Idl = {
           isSigner: false,
         },
         {
+          name: 'tokenProgram',
+          isMut: false,
+          isSigner: false,
+        },
+        {
           name: 'mangoProgram',
           isMut: false,
           isSigner: false,
@@ -225,6 +230,11 @@ export const IDL: Idl = {
         {
           name: 'mangoVault',
           isMut: true,
+          isSigner: false,
+        },
+        {
+          name: 'tokenProgram',
+          isMut: false,
           isSigner: false,
         },
         {
@@ -296,6 +306,16 @@ export const IDL: Idl = {
         {
           name: 'mangoVault',
           isMut: true,
+          isSigner: false,
+        },
+        {
+          name: 'systemProgram',
+          isMut: false,
+          isSigner: false,
+        },
+        {
+          name: 'tokenProgram',
+          isMut: false,
           isSigner: false,
         },
         {
@@ -425,6 +445,11 @@ export const IDL: Idl = {
           isSigner: false,
         },
         {
+          name: 'systemProgram',
+          isMut: false,
+          isSigner: false,
+        },
+        {
           name: 'tokenProgram',
           isMut: false,
           isSigner: false,
@@ -538,6 +563,11 @@ export const IDL: Idl = {
         {
           name: 'mangoEventQueue',
           isMut: true,
+          isSigner: false,
+        },
+        {
+          name: 'systemProgram',
+          isMut: false,
           isSigner: false,
         },
         {
@@ -658,6 +688,11 @@ export const IDL: Idl = {
         {
           name: 'mangoEventQueue',
           isMut: true,
+          isSigner: false,
+        },
+        {
+          name: 'systemProgram',
+          isMut: false,
           isSigner: false,
         },
         {
@@ -859,6 +894,11 @@ export const IDL: Idl = {
         {
           name: 'mangoPerpMarket',
           isMut: true,
+          isSigner: false,
+        },
+        {
+          name: 'systemProgram',
+          isMut: false,
           isSigner: false,
         },
         {
