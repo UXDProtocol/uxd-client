@@ -70,18 +70,18 @@ export class UXDClient {
               quoteMintAndRedeemSoftCap.value,
               quoteMintAndRedeemSoftCap.depository.quoteMintDecimals // special case
             )
-          : undefined,
+          : null,
         redeemableSoftCap:
           redeemableSoftCap !== undefined
             ? uiToNative(redeemableSoftCap, controller.redeemableMintDecimals)
-            : undefined,
+            : null,
         redeemableGlobalSupplyCap:
           redeemableGlobalSupplyCap !== undefined
             ? uiToNative(
                 redeemableGlobalSupplyCap,
                 controller.redeemableMintDecimals
               )
-            : undefined,
+            : null,
       },
       {
         accounts: {
