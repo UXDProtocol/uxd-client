@@ -112,6 +112,7 @@ export class UXDClient {
         mangoAccount: depository.mangoAccountPda,
         mangoGroup: mango.group.publicKey,
         systemProgram: SystemProgram.programId,
+        tokenProgram: TOKEN_PROGRAM_ID,
         mangoProgram: mango.programId,
         rent: SYSVAR_RENT_PUBKEY,
       },
@@ -204,6 +205,7 @@ export class UXDClient {
           mangoAsks: mangoPerpMarketConfig.asksKey,
           mangoEventQueue: mangoPerpMarketConfig.eventsKey,
           // programs
+          systemProgram: SystemProgram.programId,
           tokenProgram: TOKEN_PROGRAM_ID,
           mangoProgram: mango.programId,
         },
@@ -252,6 +254,7 @@ export class UXDClient {
           mangoNodeBank: mangoNodeBankAccount,
           mangoVault: mangoDepositedVaultAccount,
           //
+          tokenProgram: TOKEN_PROGRAM_ID,
           mangoProgram: mango.programId,
         },
         options: options,
@@ -301,6 +304,8 @@ export class UXDClient {
           mangoNodeBank: mangoNodeBankAccount,
           mangoVault: mangoDepositedVaultAccount,
           //
+          systemProgram: SystemProgram.programId,
+          tokenProgram: TOKEN_PROGRAM_ID,
           mangoProgram: mango.programId,
         },
         options: options,
@@ -374,6 +379,7 @@ export class UXDClient {
           mangoAsks: mangoPerpMarketConfig.asksKey,
           mangoEventQueue: mangoPerpMarketConfig.eventsKey,
           //
+          systemProgram: SystemProgram.programId,
           tokenProgram: TOKEN_PROGRAM_ID,
           mangoProgram: mango.programId,
         },
@@ -448,6 +454,7 @@ export class UXDClient {
           mangoAsks: mangoPerpMarketConfig.asksKey,
           mangoEventQueue: mangoPerpMarketConfig.eventsKey,
           //
+          systemProgram: SystemProgram.programId,
           tokenProgram: TOKEN_PROGRAM_ID,
           mangoProgram: mango.programId,
         },
@@ -563,6 +570,7 @@ export class UXDClient {
           mangoVault: mangoDepositedVaultAccount,
           mangoPerpMarket: mangoPerpMarketConfig.publicKey,
           //
+          systemProgram: SystemProgram.programId,
           tokenProgram: TOKEN_PROGRAM_ID,
           mangoProgram: mango.programId,
         },
