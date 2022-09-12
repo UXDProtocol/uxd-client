@@ -60,37 +60,37 @@ export class UXDClient {
     },
     options: ConfirmOptions
   ) {
-    const quoteMintAndRedeemSoftCap = uiFields.quoteMintAndRedeemSoftCap;
-    const redeemableSoftCap = uiFields.redeemableSoftCap;
-    const redeemableGlobalSupplyCap = uiFields.redeemableGlobalSupplyCap;
-    return this.instruction.editController(
-      {
-        quoteMintAndRedeemSoftCap: quoteMintAndRedeemSoftCap
+    const {
+      quoteMintAndRedeemSoftCap,
+      redeemableSoftCap,
+      redeemableGlobalSupplyCap,
+    } = uiFields;
+    const fields = {
+      quoteMintAndRedeemSoftCap: quoteMintAndRedeemSoftCap
+        ? uiToNative(
+            quoteMintAndRedeemSoftCap.value,
+            quoteMintAndRedeemSoftCap.depository.quoteMintDecimals // special case
+          )
+        : null,
+      redeemableSoftCap:
+        redeemableSoftCap !== undefined
+          ? uiToNative(redeemableSoftCap, controller.redeemableMintDecimals)
+          : null,
+      redeemableGlobalSupplyCap:
+        redeemableGlobalSupplyCap !== undefined
           ? uiToNative(
-              quoteMintAndRedeemSoftCap.value,
-              quoteMintAndRedeemSoftCap.depository.quoteMintDecimals // special case
+              redeemableGlobalSupplyCap,
+              controller.redeemableMintDecimals
             )
           : null,
-        redeemableSoftCap:
-          redeemableSoftCap !== undefined
-            ? uiToNative(redeemableSoftCap, controller.redeemableMintDecimals)
-            : null,
-        redeemableGlobalSupplyCap:
-          redeemableGlobalSupplyCap !== undefined
-            ? uiToNative(
-                redeemableGlobalSupplyCap,
-                controller.redeemableMintDecimals
-              )
-            : null,
+    };
+    return this.instruction.editController(fields, {
+      accounts: {
+        authority,
+        controller: controller.pda,
       },
-      {
-        accounts: {
-          authority,
-          controller: controller.pda,
-        },
-        options: options,
-      }
-    );
+      options: options,
+    });
   }
 
   public createRegisterMangoDepositoryInstruction(
@@ -588,20 +588,18 @@ export class UXDClient {
     },
     options: ConfirmOptions
   ): TransactionInstruction {
-    const quoteMintAndRedeemFee = uiFields.quoteMintAndRedeemFee;
-    return this.instruction.editMangoDepository(
-      {
-        quoteMintAndRedeemFee: quoteMintAndRedeemFee ?? null,
+    const { quoteMintAndRedeemFee } = uiFields;
+    const fields = {
+      quoteMintAndRedeemFee: quoteMintAndRedeemFee ?? null,
+    };
+    return this.instruction.editMangoDepository(fields, {
+      accounts: {
+        authority,
+        controller: controller.pda,
+        depository: depository.pda,
       },
-      {
-        accounts: {
-          authority,
-          controller: controller.pda,
-          depository: depository.pda,
-        },
-        options: options,
-      }
-    );
+      options: options,
+    });
   }
 
   public createDisableDepositoryRegularMintingInstruction(
