@@ -584,14 +584,14 @@ export class UXDClient {
     depository: MangoDepository,
     authority: PublicKey,
     uiFields: {
-      quoteMintAndRedeemFee: number;
+      quoteMintAndRedeemFee?: number;
     },
     options: ConfirmOptions
   ): TransactionInstruction {
     const quoteMintAndRedeemFee = uiFields.quoteMintAndRedeemFee;
     return this.instruction.editMangoDepository(
       {
-        quoteMintAndRedeemFee,
+        quoteMintAndRedeemFee: quoteMintAndRedeemFee ?? null,
       },
       {
         accounts: {
