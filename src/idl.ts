@@ -51,7 +51,7 @@ export const IDL: Idl = {
       ],
     },
     {
-      name: 'setRedeemableGlobalSupplyCap',
+      name: 'editController',
       accounts: [
         {
           name: 'authority',
@@ -66,50 +66,10 @@ export const IDL: Idl = {
       ],
       args: [
         {
-          name: 'redeemableGlobalSupplyCap',
-          type: 'u128',
-        },
-      ],
-    },
-    {
-      name: 'setMangoDepositoriesRedeemableSoftCap',
-      accounts: [
-        {
-          name: 'authority',
-          isMut: false,
-          isSigner: true,
-        },
-        {
-          name: 'controller',
-          isMut: true,
-          isSigner: false,
-        },
-      ],
-      args: [
-        {
-          name: 'redeemableSoftCap',
-          type: 'u64',
-        },
-      ],
-    },
-    {
-      name: 'setMangoDepositoryQuoteMintAndRedeemSoftCap',
-      accounts: [
-        {
-          name: 'authority',
-          isMut: false,
-          isSigner: true,
-        },
-        {
-          name: 'controller',
-          isMut: true,
-          isSigner: false,
-        },
-      ],
-      args: [
-        {
-          name: 'quoteMintAndRedeemSoftCap',
-          type: 'u64',
+          name: 'fields',
+          type: {
+            defined: 'EditControllerFields',
+          },
         },
       ],
     },
@@ -801,17 +761,7 @@ export const IDL: Idl = {
           isSigner: false,
         },
         {
-          name: 'associatedTokenProgram',
-          isMut: false,
-          isSigner: false,
-        },
-        {
           name: 'mangoProgram',
-          isMut: false,
-          isSigner: false,
-        },
-        {
-          name: 'rent',
           isMut: false,
           isSigner: false,
         },
@@ -917,17 +867,7 @@ export const IDL: Idl = {
           isSigner: false,
         },
         {
-          name: 'associatedTokenProgram',
-          isMut: false,
-          isSigner: false,
-        },
-        {
           name: 'mangoProgram',
-          isMut: false,
-          isSigner: false,
-        },
-        {
-          name: 'rent',
           isMut: false,
           isSigner: false,
         },
@@ -940,7 +880,7 @@ export const IDL: Idl = {
       ],
     },
     {
-      name: 'setMangoDepositoryQuoteMintAndRedeemFee',
+      name: 'editMangoDepository',
       accounts: [
         {
           name: 'authority',
@@ -960,8 +900,10 @@ export const IDL: Idl = {
       ],
       args: [
         {
-          name: 'quoteFee',
-          type: 'u8',
+          name: 'fields',
+          type: {
+            defined: 'EditMangoDepositoryFields',
+          },
         },
       ],
     },
@@ -1151,6 +1093,46 @@ export const IDL: Idl = {
     },
   ],
   types: [
+    {
+      name: 'EditControllerFields',
+      type: {
+        kind: 'struct',
+        fields: [
+          {
+            name: 'quoteMintAndRedeemSoftCap',
+            type: {
+              option: 'u64',
+            },
+          },
+          {
+            name: 'redeemableSoftCap',
+            type: {
+              option: 'u64',
+            },
+          },
+          {
+            name: 'redeemableGlobalSupplyCap',
+            type: {
+              option: 'u128',
+            },
+          },
+        ],
+      },
+    },
+    {
+      name: 'EditMangoDepositoryFields',
+      type: {
+        kind: 'struct',
+        fields: [
+          {
+            name: 'quoteMintAndRedeemFee',
+            type: {
+              option: 'u8',
+            },
+          },
+        ],
+      },
+    },
     {
       name: 'PnlPolarity',
       type: {
@@ -1468,7 +1450,7 @@ export const IDL: Idl = {
       ],
     },
     {
-      name: 'RedeemFromDepositoryEvent',
+      name: 'RedeemFromMangoDepositoryEvent',
       fields: [
         {
           name: 'version',
@@ -1580,6 +1562,146 @@ export const IDL: Idl = {
         {
           name: 'feeDelta',
           type: 'i64',
+          index: false,
+        },
+      ],
+    },
+    {
+      name: 'SetMangoDepositoryQuoteMintAndRedeemSoftCapEvent',
+      fields: [
+        {
+          name: 'version',
+          type: 'u8',
+          index: false,
+        },
+        {
+          name: 'controller',
+          type: 'publicKey',
+          index: false,
+        },
+        {
+          name: 'quoteMintAndRedeemSoftCap',
+          type: 'u64',
+          index: false,
+        },
+      ],
+    },
+    {
+      name: 'SetMangoDepositoryQuoteMintAndRedeemFeeEvent',
+      fields: [
+        {
+          name: 'version',
+          type: 'u8',
+          index: false,
+        },
+        {
+          name: 'controller',
+          type: 'publicKey',
+          index: false,
+        },
+        {
+          name: 'depository',
+          type: 'publicKey',
+          index: false,
+        },
+        {
+          name: 'quoteMintAndRedeemFee',
+          type: 'u8',
+          index: false,
+        },
+      ],
+    },
+    {
+      name: 'QuoteRedeemFromMangoDepositoryEvent',
+      fields: [
+        {
+          name: 'version',
+          type: 'u8',
+          index: false,
+        },
+        {
+          name: 'controller',
+          type: 'publicKey',
+          index: false,
+        },
+        {
+          name: 'depository',
+          type: 'publicKey',
+          index: false,
+        },
+        {
+          name: 'user',
+          type: 'publicKey',
+          index: false,
+        },
+        {
+          name: 'quoteRedeemableAmount',
+          type: 'u64',
+          index: false,
+        },
+        {
+          name: 'quoteRedeemFee',
+          type: 'u64',
+          index: false,
+        },
+      ],
+    },
+    {
+      name: 'QuoteMintWithMangoDepositoryEvent',
+      fields: [
+        {
+          name: 'version',
+          type: 'u8',
+          index: false,
+        },
+        {
+          name: 'controller',
+          type: 'publicKey',
+          index: false,
+        },
+        {
+          name: 'depository',
+          type: 'publicKey',
+          index: false,
+        },
+        {
+          name: 'user',
+          type: 'publicKey',
+          index: false,
+        },
+        {
+          name: 'quoteMintAmount',
+          type: 'u64',
+          index: false,
+        },
+        {
+          name: 'quoteMintFee',
+          type: 'u64',
+          index: false,
+        },
+      ],
+    },
+    {
+      name: 'DisableDepositoryRegularMintingEvent',
+      fields: [
+        {
+          name: 'version',
+          type: 'u8',
+          index: false,
+        },
+        {
+          name: 'controller',
+          type: 'publicKey',
+          index: false,
+        },
+        {
+          name: 'depository',
+          type: 'publicKey',
+          index: false,
+        },
+        {
+          name: 'regularMintingDisabled',
+          type: 'bool',
           index: false,
         },
       ],
