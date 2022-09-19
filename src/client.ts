@@ -126,9 +126,11 @@ export class UXDClient {
     depository: MercurialVaultDepository,
     authority: PublicKey,
     options: ConfirmOptions,
+    mintingFeeInBps: number,
+    redeemingFeeInBps: number,
     payer?: PublicKey
   ): TransactionInstruction {
-    return this.instruction.registerMercurialVaultDepository({
+    return this.instruction.registerMercurialVaultDepository(mintingFeeInBps, redeemingFeeInBps, {
       accounts: {
         authority,
         payer: payer ?? authority,
