@@ -1134,7 +1134,16 @@ export type Uxd = {
           "isSigner": false
         }
       ],
-      "args": []
+      "args": [
+        {
+          "name": "mintingFeeInBps",
+          "type": "u8"
+        },
+        {
+          "name": "redeemingFeeInBps",
+          "type": "u8"
+        }
+      ]
     },
     {
       "name": "redeemFromMercurialVault",
@@ -1435,6 +1444,10 @@ export type Uxd = {
             "type": "u128"
           },
           {
+            "name": "mintedRedeemableAmount",
+            "type": "u128"
+          },
+          {
             "name": "mercurialVault",
             "type": "publicKey"
           },
@@ -1453,6 +1466,22 @@ export type Uxd = {
           {
             "name": "lpTokenVaultBump",
             "type": "u8"
+          },
+          {
+            "name": "mintingFeeInBps",
+            "type": "u8"
+          },
+          {
+            "name": "redeemingFeeInBps",
+            "type": "u8"
+          },
+          {
+            "name": "totalPaidMintFees",
+            "type": "u128"
+          },
+          {
+            "name": "totalPaidRedeemFees",
+            "type": "u128"
           }
         ]
       }
@@ -1591,7 +1620,7 @@ export type Uxd = {
       ]
     },
     {
-      "name": "RegisterMercurialPoolDepositoryEvent",
+      "name": "RegisterMercurialVaultDepositoryEvent",
       "fields": [
         {
           "name": "version",
@@ -2166,66 +2195,81 @@ export type Uxd = {
     },
     {
       "code": 6048,
+      "name": "CollateralMintNotAllowed",
+      "msg": "Provided collateral mint is not allowed."
+    },
+    {
+      "code": 6049,
+      "name": "MinimumRedeemingFeeError",
+      "msg": "Provided redeeming fee is lower than the minimum redeeming fee."
+    },
+    {
+      "code": 6050,
       "name": "InvalidAuthority",
       "msg": "Only the Program initializer authority can access this instructions."
     },
     {
-      "code": 6049,
+      "code": 6051,
       "name": "InvalidController",
       "msg": "The Depository's controller doesn't match the provided Controller."
     },
     {
-      "code": 6050,
+      "code": 6052,
       "name": "InvalidDepository",
       "msg": "The Depository provided is not registered with the Controller."
     },
     {
-      "code": 6051,
+      "code": 6053,
       "name": "InvalidCollateralMint",
       "msg": "The provided collateral mint does not match the depository's collateral mint."
     },
     {
-      "code": 6052,
+      "code": 6054,
       "name": "InvalidQuoteMint",
       "msg": "The provided quote mint does not match the depository's quote mint."
     },
     {
-      "code": 6053,
+      "code": 6055,
       "name": "InvalidMangoAccount",
       "msg": "The Mango Account isn't the Depository one."
     },
     {
-      "code": 6054,
+      "code": 6056,
       "name": "InvalidRedeemableMint",
       "msg": "The Redeemable Mint provided does not match the Controller's one."
     },
     {
-      "code": 6055,
+      "code": 6057,
       "name": "InvalidDexMarket",
       "msg": "The provided perp_market is not the one tied to this Depository."
     },
     {
-      "code": 6056,
+      "code": 6058,
       "name": "InvalidOwner",
       "msg": "The provided token account is not owner by the expected party."
     },
     {
-      "code": 6057,
+      "code": 6059,
       "name": "InvalidMaxBaseQuantity",
       "msg": "The max base quantity must be above 0."
     },
     {
-      "code": 6058,
+      "code": 6060,
       "name": "InvalidMaxQuoteQuantity",
       "msg": "The max quote quantity must be above 0."
     },
     {
-      "code": 6059,
+      "code": 6061,
       "name": "InvalidMercurialVault",
       "msg": "The provided mercurial vault does not match the Depository's one."
     },
     {
-      "code": 6060,
+      "code": 6062,
+      "name": "InvalidMercurialVaultCollateralTokenSafe",
+      "msg": "The provided mercurial vault collateral token safe does not match the mercurial vault one."
+    },
+    {
+      "code": 6063,
       "name": "Default",
       "msg": "Default - Check the source code for more info."
     }
@@ -3293,7 +3337,16 @@ export const IDL: Uxd = {
           "isSigner": false
         }
       ],
-      "args": []
+      "args": [
+        {
+          "name": "mintingFeeInBps",
+          "type": "u8"
+        },
+        {
+          "name": "redeemingFeeInBps",
+          "type": "u8"
+        }
+      ]
     },
     {
       "name": "redeemFromMercurialVault",
@@ -3594,6 +3647,10 @@ export const IDL: Uxd = {
             "type": "u128"
           },
           {
+            "name": "mintedRedeemableAmount",
+            "type": "u128"
+          },
+          {
             "name": "mercurialVault",
             "type": "publicKey"
           },
@@ -3612,6 +3669,22 @@ export const IDL: Uxd = {
           {
             "name": "lpTokenVaultBump",
             "type": "u8"
+          },
+          {
+            "name": "mintingFeeInBps",
+            "type": "u8"
+          },
+          {
+            "name": "redeemingFeeInBps",
+            "type": "u8"
+          },
+          {
+            "name": "totalPaidMintFees",
+            "type": "u128"
+          },
+          {
+            "name": "totalPaidRedeemFees",
+            "type": "u128"
           }
         ]
       }
@@ -3750,7 +3823,7 @@ export const IDL: Uxd = {
       ]
     },
     {
-      "name": "RegisterMercurialPoolDepositoryEvent",
+      "name": "RegisterMercurialVaultDepositoryEvent",
       "fields": [
         {
           "name": "version",
@@ -4465,66 +4538,81 @@ export const IDL: Uxd = {
     },
     {
       "code": 6048,
+      "name": "CollateralMintNotAllowed",
+      "msg": "Provided collateral mint is not allowed."
+    },
+    {
+      "code": 6049,
+      "name": "MinimumRedeemingFeeError",
+      "msg": "Provided redeeming fee is lower than the minimum redeeming fee."
+    },
+    {
+      "code": 6050,
       "name": "InvalidAuthority",
       "msg": "Only the Program initializer authority can access this instructions."
     },
     {
-      "code": 6049,
+      "code": 6051,
       "name": "InvalidController",
       "msg": "The Depository's controller doesn't match the provided Controller."
     },
     {
-      "code": 6050,
+      "code": 6052,
       "name": "InvalidDepository",
       "msg": "The Depository provided is not registered with the Controller."
     },
     {
-      "code": 6051,
+      "code": 6053,
       "name": "InvalidCollateralMint",
       "msg": "The provided collateral mint does not match the depository's collateral mint."
     },
     {
-      "code": 6052,
+      "code": 6054,
       "name": "InvalidQuoteMint",
       "msg": "The provided quote mint does not match the depository's quote mint."
     },
     {
-      "code": 6053,
+      "code": 6055,
       "name": "InvalidMangoAccount",
       "msg": "The Mango Account isn't the Depository one."
     },
     {
-      "code": 6054,
+      "code": 6056,
       "name": "InvalidRedeemableMint",
       "msg": "The Redeemable Mint provided does not match the Controller's one."
     },
     {
-      "code": 6055,
+      "code": 6057,
       "name": "InvalidDexMarket",
       "msg": "The provided perp_market is not the one tied to this Depository."
     },
     {
-      "code": 6056,
+      "code": 6058,
       "name": "InvalidOwner",
       "msg": "The provided token account is not owner by the expected party."
     },
     {
-      "code": 6057,
+      "code": 6059,
       "name": "InvalidMaxBaseQuantity",
       "msg": "The max base quantity must be above 0."
     },
     {
-      "code": 6058,
+      "code": 6060,
       "name": "InvalidMaxQuoteQuantity",
       "msg": "The max quote quantity must be above 0."
     },
     {
-      "code": 6059,
+      "code": 6061,
       "name": "InvalidMercurialVault",
       "msg": "The provided mercurial vault does not match the Depository's one."
     },
     {
-      "code": 6060,
+      "code": 6062,
+      "name": "InvalidMercurialVaultCollateralTokenSafe",
+      "msg": "The provided mercurial vault collateral token safe does not match the mercurial vault one."
+    },
+    {
+      "code": 6063,
       "name": "Default",
       "msg": "Default - Check the source code for more info."
     }
