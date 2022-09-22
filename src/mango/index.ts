@@ -22,11 +22,11 @@ import {
 import { Connection, PublicKey } from '@solana/web3.js';
 
 const MANGO_DEVNET_GROUP_TWO = 'devnet.2';
-const MANGO_MAINNET_GROUP_ONE = 'mainnet.1';
+export const MANGO_MAINNET_GROUP_ONE = 'mainnet.1';
 const MANGO_PROGRAM_ID_DEVNET = new PublicKey(
   '4skJ85cdxQAFVKbcGgfun8iZPL7BadVYXG3kGEGkufqA'
 );
-const MANGO_PROGRAM_ID_MAINNET = new PublicKey(
+export const MANGO_PROGRAM_ID_MAINNET = new PublicKey(
   'mv3ekLzLbnVPNxjSKvqBpU3ZeZXPQdEC3bp5MDEBG68'
 );
 
