@@ -1,4 +1,4 @@
-import { BN, BookSide, Cluster, Config, getPerpMarketByBaseSymbol, getPerpMarketByIndex, getTokenByMint, getTokenBySymbol, GroupConfig, I80F48, IDS, MangoAccount, MangoAccountLayout, MangoCache, MangoGroup, MangoGroupLayout, PerpMarket, PerpMarketConfig, PerpMarketLayout, uiToNative } from '@blockworks-foundation/mango-client';
+import { BN, BookSide, Cluster, Config, getPerpMarketByBaseSymbol, getPerpMarketByIndex, getTokenByMint, getTokenBySymbol, GroupConfig, I80F48, IDS, MangoAccount, MangoAccountLayout, MangoCache, MangoCacheLayout, MangoGroup, MangoGroupLayout, PerpMarket, PerpMarketConfig, PerpMarketLayout, uiToNative } from '@blockworks-foundation/mango-client';
 import { BorshAccountsCoder } from '@project-serum/anchor';
 import { PublicKey, AccountInfo } from '@solana/web3.js';
 import JSBI from "jsbi";
@@ -65,8 +65,10 @@ interface UxdMangoDepositoryMarketParams {
     mangoPerpMarketPda: PublicKey;
     mangoPerpMarketAsksPda: PublicKey;
     mangoPerpMarketBidsPda: PublicKey;
-
+    mangoPerpMarketIndex: number;
 }
+
+///// Here is the code to use to get the different PDA to fill the Params for the init
 
 // // Get Mango groupConfigPDA
 // MANGO_PROGRAM_ID_MAINNET
@@ -117,10 +119,13 @@ export class UxdMangoDepositoryMarket implements Amm {
     private mangoPerpMarketAsksPda: PublicKey;
     private mangoPerpMarketBidsPda: PublicKey;
 
+    private perpMarketIndex: number;
+
     private depository?: MangoDepositoryAccount;
     private controller?: ControllerAccount;
     private mangoAccount?: MangoAccount;
     private mangoGroup?: MangoGroup;
+    private mangoCache?: MangoCache;
     private perpMarket?: PerpMarket;
     private asks?: BookSide;
     private bids?: BookSide;
@@ -144,11 +149,21 @@ export class UxdMangoDepositoryMarket implements Amm {
         this.mangoPerpMarketPda = params.mangoPerpMarketPda;
         this.mangoPerpMarketAsksPda = params.mangoPerpMarketAsksPda;
         this.mangoPerpMarketBidsPda = params.mangoPerpMarketBidsPda;
+        this.perpMarketIndex = params.mangoPerpMarketIndex;
     }
 
     // Here, we will query for a list of PublicKey's in one call with `getMultipleAccountInfos`.
     getAccountsForUpdate(): PublicKey[] {
-        return [this.address, this.controllerPda, this.depositoryMangoAccountPda, this.mangoGroupPda, this.mangoCachePda, this.mangoPerpMarketPda, this.mangoPerpMarketAsksPda, this.mangoPerpMarketBidsPda];
+        return [
+            this.address,
+            this.controllerPda,
+            this.depositoryMangoAccountPda,
+            this.mangoGroupPda,
+            this.mangoCachePda,
+            this.mangoPerpMarketPda,
+            this.mangoPerpMarketAsksPda,
+            this.mangoPerpMarketBidsPda
+        ];
     }
 
     // Once we have the accountInfo's from the above call, we pass them into this method.
@@ -160,7 +175,9 @@ export class UxdMangoDepositoryMarket implements Amm {
         const mangoPerpMarketAccountInfo = accountInfoMap.get(this.mangoPerpMarketPda.toBase58());
         const mangoPerpMarketAsksAccountInfo = accountInfoMap.get(this.mangoPerpMarketAsksPda.toBase58());
         const mangoPerpMarketBidsAccountInfo = accountInfoMap.get(this.mangoPerpMarketBidsPda.toBase58());
-        if (!mangoDepositoryAccountInfo || !controllerAccountInfo || !depositoryMangoAccountAccountInfo || !mangoGroupAccountInfo || !mangoPerpMarketAccountInfo || !mangoPerpMarketAsksAccountInfo || !mangoPerpMarketBidsAccountInfo) {
+        const mangoCacheAccountInfo = accountInfoMap.get(this.mangoCachePda.toBase58());
+
+        if (!mangoDepositoryAccountInfo || !controllerAccountInfo || !depositoryMangoAccountAccountInfo || !mangoGroupAccountInfo || !mangoPerpMarketAccountInfo || !mangoPerpMarketAsksAccountInfo || !mangoPerpMarketBidsAccountInfo || !mangoCacheAccountInfo) {
             throw new Error("one of the required accounts is missing");
         }
         this.depository = this.decodeMangoDepositoryAccount(mangoDepositoryAccountInfo);
@@ -173,11 +190,12 @@ export class UxdMangoDepositoryMarket implements Amm {
         this.perpMarket = this.decodeMangoPerpMarket(this.mangoPerpMarketPda, this.mangoGroup.getTokenDecimals(baseTokenIndex), this.mangoGroup.getTokenDecimals(quoteTokenIndex), mangoPerpMarketAccountInfo);
         this.asks = this.decodeMangoBookSide(this.mangoPerpMarketAsksPda, this.perpMarket, mangoPerpMarketAsksAccountInfo, false);
         this.bids = this.decodeMangoBookSide(this.mangoPerpMarketBidsPda, this.perpMarket, mangoPerpMarketBidsAccountInfo, false);
+        this.mangoCache = this.decodeMangoCache(this.mangoCachePda, mangoCacheAccountInfo);
     }
 
     // Now we have the necessary data to calculate the Quote.
     getQuote({ sourceMint, destinationMint, amount }: QuoteParams): Quote {
-        if (!this.depository || !this.controller || !this.mangoAccount || !this.mangoGroup || !this.perpMarket || !this.asks || !this.bids) {
+        if (!this.depository || !this.controller || !this.mangoAccount || !this.mangoGroup || !this.perpMarket || !this.asks || !this.bids || !this.mangoCache) {
             throw new Error("update not ran yet"); // Maybe don't error here
         }
         let collateralMint = this.depository.collateralMint;
@@ -186,7 +204,7 @@ export class UxdMangoDepositoryMarket implements Amm {
         switch ([sourceMint, destinationMint]) {
             // Regular Mint
             case [collateralMint, redeemableMint]: {
-                return getRegularMintQuote(amount);
+                return getRegularMintQuote(amount, this.bids, this.mangoGroup, this.mangoCache, this.perpMarketIndex, this.mangoPerpMarketPda, this.depository.quoteMint);
             }
             // Regular Redeem
             case [redeemableMint, collateralMint]: {
@@ -275,6 +293,10 @@ export class UxdMangoDepositoryMarket implements Amm {
         );
     }
 
+    decodeMangoCache(address: PublicKey, accountInfo: AccountInfo<Buffer>): MangoCache {
+        return new MangoCache(address, MangoCacheLayout.decode(accountInfo.data));
+    }
+
     deriveRedeemableMint(): PublicKey {
         return PublicKey.findProgramAddressSync(
             [Buffer.from('REDEEMABLE')],
@@ -312,11 +334,10 @@ function perpOrderFees(
     return JSBI.multiply(amount, JSBI.divide(takerFeeRate, JSBI.BigInt(1)));
 }
 
-function perpPrice(mangoGroup: MangoGroup, mangoCache: MangoCache, perpMarketPda: PublicKey): I80F48 {
+function perpPrice(mangoGroup: MangoGroup, mangoCache: MangoCache, perpMarketPda: PublicKey): JSBI {
     let perpMarketIndex = mangoGroup.getPerpMarketIndex(perpMarketPda);
-    return mangoGroup.getPrice(perpMarketIndex, mangoCache);
+    return JSBI.BigInt(mangoGroup.getPrice(perpMarketIndex, mangoCache).toBig());
 }
-
 
 // Estimated amount of Redeemable (UXD) that will be given for Minting (Mint or RebalancingLite when PnlPolarity is positive)
 // `collateralQuantity` : In Collateral UI units
@@ -325,14 +346,46 @@ function getRegularMintQuote(
     inAmount: JSBI, // Collateral
     bids: BookSide,
     mangoGroup: MangoGroup,
+    mangoCache: MangoCache,
     marketIndex: number,
+    perpMarketPda: PublicKey,
+    feeMint: PublicKey,
 ): Quote {
-    const priceImpact = perpOrderPriceImpact(inAmount, bids);
-    const size = JSBI.multiply(inAmount, priceImpact);
-    const fees = perpOrderFees(collateralQuantity * price), mangoGroup, marketIndex);
-    const slippage = perfectAmount - realAmount - fees;
-    const finalYield = realAmount - fees;
-    return { yield: finalYield, fees, slippage };
+    // Current mid price (without any order quantity consideration)
+    const midPrice = perpPrice(mangoGroup, mangoCache, perpMarketPda);
+    // Order execution reached price, how much this order will move the price
+    let executionPrice;
+    try {
+        executionPrice = perpOrderPriceImpact(inAmount, bids);
+    } catch {
+        return {
+            notEnoughLiquidity: true,
+            inAmount: inAmount,
+            outAmount: JSBI.BigInt(0),
+            feeAmount: JSBI.BigInt(0),
+            feeMint: feeMint.toBase58(),
+            feePct: 0,
+            priceImpactPct: 0,
+        }
+    };
+    const midToExecutionPriceDelta = JSBI.subtract(executionPrice, midPrice);
+    const priceImpactPct = JSBI.divide(midToExecutionPriceDelta, midPrice);
+
+    // We calculate a worse case out amount, that isn't super precise, because the execution price is just the highest reached, not the average
+    const executionSizeEstimate = JSBI.multiply(inAmount, executionPrice);
+    const feeAmount = perpOrderFees(executionSizeEstimate, mangoGroup, marketIndex);
+    const feePct = JSBI.divide(feeAmount, inAmount);
+    const outAmountEstimate = JSBI.subtract(executionSizeEstimate, feeAmount);
+
+    return {
+        notEnoughLiquidity: false,
+        inAmount: inAmount,
+        outAmount: outAmountEstimate,
+        feeAmount: feeAmount,
+        feeMint: feeMint.toBase58(),
+        feePct: JSBI.toNumber(feePct),
+        priceImpactPct: JSBI.toNumber(priceImpactPct),
+    }
 }
 
 // // Estimated amount of Collateral (SOL/BTC/ETH) that will be given for Redeeming (Redeem or RebalancingLite when PnlPolarity is negative)
