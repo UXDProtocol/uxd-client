@@ -4,7 +4,7 @@ export {
   nativeI80F48ToUi,
   uiToNative,
 } from '@blockworks-foundation/mango-client';
-
+export * from "./jupiter/UxdMangoDepositoryMarket";
 export { UXDClient } from './client';
 export { Controller } from './controller';
 export { IDL } from './idl';

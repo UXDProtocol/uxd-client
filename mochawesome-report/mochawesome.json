@@ -1,0 +1,103 @@
+{
+  "stats": {
+    "suites": 1,
+    "tests": 1,
+    "passes": 1,
+    "pending": 0,
+    "failures": 0,
+    "start": "2022-09-23T11:14:25.637Z",
+    "end": "2022-09-23T11:14:27.379Z",
+    "duration": 1742,
+    "testsRegistered": 1,
+    "passPercent": 100,
+    "pendingPercent": 0,
+    "other": 0,
+    "hasOther": false,
+    "skipped": 0,
+    "hasSkipped": false
+  },
+  "results": [
+    {
+      "uuid": "b4478b62-bea7-4d72-b44a-7a701ce96777",
+      "title": "",
+      "fullFile": "/Users/gregoryneut/work/acamm/uxd-client/tests/jupiter_integration.ts",
+      "file": "/tests/jupiter_integration.ts",
+      "beforeHooks": [],
+      "afterHooks": [],
+      "tests": [],
+      "suites": [
+        {
+          "uuid": "1d82591b-bdda-41a4-b1ab-e29f1726eb07",
+          "title": "Jupiter integration test",
+          "fullFile": "/Users/gregoryneut/work/acamm/uxd-client/tests/jupiter_integration.ts",
+          "file": "/tests/jupiter_integration.ts",
+          "beforeHooks": [],
+          "afterHooks": [],
+          "tests": [
+            {
+              "title": "Show price",
+              "fullTitle": "Jupiter integration test Show price",
+              "timedOut": false,
+              "duration": 1736,
+              "state": "passed",
+              "speed": "slow",
+              "pass": true,
+              "fail": false,
+              "pending": false,
+              "context": null,
+              "code": "console.log(`-> Initialize the connection with the RPC ${RPC} ...`);\nconst connection = new web3_js_1.Connection(RPC, 'processed');\nconst solMangoDepositoryPda = new web3_js_1.PublicKey('FHUaC5eXkbSFAmDk4jTsReX9XAKEtDfu34uTpMMUipmp');\nconst solMangoDepositoryAccountInfo = await connection.getAccountInfo(solMangoDepositoryPda);\nif (!solMangoDepositoryAccountInfo) {\n    throw new Error('cannot load sol mango depository account info');\n}\nconst MANGO_MAINNET_GROUP_ONE = 'mainnet.1';\nconst MANGO_PROGRAM_ID_MAINNET = new web3_js_1.PublicKey('mv3ekLzLbnVPNxjSKvqBpU3ZeZXPQdEC3bp5MDEBG68');\nconst mangoConfig = new mango_client_1.Config(mango_client_1.IDS);\nconst mangoCluster = 'mainnet';\nconst mangoGroupName = MANGO_MAINNET_GROUP_ONE;\nconst groupConfig = mangoConfig.getGroup(mangoCluster, mangoGroupName);\nif (!groupConfig) {\n    throw new Error('unable to get mango group config');\n}\nconst mangoGroupPda = groupConfig.publicKey;\nconst perpMarketConfig = (0, mango_client_1.getPerpMarketByBaseSymbol)(groupConfig, 'SOL');\nif (!perpMarketConfig) {\n    throw new Error('perpMarket not found');\n}\nconst client = new mango_client_1.MangoClient(connection, MANGO_PROGRAM_ID_MAINNET);\nconst mangoGroup = await client.getMangoGroup(mangoGroupPda);\nconst uxdMangoDepositoryMarket = new UxdMangoDepositoryMarket_1.UxdMangoDepositoryMarket(solMangoDepositoryPda, solMangoDepositoryAccountInfo, {\n    collateralMint: spl_token_1.NATIVE_MINT,\n    uxdProgramId: new web3_js_1.PublicKey('UXD8m9cvwk4RcSxnX2HZ9VudQCEeDH6fRnB4CAP57Dr'),\n    mangoCachePda: mangoGroup.mangoCache,\n    mangoGroupPda,\n    mangoPerpMarketPda: perpMarketConfig.publicKey,\n    mangoPerpMarketAsksPda: perpMarketConfig.asksKey,\n    mangoPerpMarketBidsPda: perpMarketConfig.bidsKey,\n    mangoPerpMarketIndex: perpMarketConfig.marketIndex,\n});\nconst accountsToLoad = uxdMangoDepositoryMarket.getAccountsForUpdate();\nconst accountsInfo = await Promise.all(accountsToLoad.map(address => connection.getAccountInfo(address)));\nconst accountsInfoMap = new Map();\naccountsInfo.forEach((accountInfo, index) => {\n    accountsInfoMap.set(accountsToLoad[index].toBase58(), accountInfo);\n});\nuxdMangoDepositoryMarket.update(accountsInfoMap);\nconst quote = uxdMangoDepositoryMarket.getQuote({\n    sourceMint: src_1.WSOL,\n    destinationMint: src_1.UXD,\n    amount: jsbi_1.default.BigInt(1000000),\n    swapMode: types_1.SwapMode.ExactIn,\n});\n(0, chai_1.expect)(true).equals(true);\nconsole.log('Quote', {\n    notEnoughLiquidity: quote.notEnoughLiquidity,\n    inAmount: quote.inAmount.toString(),\n    outAmount: quote.outAmount.toString(),\n    feeAmount: quote.feeAmount.toString(),\n    feeMint: quote.feeMint,\n    feePct: quote.feePct,\n    priceImpactPct: quote.priceImpactPct,\n});\n/*\nconsole.log(`-> Load jupiter client ...`);\n    \nconst jupiter = await Jupiter.load({\n    connection,\n    cluster: 'mainnet-beta',\n    user: wallet.publicKey,\n    routeCacheDuration: 10_000, // Will not refetch data on computeRoutes for up to 10 seconds\n});\n    \nconst [uxdATA] = findATAAddrSync(wallet.publicKey, UXD);\nconst [btcATA] = findATAAddrSync(wallet.publicKey, BTC);\nconst [usdcATA] = findATAAddrSync(wallet.publicKey, USDC);\n    \nconst routes = await jupiter.computeRoutes({\n    inputMint: WRAPPED_SOL_MINT, // Mint address of the input token\n    outputMint: UXD, // Mint address of the output token\n    amount: JSBI.BigInt(1), // raw input amount of tokens\n    slippage: 1, // The slippage in % terms\n    forceFetch: true, // false is the default value => will use cache if not older than routeCacheDuration\n    onlyDirectRoutes: true,\n});\n    \nconsole.log('routes', JSON.stringify(routes, null, 5));*/\n// ...",
+              "err": {},
+              "uuid": "d7e2f0bc-6e0c-4361-a2a6-45f21d1387bd",
+              "parentUUID": "1d82591b-bdda-41a4-b1ab-e29f1726eb07",
+              "isHook": false,
+              "skipped": false
+            }
+          ],
+          "suites": [],
+          "passes": [
+            "d7e2f0bc-6e0c-4361-a2a6-45f21d1387bd"
+          ],
+          "failures": [],
+          "pending": [],
+          "skipped": [],
+          "duration": 1736,
+          "root": false,
+          "rootEmpty": false,
+          "_timeout": 500000
+        }
+      ],
+      "passes": [],
+      "failures": [],
+      "pending": [],
+      "skipped": [],
+      "duration": 0,
+      "root": true,
+      "rootEmpty": true,
+      "_timeout": 500000
+    }
+  ],
+  "meta": {
+    "mocha": {
+      "version": "9.2.2"
+    },
+    "mochawesome": {
+      "options": {
+        "quiet": true,
+        "reportFilename": "mochawesome",
+        "saveHtml": true,
+        "saveJson": true,
+        "consoleReporter": "spec",
+        "useInlineDiffs": false,
+        "code": true
+      },
+      "version": "7.1.3"
+    },
+    "marge": {
+      "options": {
+        "quiet": "true",
+        "reportTitle": "uxdclient-test_integration"
+      },
+      "version": "6.2.0"
+    }
+  }
+}
