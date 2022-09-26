@@ -1,5 +1,5 @@
 export type Uxd = {
-  "version": "3.1.0",
+  "version": "4.0.0",
   "name": "uxd",
   "instructions": [
     {
@@ -49,7 +49,7 @@ export type Uxd = {
       ]
     },
     {
-      "name": "setRedeemableGlobalSupplyCap",
+      "name": "editController",
       "accounts": [
         {
           "name": "authority",
@@ -64,50 +64,10 @@ export type Uxd = {
       ],
       "args": [
         {
-          "name": "redeemableGlobalSupplyCap",
-          "type": "u128"
-        }
-      ]
-    },
-    {
-      "name": "setMangoDepositoriesRedeemableSoftCap",
-      "accounts": [
-        {
-          "name": "authority",
-          "isMut": false,
-          "isSigner": true
-        },
-        {
-          "name": "controller",
-          "isMut": true,
-          "isSigner": false
-        }
-      ],
-      "args": [
-        {
-          "name": "redeemableSoftCap",
-          "type": "u64"
-        }
-      ]
-    },
-    {
-      "name": "setMangoDepositoryQuoteMintAndRedeemSoftCap",
-      "accounts": [
-        {
-          "name": "authority",
-          "isMut": false,
-          "isSigner": true
-        },
-        {
-          "name": "controller",
-          "isMut": true,
-          "isSigner": false
-        }
-      ],
-      "args": [
-        {
-          "name": "quoteMintAndRedeemSoftCap",
-          "type": "u64"
+          "name": "fields",
+          "type": {
+            "defined": "EditControllerFields"
+          }
         }
       ]
     },
@@ -799,17 +759,7 @@ export type Uxd = {
           "isSigner": false
         },
         {
-          "name": "associatedTokenProgram",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
           "name": "mangoProgram",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "rent",
           "isMut": false,
           "isSigner": false
         }
@@ -915,17 +865,7 @@ export type Uxd = {
           "isSigner": false
         },
         {
-          "name": "associatedTokenProgram",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
           "name": "mangoProgram",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "rent",
           "isMut": false,
           "isSigner": false
         }
@@ -938,7 +878,7 @@ export type Uxd = {
       ]
     },
     {
-      "name": "setMangoDepositoryQuoteMintAndRedeemFee",
+      "name": "editMangoDepository",
       "accounts": [
         {
           "name": "authority",
@@ -958,8 +898,10 @@ export type Uxd = {
       ],
       "args": [
         {
-          "name": "quoteFee",
-          "type": "u8"
+          "name": "fields",
+          "type": {
+            "defined": "EditMangoDepositoryFields"
+          }
         }
       ]
     },
@@ -1489,6 +1431,46 @@ export type Uxd = {
   ],
   "types": [
     {
+      "name": "EditControllerFields",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "quoteMintAndRedeemSoftCap",
+            "type": {
+              "option": "u64"
+            }
+          },
+          {
+            "name": "redeemableSoftCap",
+            "type": {
+              "option": "u64"
+            }
+          },
+          {
+            "name": "redeemableGlobalSupplyCap",
+            "type": {
+              "option": "u128"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "EditMangoDepositoryFields",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "quoteMintAndRedeemFee",
+            "type": {
+              "option": "u8"
+            }
+          }
+        ]
+      }
+    },
+    {
       "name": "PnlPolarity",
       "type": {
         "kind": "enum",
@@ -1625,20 +1607,30 @@ export type Uxd = {
         {
           "name": "version",
           "type": "u8",
-          "index": false
+          "index": true
         },
         {
           "name": "depositoryVersion",
           "type": "u8",
-          "index": false
+          "index": true
         },
         {
           "name": "controller",
           "type": "publicKey",
-          "index": false
+          "index": true
         },
         {
           "name": "depository",
+          "type": "publicKey",
+          "index": true
+        },
+        {
+          "name": "mercurialVault",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "depositoryLpTokenVault",
           "type": "publicKey",
           "index": false
         },
@@ -1835,7 +1827,7 @@ export type Uxd = {
       ]
     },
     {
-      "name": "RedeemFromDepositoryEvent",
+      "name": "RedeemFromMangoDepositoryEvent",
       "fields": [
         {
           "name": "version",
@@ -1947,6 +1939,146 @@ export type Uxd = {
         {
           "name": "feeDelta",
           "type": "i64",
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "SetMangoDepositoryQuoteMintAndRedeemSoftCapEvent",
+      "fields": [
+        {
+          "name": "version",
+          "type": "u8",
+          "index": false
+        },
+        {
+          "name": "controller",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "quoteMintAndRedeemSoftCap",
+          "type": "u64",
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "SetMangoDepositoryQuoteMintAndRedeemFeeEvent",
+      "fields": [
+        {
+          "name": "version",
+          "type": "u8",
+          "index": false
+        },
+        {
+          "name": "controller",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "depository",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "quoteMintAndRedeemFee",
+          "type": "u8",
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "QuoteRedeemFromMangoDepositoryEvent",
+      "fields": [
+        {
+          "name": "version",
+          "type": "u8",
+          "index": false
+        },
+        {
+          "name": "controller",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "depository",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "user",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "quoteRedeemableAmount",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "quoteRedeemFee",
+          "type": "u64",
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "QuoteMintWithMangoDepositoryEvent",
+      "fields": [
+        {
+          "name": "version",
+          "type": "u8",
+          "index": false
+        },
+        {
+          "name": "controller",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "depository",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "user",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "quoteMintAmount",
+          "type": "u64",
+          "index": false
+        },
+        {
+          "name": "quoteMintFee",
+          "type": "u64",
+          "index": false
+        }
+      ]
+    },
+    {
+      "name": "DisableDepositoryRegularMintingEvent",
+      "fields": [
+        {
+          "name": "version",
+          "type": "u8",
+          "index": false
+        },
+        {
+          "name": "controller",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "depository",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "regularMintingDisabled",
+          "type": "bool",
           "index": false
         }
       ]
@@ -2170,106 +2302,101 @@ export type Uxd = {
     },
     {
       "code": 6043,
-      "name": "InvalidMercurialVaultCollateralMint",
-      "msg": "The mercurial vault collateral mint does not match the Depository's one."
-    },
-    {
-      "code": 6044,
       "name": "MaxNumberOfMercurialVaultDepositoriesRegisteredReached",
       "msg": "Cannot register more mercurial vault depositories, the limit has been reached."
     },
     {
-      "code": 6045,
+      "code": 6044,
       "name": "MercurialVaultDoNotMatchCollateral",
       "msg": "The provided collateral do not match the provided mercurial vault token."
     },
     {
+      "code": 6045,
+      "name": "CollateralMintEqualToRedeemableMint",
+      "msg": "Collateral mint should be different than redeemable mint."
+    },
+    {
       "code": 6046,
-      "name": "ClockError",
-      "msg": "Cannot access solana clock"
-    },
-    {
-      "code": 6047,
-      "name": "CollateralEqualToRedeemable",
-      "msg": "Collateral should be different than redeemable."
-    },
-    {
-      "code": 6048,
       "name": "CollateralMintNotAllowed",
       "msg": "Provided collateral mint is not allowed."
     },
     {
-      "code": 6049,
-      "name": "MinimumRedeemingFeeError",
-      "msg": "Provided redeeming fee is lower than the minimum redeeming fee."
+      "code": 6047,
+      "name": "MinimumMintedRedeemableAmountError",
+      "msg": "Mint resulted to 0 redeemable token being minted."
     },
     {
-      "code": 6050,
+      "code": 6048,
+      "name": "MinimumRedeemedCollateralAmountError",
+      "msg": "Redeem resulted to 0 collateral token being redeemed."
+    },
+    {
+      "code": 6049,
       "name": "InvalidAuthority",
       "msg": "Only the Program initializer authority can access this instructions."
     },
     {
-      "code": 6051,
+      "code": 6050,
       "name": "InvalidController",
       "msg": "The Depository's controller doesn't match the provided Controller."
     },
     {
-      "code": 6052,
+      "code": 6051,
       "name": "InvalidDepository",
       "msg": "The Depository provided is not registered with the Controller."
     },
     {
-      "code": 6053,
+      "code": 6052,
       "name": "InvalidCollateralMint",
       "msg": "The provided collateral mint does not match the depository's collateral mint."
     },
     {
-      "code": 6054,
+      "code": 6053,
       "name": "InvalidQuoteMint",
       "msg": "The provided quote mint does not match the depository's quote mint."
     },
     {
-      "code": 6055,
+      "code": 6054,
       "name": "InvalidMangoAccount",
       "msg": "The Mango Account isn't the Depository one."
     },
     {
-      "code": 6056,
+      "code": 6055,
       "name": "InvalidRedeemableMint",
       "msg": "The Redeemable Mint provided does not match the Controller's one."
     },
     {
-      "code": 6057,
+      "code": 6056,
       "name": "InvalidDexMarket",
       "msg": "The provided perp_market is not the one tied to this Depository."
     },
     {
-      "code": 6058,
+      "code": 6057,
       "name": "InvalidOwner",
       "msg": "The provided token account is not owner by the expected party."
     },
     {
-      "code": 6059,
+      "code": 6058,
       "name": "InvalidMaxBaseQuantity",
       "msg": "The max base quantity must be above 0."
     },
     {
-      "code": 6060,
+      "code": 6059,
       "name": "InvalidMaxQuoteQuantity",
       "msg": "The max quote quantity must be above 0."
     },
     {
-      "code": 6061,
+      "code": 6060,
       "name": "InvalidMercurialVault",
       "msg": "The provided mercurial vault does not match the Depository's one."
     },
     {
-      "code": 6062,
+      "code": 6061,
       "name": "InvalidMercurialVaultCollateralTokenSafe",
       "msg": "The provided mercurial vault collateral token safe does not match the mercurial vault one."
     },
     {
-      "code": 6063,
+      "code": 6062,
       "name": "Default",
       "msg": "Default - Check the source code for more info."
     }
@@ -2277,7 +2404,7 @@ export type Uxd = {
 };
 
 export const IDL: Uxd = {
-  "version": "3.1.0",
+  "version": "4.0.0",
   "name": "uxd",
   "instructions": [
     {
@@ -2327,8 +2454,8 @@ export const IDL: Uxd = {
       ]
     },
     {
-      name: 'editController',
-      accounts: [
+      "name": "editController",
+      "accounts": [
         {
           "name": "authority",
           "isMut": false,
@@ -2342,12 +2469,12 @@ export const IDL: Uxd = {
       ],
       "args": [
         {
-          name: 'fields',
-          type: {
-            defined: 'EditControllerFields',
-          },
-        },
-      ],
+          "name": "fields",
+          "type": {
+            "defined": "EditControllerFields"
+          }
+        }
+      ]
     },
     {
       "name": "registerMangoDepository",
@@ -3037,10 +3164,10 @@ export const IDL: Uxd = {
           "isSigner": false
         },
         {
-          name: 'mangoProgram',
-          isMut: false,
-          isSigner: false,
-        },
+          "name": "mangoProgram",
+          "isMut": false,
+          "isSigner": false
+        }
       ],
       "args": [
         {
@@ -3143,20 +3270,43 @@ export const IDL: Uxd = {
           "isSigner": false
         },
         {
-          "name": "associatedTokenProgram",
+          "name": "mangoProgram",
           "isMut": false,
           "isSigner": false
-        },
-        {
-          name: 'mangoProgram',
-          isMut: false,
-          isSigner: false,
-        },
+        }
       ],
       "args": [
         {
-          "name": "quoteFee",
-          "type": "u8"
+          "name": "redeemableAmount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "editMangoDepository",
+      "accounts": [
+        {
+          "name": "authority",
+          "isMut": false,
+          "isSigner": true
+        },
+        {
+          "name": "controller",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "depository",
+          "isMut": true,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "fields",
+          "type": {
+            "defined": "EditMangoDepositoryFields"
+          }
         }
       ]
     },
@@ -3187,8 +3337,8 @@ export const IDL: Uxd = {
       ]
     },
     {
-      name: 'editMangoDepository',
-      accounts: [
+      "name": "mintWithMercurialVault",
+      "accounts": [
         {
           "name": "user",
           "isMut": false,
@@ -3260,13 +3410,7 @@ export const IDL: Uxd = {
           "isSigner": false
         },
         {
-          name: 'fields',
-          type: {
-            defined: 'EditMangoDepositoryFields',
-          },
-        },
-        {
-          "name": "mercurialPoolProgram",
+          "name": "tokenProgram",
           "isMut": false,
           "isSigner": false
         }
@@ -3692,6 +3836,46 @@ export const IDL: Uxd = {
   ],
   "types": [
     {
+      "name": "EditControllerFields",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "quoteMintAndRedeemSoftCap",
+            "type": {
+              "option": "u64"
+            }
+          },
+          {
+            "name": "redeemableSoftCap",
+            "type": {
+              "option": "u64"
+            }
+          },
+          {
+            "name": "redeemableGlobalSupplyCap",
+            "type": {
+              "option": "u128"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "EditMangoDepositoryFields",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "quoteMintAndRedeemFee",
+            "type": {
+              "option": "u8"
+            }
+          }
+        ]
+      }
+    },
+    {
       "name": "PnlPolarity",
       "type": {
         "kind": "enum",
@@ -3828,20 +4012,30 @@ export const IDL: Uxd = {
         {
           "name": "version",
           "type": "u8",
-          "index": false
+          "index": true
         },
         {
           "name": "depositoryVersion",
           "type": "u8",
-          "index": false
+          "index": true
         },
         {
           "name": "controller",
           "type": "publicKey",
-          "index": false
+          "index": true
         },
         {
           "name": "depository",
+          "type": "publicKey",
+          "index": true
+        },
+        {
+          "name": "mercurialVault",
+          "type": "publicKey",
+          "index": false
+        },
+        {
+          "name": "depositoryLpTokenVault",
           "type": "publicKey",
           "index": false
         },
@@ -4038,8 +4232,8 @@ export const IDL: Uxd = {
       ]
     },
     {
-      name: 'RedeemFromMangoDepositoryEvent',
-      fields: [
+      "name": "RedeemFromMangoDepositoryEvent",
+      "fields": [
         {
           "name": "version",
           "type": "u8",
@@ -4148,152 +4342,152 @@ export const IDL: Uxd = {
           "index": false
         },
         {
-          name: 'feeDelta',
-          type: 'i64',
-          index: false,
-        },
-      ],
+          "name": "feeDelta",
+          "type": "i64",
+          "index": false
+        }
+      ]
     },
     {
-      name: 'SetMangoDepositoryQuoteMintAndRedeemSoftCapEvent',
-      fields: [
+      "name": "SetMangoDepositoryQuoteMintAndRedeemSoftCapEvent",
+      "fields": [
         {
-          name: 'version',
-          type: 'u8',
-          index: false,
+          "name": "version",
+          "type": "u8",
+          "index": false
         },
         {
-          name: 'controller',
-          type: 'publicKey',
-          index: false,
+          "name": "controller",
+          "type": "publicKey",
+          "index": false
         },
         {
-          name: 'quoteMintAndRedeemSoftCap',
-          type: 'u64',
-          index: false,
-        },
-      ],
+          "name": "quoteMintAndRedeemSoftCap",
+          "type": "u64",
+          "index": false
+        }
+      ]
     },
     {
-      name: 'SetMangoDepositoryQuoteMintAndRedeemFeeEvent',
-      fields: [
+      "name": "SetMangoDepositoryQuoteMintAndRedeemFeeEvent",
+      "fields": [
         {
-          name: 'version',
-          type: 'u8',
-          index: false,
+          "name": "version",
+          "type": "u8",
+          "index": false
         },
         {
-          name: 'controller',
-          type: 'publicKey',
-          index: false,
+          "name": "controller",
+          "type": "publicKey",
+          "index": false
         },
         {
-          name: 'depository',
-          type: 'publicKey',
-          index: false,
+          "name": "depository",
+          "type": "publicKey",
+          "index": false
         },
         {
-          name: 'quoteMintAndRedeemFee',
-          type: 'u8',
-          index: false,
-        },
-      ],
+          "name": "quoteMintAndRedeemFee",
+          "type": "u8",
+          "index": false
+        }
+      ]
     },
     {
-      name: 'QuoteRedeemFromMangoDepositoryEvent',
-      fields: [
+      "name": "QuoteRedeemFromMangoDepositoryEvent",
+      "fields": [
         {
-          name: 'version',
-          type: 'u8',
-          index: false,
+          "name": "version",
+          "type": "u8",
+          "index": false
         },
         {
-          name: 'controller',
-          type: 'publicKey',
-          index: false,
+          "name": "controller",
+          "type": "publicKey",
+          "index": false
         },
         {
-          name: 'depository',
-          type: 'publicKey',
-          index: false,
+          "name": "depository",
+          "type": "publicKey",
+          "index": false
         },
         {
-          name: 'user',
-          type: 'publicKey',
-          index: false,
+          "name": "user",
+          "type": "publicKey",
+          "index": false
         },
         {
-          name: 'quoteRedeemableAmount',
-          type: 'u64',
-          index: false,
+          "name": "quoteRedeemableAmount",
+          "type": "u64",
+          "index": false
         },
         {
-          name: 'quoteRedeemFee',
-          type: 'u64',
-          index: false,
-        },
-      ],
+          "name": "quoteRedeemFee",
+          "type": "u64",
+          "index": false
+        }
+      ]
     },
     {
-      name: 'QuoteMintWithMangoDepositoryEvent',
-      fields: [
+      "name": "QuoteMintWithMangoDepositoryEvent",
+      "fields": [
         {
-          name: 'version',
-          type: 'u8',
-          index: false,
+          "name": "version",
+          "type": "u8",
+          "index": false
         },
         {
-          name: 'controller',
-          type: 'publicKey',
-          index: false,
+          "name": "controller",
+          "type": "publicKey",
+          "index": false
         },
         {
-          name: 'depository',
-          type: 'publicKey',
-          index: false,
+          "name": "depository",
+          "type": "publicKey",
+          "index": false
         },
         {
-          name: 'user',
-          type: 'publicKey',
-          index: false,
+          "name": "user",
+          "type": "publicKey",
+          "index": false
         },
         {
-          name: 'quoteMintAmount',
-          type: 'u64',
-          index: false,
+          "name": "quoteMintAmount",
+          "type": "u64",
+          "index": false
         },
         {
-          name: 'quoteMintFee',
-          type: 'u64',
-          index: false,
-        },
-      ],
+          "name": "quoteMintFee",
+          "type": "u64",
+          "index": false
+        }
+      ]
     },
     {
-      name: 'DisableDepositoryRegularMintingEvent',
-      fields: [
+      "name": "DisableDepositoryRegularMintingEvent",
+      "fields": [
         {
-          name: 'version',
-          type: 'u8',
-          index: false,
+          "name": "version",
+          "type": "u8",
+          "index": false
         },
         {
-          name: 'controller',
-          type: 'publicKey',
-          index: false,
+          "name": "controller",
+          "type": "publicKey",
+          "index": false
         },
         {
-          name: 'depository',
-          type: 'publicKey',
-          index: false,
+          "name": "depository",
+          "type": "publicKey",
+          "index": false
         },
         {
-          name: 'regularMintingDisabled',
-          type: 'bool',
-          index: false,
-        },
-      ],
-    },
+          "name": "regularMintingDisabled",
+          "type": "bool",
+          "index": false
+        }
+      ]
+    }
   ],
   "errors": [
     {
@@ -4513,106 +4707,101 @@ export const IDL: Uxd = {
     },
     {
       "code": 6043,
-      "name": "InvalidMercurialVaultCollateralMint",
-      "msg": "The mercurial vault collateral mint does not match the Depository's one."
-    },
-    {
-      "code": 6044,
       "name": "MaxNumberOfMercurialVaultDepositoriesRegisteredReached",
       "msg": "Cannot register more mercurial vault depositories, the limit has been reached."
     },
     {
-      "code": 6045,
+      "code": 6044,
       "name": "MercurialVaultDoNotMatchCollateral",
       "msg": "The provided collateral do not match the provided mercurial vault token."
     },
     {
+      "code": 6045,
+      "name": "CollateralMintEqualToRedeemableMint",
+      "msg": "Collateral mint should be different than redeemable mint."
+    },
+    {
       "code": 6046,
-      "name": "ClockError",
-      "msg": "Cannot access solana clock"
-    },
-    {
-      "code": 6047,
-      "name": "CollateralEqualToRedeemable",
-      "msg": "Collateral should be different than redeemable."
-    },
-    {
-      "code": 6048,
       "name": "CollateralMintNotAllowed",
       "msg": "Provided collateral mint is not allowed."
     },
     {
-      "code": 6049,
-      "name": "MinimumRedeemingFeeError",
-      "msg": "Provided redeeming fee is lower than the minimum redeeming fee."
+      "code": 6047,
+      "name": "MinimumMintedRedeemableAmountError",
+      "msg": "Mint resulted to 0 redeemable token being minted."
     },
     {
-      "code": 6050,
+      "code": 6048,
+      "name": "MinimumRedeemedCollateralAmountError",
+      "msg": "Redeem resulted to 0 collateral token being redeemed."
+    },
+    {
+      "code": 6049,
       "name": "InvalidAuthority",
       "msg": "Only the Program initializer authority can access this instructions."
     },
     {
-      "code": 6051,
+      "code": 6050,
       "name": "InvalidController",
       "msg": "The Depository's controller doesn't match the provided Controller."
     },
     {
-      "code": 6052,
+      "code": 6051,
       "name": "InvalidDepository",
       "msg": "The Depository provided is not registered with the Controller."
     },
     {
-      "code": 6053,
+      "code": 6052,
       "name": "InvalidCollateralMint",
       "msg": "The provided collateral mint does not match the depository's collateral mint."
     },
     {
-      "code": 6054,
+      "code": 6053,
       "name": "InvalidQuoteMint",
       "msg": "The provided quote mint does not match the depository's quote mint."
     },
     {
-      "code": 6055,
+      "code": 6054,
       "name": "InvalidMangoAccount",
       "msg": "The Mango Account isn't the Depository one."
     },
     {
-      "code": 6056,
+      "code": 6055,
       "name": "InvalidRedeemableMint",
       "msg": "The Redeemable Mint provided does not match the Controller's one."
     },
     {
-      "code": 6057,
+      "code": 6056,
       "name": "InvalidDexMarket",
       "msg": "The provided perp_market is not the one tied to this Depository."
     },
     {
-      "code": 6058,
+      "code": 6057,
       "name": "InvalidOwner",
       "msg": "The provided token account is not owner by the expected party."
     },
     {
-      "code": 6059,
+      "code": 6058,
       "name": "InvalidMaxBaseQuantity",
       "msg": "The max base quantity must be above 0."
     },
     {
-      "code": 6060,
+      "code": 6059,
       "name": "InvalidMaxQuoteQuantity",
       "msg": "The max quote quantity must be above 0."
     },
     {
-      "code": 6061,
+      "code": 6060,
       "name": "InvalidMercurialVault",
       "msg": "The provided mercurial vault does not match the Depository's one."
     },
     {
-      "code": 6062,
+      "code": 6061,
       "name": "InvalidMercurialVaultCollateralTokenSafe",
       "msg": "The provided mercurial vault collateral token safe does not match the mercurial vault one."
     },
     {
-      "code": 6063,
+      "code": 6062,
       "name": "Default",
       "msg": "Default - Check the source code for more info."
     }

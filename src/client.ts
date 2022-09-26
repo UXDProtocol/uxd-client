@@ -1,5 +1,5 @@
 import { uiToNative, I80F48 } from '@blockworks-foundation/mango-client';
-import { BN, InstructionNamespace } from '@project-serum/anchor';
+import { InstructionNamespace } from '@project-serum/anchor';
 import { TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import {
   SystemProgram,
@@ -136,9 +136,9 @@ export class UXDClient {
         payer: payer ?? authority,
         controller: controller.pda,
         depository: depository.pda,
-        collateralMint: depository.collateralMint.mint,
         mercurialVault: depository.mercurialVault,
         mercurialVaultLpMint: depository.mercurialVaultLpMint.mint,
+        collateralMint: depository.collateralMint.mint,
         depositoryLpTokenVault: depository.depositoryLpTokenVault,
         systemProgram: SystemProgram.programId,
         tokenProgram: TOKEN_PROGRAM_ID,
