@@ -34,18 +34,21 @@ export class UXDClient {
     options: ConfirmOptions,
     payer?: PublicKey
   ): TransactionInstruction {
-    return this.instruction.initializeController(controller.redeemableMintDecimals, {
-      accounts: {
-        authority,
-        payer: payer ?? authority,
-        controller: controller.pda,
-        redeemableMint: controller.redeemableMintPda,
-        systemProgram: SystemProgram.programId,
-        tokenProgram: TOKEN_PROGRAM_ID,
-        rent: SYSVAR_RENT_PUBKEY,
-      },
-      options,
-    });
+    return this.instruction.initializeController(
+      controller.redeemableMintDecimals,
+      {
+        accounts: {
+          authority,
+          payer: payer ?? authority,
+          controller: controller.pda,
+          redeemableMint: controller.redeemableMintPda,
+          systemProgram: SystemProgram.programId,
+          tokenProgram: TOKEN_PROGRAM_ID,
+          rent: SYSVAR_RENT_PUBKEY,
+        },
+        options,
+      }
+    );
   }
 
   public createEditControllerInstruction(
@@ -69,9 +72,9 @@ export class UXDClient {
     const fields = {
       quoteMintAndRedeemSoftCap: quoteMintAndRedeemSoftCap
         ? uiToNative(
-          quoteMintAndRedeemSoftCap.value,
-          quoteMintAndRedeemSoftCap.depository.quoteMintDecimals // special case
-        )
+            quoteMintAndRedeemSoftCap.value,
+            quoteMintAndRedeemSoftCap.depository.quoteMintDecimals // special case
+          )
         : null,
       redeemableSoftCap:
         redeemableSoftCap !== undefined
@@ -80,9 +83,9 @@ export class UXDClient {
       redeemableGlobalSupplyCap:
         redeemableGlobalSupplyCap !== undefined
           ? uiToNative(
-            redeemableGlobalSupplyCap,
-            controller.redeemableMintDecimals
-          )
+              redeemableGlobalSupplyCap,
+              controller.redeemableMintDecimals
+            )
           : null,
     };
     return this.instruction.editController(fields, {
@@ -130,22 +133,26 @@ export class UXDClient {
     redeemingFeeInBps: number,
     payer?: PublicKey
   ): TransactionInstruction {
-    return this.instruction.registerMercurialVaultDepository(mintingFeeInBps, redeemingFeeInBps, {
-      accounts: {
-        authority,
-        payer: payer ?? authority,
-        controller: controller.pda,
-        depository: depository.pda,
-        mercurialVault: depository.mercurialVault,
-        mercurialVaultLpMint: depository.mercurialVaultLpMint.mint,
-        collateralMint: depository.collateralMint.mint,
-        depositoryLpTokenVault: depository.depositoryLpTokenVault,
-        systemProgram: SystemProgram.programId,
-        tokenProgram: TOKEN_PROGRAM_ID,
-        rent: SYSVAR_RENT_PUBKEY,
-      },
-      options,
-    });
+    return this.instruction.registerMercurialVaultDepository(
+      mintingFeeInBps,
+      redeemingFeeInBps,
+      {
+        accounts: {
+          authority,
+          payer: payer ?? authority,
+          controller: controller.pda,
+          depository: depository.pda,
+          mercurialVault: depository.mercurialVault,
+          mercurialVaultLpMint: depository.mercurialVaultLpMint.mint,
+          collateralMint: depository.collateralMint.mint,
+          depositoryLpTokenVault: depository.depositoryLpTokenVault,
+          systemProgram: SystemProgram.programId,
+          tokenProgram: TOKEN_PROGRAM_ID,
+          rent: SYSVAR_RENT_PUBKEY,
+        },
+        options,
+      }
+    );
   }
 
   public createMintWithMercurialVaultInstruction(
@@ -161,13 +168,10 @@ export class UXDClient {
       depository.collateralMint.decimals
     );
 
-    const [
-      [userCollateralATA],
-      [userRedeemableATA],
-    ] = findMultipleATAAddSync(authority, [
-      depository.collateralMint.mint,
-      controller.redeemableMintPda,
-    ]);
+    const [[userCollateralATA], [userRedeemableATA]] = findMultipleATAAddSync(
+      authority,
+      [depository.collateralMint.mint, controller.redeemableMintPda]
+    );
 
     return this.instruction.mintWithMercurialVault(nativeCollateralAmount, {
       accounts: {
@@ -182,7 +186,8 @@ export class UXDClient {
         mercurialVault: depository.mercurialVault,
         mercurialVaultLpMint: depository.mercurialVaultLpMint.mint,
         depositoryLpTokenVault: depository.depositoryLpTokenVault,
-        mercurialVaultCollateralTokenSafe: depository.mercurialVaultCollateralTokenSafe,
+        mercurialVaultCollateralTokenSafe:
+          depository.mercurialVaultCollateralTokenSafe,
         mercurialVaultProgram: depository.mercurialVaultProgram,
         systemProgram: SystemProgram.programId,
         tokenProgram: TOKEN_PROGRAM_ID,
@@ -204,13 +209,10 @@ export class UXDClient {
       controller.redeemableMintDecimals
     );
 
-    const [
-      [userCollateralATA],
-      [userRedeemableATA],
-    ] = findMultipleATAAddSync(authority, [
-      depository.collateralMint.mint,
-      controller.redeemableMintPda,
-    ]);
+    const [[userCollateralATA], [userRedeemableATA]] = findMultipleATAAddSync(
+      authority,
+      [depository.collateralMint.mint, controller.redeemableMintPda]
+    );
 
     return this.instruction.redeemFromMercurialVault(nativeRedeemableAmount, {
       accounts: {
@@ -225,7 +227,8 @@ export class UXDClient {
         mercurialVault: depository.mercurialVault,
         mercurialVaultLpMint: depository.mercurialVaultLpMint.mint,
         depositoryLpTokenVault: depository.depositoryLpTokenVault,
-        mercurialVaultCollateralTokenSafe: depository.mercurialVaultCollateralTokenSafe,
+        mercurialVaultCollateralTokenSafe:
+          depository.mercurialVaultCollateralTokenSafe,
         mercurialVaultProgram: depository.mercurialVaultProgram,
         systemProgram: SystemProgram.programId,
         tokenProgram: TOKEN_PROGRAM_ID,
