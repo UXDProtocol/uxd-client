@@ -11,58 +11,52 @@ import { MaplePoolDepositoryAccount } from '../interfaces';
 import { TokenInfo } from '@solana/spl-token-registry';
 import { Token, TOKEN_PROGRAM_ID } from '@solana/spl-token';
 
+/*
+bump
+version
+controller
+collateral_mint
+maple_pool
+maple_shares_mint
+maple_lender
+maple_locked_shares
+maple_lender_shares
+accounting_supply_sheet
+accounting_total_paid_stamp_fees
+accounting_bps_stamp_fees
+*/
+const MAPLE_POOL_DEPOSITORY_NAMESPACE = 'MAPLE_POOL_DEPOSITORY';
+
 export class MaplePoolDepository {
   public constructor(
-    public readonly pda: PublicKey,
-    public readonly collateralMint: {
-      mint: PublicKey;
-      name: string;
-      symbol: string;
-      decimals: number;
-    },
+    public readonly depository: PublicKey,
+    public readonly collateralMint: PublicKey,
     public readonly maplePool: PublicKey,
-    public readonly maplePoolLpMint: {
-      mint: PublicKey;
-      decimals: number;
-    },
-    public readonly depositoryLpTokenVault: PublicKey,
-    public readonly maplePoolCollateralTokenSafe: PublicKey,
-    public readonly maplePoolProgram: PublicKey,
-    public readonly vault: VaultImpl
+    public readonly maplePoolSharesMint: PublicKey,
+    public readonly mapleLender: PublicKey,
+    public readonly mapleLockedShares: PublicKey,
+    public readonly mapleLenderShares: PublicKey
   ) {}
 
   public static async initialize({
     connection,
-    collateralMint,
     uxdProgramId,
+    collateralMint,
+    maplePool,
+    maplePoolSharesMint: PublicKey,
     cluster,
   }: {
     connection: Connection;
-    collateralMint: {
-      mint: PublicKey;
-      name: string;
-      symbol: string;
-      decimals: number;
-    };
     uxdProgramId: PublicKey;
+    maplePool: PublicKey;
+    collateralMint: PublicKey;
     cluster: Cluster;
   }): Promise<MaplePoolDepository> {
-    const vault = await VaultImpl.create(
-      connection,
-      {
-        // Only the address field is used in the TokenInfo structure
-        address: collateralMint.mint.toBase58(),
-      } as TokenInfo,
-      {
-        cluster,
-      }
-    );
-
-    const [pda] = PublicKey.findProgramAddressSync(
+    const [depository] = PublicKey.findProgramAddressSync(
       [
-        Buffer.from('MAPLE_POOL_DEPOSITORY'),
-        vault.vaultPda.toBuffer(),
-        collateralMint.mint.toBuffer(),
+        Buffer.from(MAPLE_POOL_DEPOSITORY_NAMESPACE),
+        maplePool.toBuffer(),
+        collateralMint.toBuffer(),
       ],
       uxdProgramId
     );

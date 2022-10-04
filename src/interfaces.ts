@@ -54,6 +54,26 @@ export class MangoDepositoryAccount {
   regularMintingDisabled!: boolean;
 }
 
+// V1
+export class MercurialVaultDepositoryAccount {
+  bump!: number; // u8
+  version!: number; // u8
+  collateralMint!: PublicKey;
+  collateralMintDecimals!: number; //u8
+  controller!: PublicKey;
+  collateralAmountDeposited!: BN; // u128
+  mintedRedeemableAmount!: BN; // u128
+  mercurialVault!: PublicKey;
+  mercurialVaultLpMint!: PublicKey;
+  mercurialVaultLpMintDecimals!: number; // u8
+  lpTokenVault!: PublicKey;
+  lpTokenVaultBump!: number; // u8
+  mintingFeeInBps!: number; // u8
+  redeemingFeeInBps!: number; // u8
+  totalPaidMintFees!: BN; // u128
+  totalPaidRedeemFees!: BN; // u128
+}
+
 export enum PnLPolarity {
   Positive = `Positive`,
   Negative = `Negative`,

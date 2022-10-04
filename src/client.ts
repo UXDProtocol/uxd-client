@@ -1,9 +1,6 @@
 import { uiToNative, I80F48 } from '@blockworks-foundation/mango-client';
-import { BN, InstructionNamespace } from '@project-serum/anchor';
-import {
-  ASSOCIATED_TOKEN_PROGRAM_ID,
-  TOKEN_PROGRAM_ID,
-} from '@solana/spl-token';
+import { InstructionNamespace } from '@project-serum/anchor';
+import { TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import {
   SystemProgram,
   SYSVAR_RENT_PUBKEY,
@@ -13,14 +10,16 @@ import {
 } from '@solana/web3.js';
 import { Controller } from './controller';
 import { MangoDepository } from './mango/depository';
+import { MercurialVaultDepository } from './mercurial/depository';
 import { Mango } from './mango';
 import { findATAAddrSync, findMultipleATAAddSync } from './utils';
 import NamespaceFactory from './namespace';
 import { IDL as UXD_IDL } from './idl';
+import type { Uxd as UXD_IDL_TYPE } from './idl';
 import { PnLPolarity } from './interfaces';
 
 export class UXDClient {
-  public instruction: InstructionNamespace<typeof UXD_IDL>;
+  public instruction: InstructionNamespace<UXD_IDL_TYPE>;
 
   public constructor(programId: PublicKey) {
     this.instruction = NamespaceFactory.buildInstructionNamespace(
@@ -35,63 +34,67 @@ export class UXDClient {
     options: ConfirmOptions,
     payer?: PublicKey
   ): TransactionInstruction {
-    const redeemableMintDecimals = new BN(controller.redeemableMintDecimals);
-    return this.instruction.initializeController(redeemableMintDecimals, {
-      accounts: {
-        authority,
-        payer: payer ?? authority,
-        controller: controller.pda,
-        redeemableMint: controller.redeemableMintPda,
-        rent: SYSVAR_RENT_PUBKEY,
-        systemProgram: SystemProgram.programId,
-        tokenProgram: TOKEN_PROGRAM_ID,
-      },
-      options: options,
-    });
-  }
-
-  public createSetRedeemableGlobalSupplyCapInstruction(
-    controller: Controller,
-    authority: PublicKey,
-    supplyCapAmount: number,
-    options: ConfirmOptions
-  ): TransactionInstruction {
-    const supplyCapAmountNativeUnits = uiToNative(
-      supplyCapAmount,
-      controller.redeemableMintDecimals
-    );
-    return this.instruction.setRedeemableGlobalSupplyCap(
-      supplyCapAmountNativeUnits,
+    return this.instruction.initializeController(
+      controller.redeemableMintDecimals,
       {
         accounts: {
           authority,
+          payer: payer ?? authority,
           controller: controller.pda,
+          redeemableMint: controller.redeemableMintPda,
+          systemProgram: SystemProgram.programId,
+          tokenProgram: TOKEN_PROGRAM_ID,
+          rent: SYSVAR_RENT_PUBKEY,
         },
-        options: options,
+        options,
       }
     );
   }
 
-  public createSetMangoDepositoriesRedeemableSoftCapInstruction(
+  public createEditControllerInstruction(
     controller: Controller,
     authority: PublicKey,
-    supplySoftCapAmount: number,
+    uiFields: {
+      quoteMintAndRedeemSoftCap?: {
+        value: number;
+        depository: MangoDepository;
+      };
+      redeemableSoftCap?: number;
+      redeemableGlobalSupplyCap?: number;
+    },
     options: ConfirmOptions
-  ): TransactionInstruction {
-    const supplySoftCapAmountNativeUnits = uiToNative(
-      supplySoftCapAmount,
-      controller.redeemableMintDecimals
-    );
-    return this.instruction.setMangoDepositoriesRedeemableSoftCap(
-      supplySoftCapAmountNativeUnits,
-      {
-        accounts: {
-          authority: authority,
-          controller: controller.pda,
-        },
-        options: options,
-      }
-    );
+  ) {
+    const {
+      quoteMintAndRedeemSoftCap,
+      redeemableSoftCap,
+      redeemableGlobalSupplyCap,
+    } = uiFields;
+    const fields = {
+      quoteMintAndRedeemSoftCap: quoteMintAndRedeemSoftCap
+        ? uiToNative(
+            quoteMintAndRedeemSoftCap.value,
+            quoteMintAndRedeemSoftCap.depository.quoteMintDecimals // special case
+          )
+        : null,
+      redeemableSoftCap:
+        redeemableSoftCap !== undefined
+          ? uiToNative(redeemableSoftCap, controller.redeemableMintDecimals)
+          : null,
+      redeemableGlobalSupplyCap:
+        redeemableGlobalSupplyCap !== undefined
+          ? uiToNative(
+              redeemableGlobalSupplyCap,
+              controller.redeemableMintDecimals
+            )
+          : null,
+    };
+    return this.instruction.editController(fields, {
+      accounts: {
+        authority,
+        controller: controller.pda,
+      },
+      options: options,
+    });
   }
 
   public createRegisterMangoDepositoryInstruction(
@@ -117,7 +120,120 @@ export class UXDClient {
         mangoProgram: mango.programId,
         rent: SYSVAR_RENT_PUBKEY,
       },
-      options: options,
+      options,
+    });
+  }
+
+  public createRegisterMercurialVaultDepositoryInstruction(
+    controller: Controller,
+    depository: MercurialVaultDepository,
+    authority: PublicKey,
+    options: ConfirmOptions,
+    mintingFeeInBps: number,
+    redeemingFeeInBps: number,
+    payer?: PublicKey
+  ): TransactionInstruction {
+    return this.instruction.registerMercurialVaultDepository(
+      mintingFeeInBps,
+      redeemingFeeInBps,
+      {
+        accounts: {
+          authority,
+          payer: payer ?? authority,
+          controller: controller.pda,
+          depository: depository.pda,
+          mercurialVault: depository.mercurialVault,
+          mercurialVaultLpMint: depository.mercurialVaultLpMint.mint,
+          collateralMint: depository.collateralMint.mint,
+          depositoryLpTokenVault: depository.depositoryLpTokenVault,
+          systemProgram: SystemProgram.programId,
+          tokenProgram: TOKEN_PROGRAM_ID,
+          rent: SYSVAR_RENT_PUBKEY,
+        },
+        options,
+      }
+    );
+  }
+
+  public createMintWithMercurialVaultInstruction(
+    controller: Controller,
+    depository: MercurialVaultDepository,
+    authority: PublicKey,
+    collateralAmount: number,
+    options: ConfirmOptions,
+    payer?: PublicKey
+  ): TransactionInstruction {
+    const nativeCollateralAmount = uiToNative(
+      collateralAmount,
+      depository.collateralMint.decimals
+    );
+
+    const [[userCollateralATA], [userRedeemableATA]] = findMultipleATAAddSync(
+      authority,
+      [depository.collateralMint.mint, controller.redeemableMintPda]
+    );
+
+    return this.instruction.mintWithMercurialVault(nativeCollateralAmount, {
+      accounts: {
+        user: authority,
+        payer: payer ?? authority,
+        controller: controller.pda,
+        depository: depository.pda,
+        redeemableMint: controller.redeemableMintPda,
+        userRedeemable: userRedeemableATA,
+        userCollateral: userCollateralATA,
+        collateralMint: depository.collateralMint.mint,
+        mercurialVault: depository.mercurialVault,
+        mercurialVaultLpMint: depository.mercurialVaultLpMint.mint,
+        depositoryLpTokenVault: depository.depositoryLpTokenVault,
+        mercurialVaultCollateralTokenSafe:
+          depository.mercurialVaultCollateralTokenSafe,
+        mercurialVaultProgram: depository.mercurialVaultProgram,
+        systemProgram: SystemProgram.programId,
+        tokenProgram: TOKEN_PROGRAM_ID,
+      },
+      options,
+    });
+  }
+
+  public createRedeemFromMercurialVaultInstruction(
+    controller: Controller,
+    depository: MercurialVaultDepository,
+    authority: PublicKey,
+    redeemableAmount: number,
+    options: ConfirmOptions,
+    payer?: PublicKey
+  ): TransactionInstruction {
+    const nativeRedeemableAmount = uiToNative(
+      redeemableAmount,
+      controller.redeemableMintDecimals
+    );
+
+    const [[userCollateralATA], [userRedeemableATA]] = findMultipleATAAddSync(
+      authority,
+      [depository.collateralMint.mint, controller.redeemableMintPda]
+    );
+
+    return this.instruction.redeemFromMercurialVault(nativeRedeemableAmount, {
+      accounts: {
+        user: authority,
+        payer: payer ?? authority,
+        controller: controller.pda,
+        depository: depository.pda,
+        redeemableMint: controller.redeemableMintPda,
+        userRedeemable: userRedeemableATA,
+        userCollateral: userCollateralATA,
+        collateralMint: depository.collateralMint.mint,
+        mercurialVault: depository.mercurialVault,
+        mercurialVaultLpMint: depository.mercurialVaultLpMint.mint,
+        depositoryLpTokenVault: depository.depositoryLpTokenVault,
+        mercurialVaultCollateralTokenSafe:
+          depository.mercurialVaultCollateralTokenSafe,
+        mercurialVaultProgram: depository.mercurialVaultProgram,
+        systemProgram: SystemProgram.programId,
+        tokenProgram: TOKEN_PROGRAM_ID,
+      },
+      options,
     });
   }
 
@@ -210,7 +326,7 @@ export class UXDClient {
           tokenProgram: TOKEN_PROGRAM_ID,
           mangoProgram: mango.programId,
         },
-        options: options,
+        options,
       }
     );
   }
@@ -258,7 +374,7 @@ export class UXDClient {
           tokenProgram: TOKEN_PROGRAM_ID,
           mangoProgram: mango.programId,
         },
-        options: options,
+        options,
       }
     );
   }
@@ -309,7 +425,7 @@ export class UXDClient {
           tokenProgram: TOKEN_PROGRAM_ID,
           mangoProgram: mango.programId,
         },
-        options: options,
+        options,
       }
     );
   }
@@ -384,7 +500,7 @@ export class UXDClient {
           tokenProgram: TOKEN_PROGRAM_ID,
           mangoProgram: mango.programId,
         },
-        options: options,
+        options,
       }
     );
   }
@@ -459,7 +575,7 @@ export class UXDClient {
           tokenProgram: TOKEN_PROGRAM_ID,
           mangoProgram: mango.programId,
         },
-        options: options,
+        options,
       }
     );
   }
@@ -512,12 +628,9 @@ export class UXDClient {
         //
         systemProgram: SystemProgram.programId,
         tokenProgram: TOKEN_PROGRAM_ID,
-        associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
         mangoProgram: mango.programId,
-        //
-        rent: SYSVAR_RENT_PUBKEY,
       },
-      options: options,
+      options,
     });
   }
 
@@ -576,53 +689,34 @@ export class UXDClient {
           //
           systemProgram: SystemProgram.programId,
           tokenProgram: TOKEN_PROGRAM_ID,
-          associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
           mangoProgram: mango.programId,
-          //
-          rent: SYSVAR_RENT_PUBKEY,
         },
-        options: options,
+        options,
       }
     );
   }
 
-  public createSetMangoDepositoryQuoteMintAndRedeemFeeInstruction(
-    quoteFee: number,
+  public createEditMangoDepositoryInstruction(
     controller: Controller,
     depository: MangoDepository,
     authority: PublicKey,
+    uiFields: {
+      quoteMintAndRedeemFee?: number;
+    },
     options: ConfirmOptions
   ): TransactionInstruction {
-    return this.instruction.setMangoDepositoryQuoteMintAndRedeemFee(quoteFee, {
+    const { quoteMintAndRedeemFee } = uiFields;
+    const fields = {
+      quoteMintAndRedeemFee: quoteMintAndRedeemFee ?? null,
+    };
+    return this.instruction.editMangoDepository(fields, {
       accounts: {
-        authority: authority,
+        authority,
         controller: controller.pda,
         depository: depository.pda,
       },
       options: options,
     });
-  }
-
-  public createSetMangoDepositoryQuoteMintAndRedeemSoftCapInstruction(
-    softCap: number,
-    controller: Controller,
-    depository: MangoDepository,
-    authority: PublicKey,
-    options: ConfirmOptions
-  ): TransactionInstruction {
-    const softCapNativeBN = new BN(softCap).mul(
-      new BN(10).pow(new BN(depository.quoteMintDecimals))
-    );
-    return this.instruction.setMangoDepositoryQuoteMintAndRedeemSoftCap(
-      softCapNativeBN,
-      {
-        accounts: {
-          authority,
-          controller: controller.pda,
-        },
-        options,
-      }
-    );
   }
 
   public createDisableDepositoryRegularMintingInstruction(
@@ -638,7 +732,97 @@ export class UXDClient {
         controller: controller.pda,
         depository: depository.pda,
       },
-      options: options,
+      options,
     });
+  }
+
+  /**
+   * @deprecated
+   * for backward compatibility only
+   * please use createEditControllerInstruction instead
+   */
+  public createSetMangoDepositoryQuoteMintAndRedeemSoftCapInstruction(
+    quoteMintAndRedeemSoftCap: number,
+    controller: Controller,
+    depository: MangoDepository,
+    authority: PublicKey,
+    options: ConfirmOptions
+  ): TransactionInstruction {
+    return this.createEditControllerInstruction(
+      controller,
+      authority,
+      {
+        quoteMintAndRedeemSoftCap: {
+          value: quoteMintAndRedeemSoftCap,
+          depository,
+        },
+      },
+      options
+    );
+  }
+
+  /**
+   * @deprecated
+   * for backward compatibility only
+   * please use createEditControllerInstruction instead
+   */
+  public createSetRedeemableGlobalSupplyCapInstruction(
+    controller: Controller,
+    authority: PublicKey,
+    redeemableGlobalSupplyCap: number,
+    options: ConfirmOptions
+  ): TransactionInstruction {
+    return this.createEditControllerInstruction(
+      controller,
+      authority,
+      {
+        redeemableGlobalSupplyCap,
+      },
+      options
+    );
+  }
+
+  /**
+   * @deprecated
+   * for backward compatibility only
+   * please use createEditControllerInstruction instead
+   */
+  public createSetMangoDepositoriesRedeemableSoftCapInstruction(
+    controller: Controller,
+    authority: PublicKey,
+    redeemableSoftCap: number,
+    options: ConfirmOptions
+  ): TransactionInstruction {
+    return this.createEditControllerInstruction(
+      controller,
+      authority,
+      {
+        redeemableSoftCap,
+      },
+      options
+    );
+  }
+
+  /**
+   * @deprecated
+   * for backward compatibility only
+   * please use createEditMangoDepositoryInstruction instead
+   */
+  public createSetMangoDepositoryQuoteMintAndRedeemFeeInstruction(
+    quoteMintAndRedeemFee: number,
+    controller: Controller,
+    depository: MangoDepository,
+    authority: PublicKey,
+    options: ConfirmOptions
+  ): TransactionInstruction {
+    return this.createEditMangoDepositoryInstruction(
+      controller,
+      depository,
+      authority,
+      {
+        quoteMintAndRedeemFee,
+      },
+      options
+    );
   }
 }

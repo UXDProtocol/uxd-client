@@ -1,6 +1,6 @@
 {
   "name": "@uxd-protocol/uxd-client",
-  "version": "3.5.5-0",
+  "version": "4.1.0-alpha.maple.1",
   "description": "JavaScript Client for the UXD Solana Program",
   "keywords": [
     "solana",
@@ -39,6 +39,8 @@
   },
   "dependencies": {
     "@blockworks-foundation/mango-client": "3.4.7",
+    "@mercurial-finance/dynamic-amm-sdk": "0.0.1-769fc61d.0",
+    "@mercurial-finance/vault-sdk": "0.2.27-25239a99.0",
     "@project-serum/anchor": "0.24.2",
     "@solana/spl-token": "0.1.8",
     "@solana/web3.js": "1.48.0",
@@ -60,5 +62,13 @@
     "jest": "^27.5.1",
     "prettier": "^2.6.2",
     "typescript": "^4.6.4"
+  },
+  "overrides": {
+    "@mercurial-finance/dynamic-amm-sdk": {
+      "@solana/web3.js": "1.48.0"
+    },
+    "@mercurial-finance/vault-sdk": {
+      "@solana/web3.js": "1.48.0"
+    }
   }
 }
