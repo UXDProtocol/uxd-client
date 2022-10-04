@@ -58,3 +58,21 @@ export enum PnLPolarity {
   Positive = `Positive`,
   Negative = `Negative`,
 }
+
+export class MaplePoolDepositoryAccount {
+  version!: number; // u8
+  collateralMint!: PublicKey;
+  mangoAccount!: PublicKey;
+  controller!: PublicKey;
+  insuranceAmountDeposited!: BN; // u128
+  collateralAmountDeposited!: BN; // u128
+  redeemableAmountUnderManagement!: BN; // u128
+  totalAmountPaidTakerFee!: BN; // u128
+  quoteMint!: PublicKey;
+  quoteMintDecimals!: number; // u8
+  totalAmountRebalanced!: BN; // u128
+  netQuoteMinted!: BN; // i128
+  quoteMintAndRedeemFee!: number; // u8
+  totalQuoteMintAndRedeemFees!: BN; // u128
+  regularMintingDisabled!: boolean;
+}
