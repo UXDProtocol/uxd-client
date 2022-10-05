@@ -1,7 +1,5 @@
-import VaultImpl, { PROGRAM_ID } from '@mercurial-finance/vault-sdk';
-import { BorshAccountsCoder } from '@project-serum/anchor';
+import { AnchorProvider, BorshAccountsCoder, Program } from '@project-serum/anchor';
 import {
-  Cluster,
   ConfirmOptions,
   Connection,
   PublicKey,
@@ -9,10 +7,17 @@ import {
 } from '@solana/web3.js';
 import { IDL } from '../idl';
 import { MercurialVaultDepositoryAccount } from '../interfaces';
-import { TokenInfo } from '@solana/spl-token-registry';
 import { Token, TOKEN_PROGRAM_ID } from '@solana/spl-token';
+import { IDL as mercurialVaultIDL, Vault as MercurialVaultIDL } from './vaultIdl';
+import { IdlTypes, TypeDef } from '@project-serum/anchor/dist/cjs/program/namespace/types';
+
+type VaultState = TypeDef<MercurialVaultIDL['accounts']['0'], IdlTypes<MercurialVaultIDL>>;
+
+const VAULT_BASE_KEY = new PublicKey('HWzXGcGHy4tcpYfaRDCyLNzXqBTv3E6BttpCH2vJxArv');
 
 export class MercurialVaultDepository {
+  public static readonly mercurialVaultProgramId = new PublicKey('24Uqj9JCLxUeoC3hGfh5W3s9FM9uCHDS2SG3LYwBpyTi');
+
   public constructor(
     public readonly pda: PublicKey,
     public readonly collateralMint: {
@@ -28,15 +33,12 @@ export class MercurialVaultDepository {
     },
     public readonly depositoryLpTokenVault: PublicKey,
     public readonly mercurialVaultCollateralTokenSafe: PublicKey,
-    public readonly mercurialVaultProgram: PublicKey,
-    public readonly vault: VaultImpl
-  ) {}
+  ) { }
 
   public static async initialize({
     connection,
     collateralMint,
     uxdProgramId,
-    cluster,
   }: {
     connection: Connection;
     collateralMint: {
@@ -46,23 +48,29 @@ export class MercurialVaultDepository {
       decimals: number;
     };
     uxdProgramId: PublicKey;
-    cluster: Cluster;
   }): Promise<MercurialVaultDepository> {
-    const vault = await VaultImpl.create(
-      connection,
-      {
-        // Only the address field is used in the TokenInfo structure
-        address: collateralMint.mint.toBase58(),
-      } as TokenInfo,
-      {
-        cluster,
-      }
+    const provider = new AnchorProvider(connection, {} as any, AnchorProvider.defaultOptions());
+    const mercurialVaultProgram = new Program<MercurialVaultIDL>(
+      mercurialVaultIDL as MercurialVaultIDL,
+      MercurialVaultDepository.mercurialVaultProgramId,
+      provider,
+    );
+
+    const [vaultPda] = PublicKey.findProgramAddressSync(
+      [Buffer.from('vault'), collateralMint.mint.toBuffer(), VAULT_BASE_KEY.toBuffer()],
+      MercurialVaultDepository.mercurialVaultProgramId,
+    );
+
+    const [tokenVaultPda] = PublicKey.findProgramAddressSync([
+      Buffer.from('token_vault'),
+      vaultPda.toBuffer()],
+      MercurialVaultDepository.mercurialVaultProgramId,
     );
 
     const [pda] = PublicKey.findProgramAddressSync(
       [
         Buffer.from('MERCURIALVAULTDEPOSITORY'),
-        vault.vaultPda.toBuffer(),
+        vaultPda.toBuffer(),
         collateralMint.mint.toBuffer(),
       ],
       uxdProgramId
@@ -71,15 +79,21 @@ export class MercurialVaultDepository {
     const [depositoryLpTokenVault] = PublicKey.findProgramAddressSync(
       [
         Buffer.from('MERCURIALVAULTDEPOSITORYLPVAULT'),
-        vault.vaultPda.toBuffer(),
+        vaultPda.toBuffer(),
         collateralMint.mint.toBuffer(),
       ],
       uxdProgramId
     );
 
+    const vaultState = (await mercurialVaultProgram.account.vault.fetchNullable(vaultPda)) as (VaultState | null);
+
+    if (!vaultState) {
+      throw new Error('Cannot get vault state');
+    }
+
     const lpMintToken = new Token(
       connection,
-      vault.vaultState.lpMint,
+      vaultState.lpMint,
       TOKEN_PROGRAM_ID,
       null as unknown as Signer
     );
@@ -90,21 +104,19 @@ export class MercurialVaultDepository {
     }
 
     const mercurialVaultLpMint = {
-      mint: vault.vaultState.lpMint,
+      mint: vaultState.lpMint,
       decimals: lpMintInfo.decimals,
     };
 
-    const mercurialVaultCollateralTokenSafe = vault.tokenVaultPda;
+    const mercurialVaultCollateralTokenSafe = tokenVaultPda;
 
     return new MercurialVaultDepository(
       pda,
       collateralMint,
-      vault.vaultPda,
+      vaultPda,
       mercurialVaultLpMint,
       depositoryLpTokenVault,
       mercurialVaultCollateralTokenSafe,
-      new PublicKey(PROGRAM_ID),
-      vault
     );
   }
 
