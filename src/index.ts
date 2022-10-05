@@ -16,6 +16,7 @@ export {
 } from './interfaces';
 export { Mango, createAndInitializeMango } from './mango';
 export { MangoDepository } from './mango/depository';
+export { MaplePoolDepository } from './maple_pool/depository';
 export { MercurialVaultDepository } from './mercurial/depository';
 export {
   ETH_DECIMALS,

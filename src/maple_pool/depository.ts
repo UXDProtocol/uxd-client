@@ -8,50 +8,66 @@ import {
 } from '@solana/web3.js';
 import { IDL } from '../idl';
 import { MaplePoolDepositoryAccount } from '../interfaces';
-import { TokenInfo } from '@solana/spl-token-registry';
 import { Token, TOKEN_PROGRAM_ID } from '@solana/spl-token';
+import { getATAAddressSync } from '@saberhq/token-utils';
 
-/*
-bump
-version
-controller
-collateral_mint
-maple_pool
-maple_shares_mint
-maple_lender
-maple_locked_shares
-maple_lender_shares
-accounting_supply_sheet
-accounting_total_paid_stamp_fees
-accounting_bps_stamp_fees
-*/
 const MAPLE_POOL_DEPOSITORY_NAMESPACE = 'MAPLE_POOL_DEPOSITORY';
 
+const MAPLE_INTERNAL_LENDER_NAMESPACE = 'lender';
+const MAPLE_INTERNAL_LOCKED_SHARES_NAMESPACE = 'locked_shares';
+
 export class MaplePoolDepository {
+  public static SYRUP_PROGRAM_ID = new PublicKey(
+    '5D9yi4BKrxF8h65NkVE1raCCWFKUs5ngub2ECxhvfaZe'
+  );
+
+  public static POOL_CREDORA_USDC = {
+    mapleGlobals: new PublicKey('DtnAPKSHwJaYbFdjYibNcjxihVd6pK1agpT86N5tMVPX'),
+    maplePool: new PublicKey('TamdAwg85s9aZ6mwSeAHoczzAV53rFokL5FVKzaF1Tb'),
+    maplePoolLocker: new PublicKey(
+      '92oAd9cm4rV4K4Xx9HPRMoFn7GwMaKsjNSPe7QVxywcy'
+    ),
+    mapleSharesMint: new PublicKey(
+      'CesxqgX4BvYudTNU45PArqTgefrRFhE1CwR7ECTDshfY'
+    ),
+    //baseMint: SPL_TOKENS.USDC,
+  };
+
   public constructor(
     public readonly depository: PublicKey,
     public readonly collateralMint: PublicKey,
+    public readonly collateralDecimals: number,
+    public readonly mapleGlobals: PublicKey,
     public readonly maplePool: PublicKey,
-    public readonly maplePoolSharesMint: PublicKey,
+    public readonly maplePoolLocker: PublicKey,
     public readonly mapleLender: PublicKey,
+    public readonly mapleLenderUser: PublicKey,
+    public readonly mapleSharesMint: PublicKey,
     public readonly mapleLockedShares: PublicKey,
-    public readonly mapleLenderShares: PublicKey
+    public readonly mapleLenderShares: PublicKey,
+    public readonly syrupProgramId: PublicKey
   ) {}
 
   public static async initialize({
     connection,
     uxdProgramId,
+    syrupProgramId,
     collateralMint,
+    mapleGlobals,
     maplePool,
-    maplePoolSharesMint: PublicKey,
+    mapleSharesMint,
     cluster,
   }: {
     connection: Connection;
     uxdProgramId: PublicKey;
-    maplePool: PublicKey;
+    syrupProgramId: PublicKey;
     collateralMint: PublicKey;
+    mapleGlobals: PublicKey;
+    maplePool: PublicKey;
+    mapleSharesMint: PublicKey;
     cluster: Cluster;
   }): Promise<MaplePoolDepository> {
+    // The depository is PDA from the pool and the collateral
     const [depository] = PublicKey.findProgramAddressSync(
       [
         Buffer.from(MAPLE_POOL_DEPOSITORY_NAMESPACE),
@@ -61,53 +77,98 @@ export class MaplePoolDepository {
       uxdProgramId
     );
 
-    const lpMintToken = new Token(
+    // Read collateral decimals
+    const collateralToken = new Token(
       connection,
-      vault.vaultState.lpMint,
+      collateralMint,
       TOKEN_PROGRAM_ID,
       null as unknown as Signer
     );
-    const lpMintInfo = await lpMintToken.getMintInfo();
-
-    if (!lpMintInfo) {
+    const collateralInfo = await collateralToken.getMintInfo();
+    if (!collateralInfo) {
       throw new Error('Cannot load vault lp mint info');
     }
+    const collateralDecimals = collateralInfo.decimals;
 
-    const maplePoolLpMint = {
-      mint: vault.vaultState.lpMint,
-      decimals: lpMintInfo.decimals,
-    };
+    const maplePoolLocker = getATAAddressSync({
+      mint: collateralMint,
+      owner: maplePool,
+    });
 
-    const maplePoolCollateralTokenSafe = vault.tokenVaultPda;
+    const mapleLenderUser = depository;
+    const mapleLender = await this.findLenderAddress(
+      maplePool,
+      mapleLenderUser,
+      syrupProgramId
+    );
+
+    const mapleLockedShares = await this.findLockedSharesAddress(
+      mapleLender,
+      syrupProgramId
+    );
+    const mapleLenderShares = getATAAddressSync({
+      mint: mapleSharesMint,
+      owner: depository,
+    });
 
     return new MaplePoolDepository(
-      pda,
+      depository,
       collateralMint,
-      vault.vaultPda,
-      maplePoolLpMint,
-      depositoryLpTokenVault,
-      maplePoolCollateralTokenSafe,
-      new PublicKey(PROGRAM_ID),
-      vault
+      collateralDecimals,
+      mapleGlobals,
+      maplePool,
+      maplePoolLocker,
+      mapleLender,
+      mapleLenderUser,
+      mapleSharesMint,
+      mapleLockedShares,
+      mapleLenderShares,
+      syrupProgramId
     );
   }
 
+  private static async findLenderAddress(
+    maplePool: PublicKey,
+    depository: PublicKey,
+    syrupProgramId: PublicKey
+  ): Promise<PublicKey> {
+    return (
+      await PublicKey.findProgramAddress(
+        [
+          Buffer.from(MAPLE_INTERNAL_LENDER_NAMESPACE),
+          maplePool.toBytes(),
+          depository.toBytes(),
+        ],
+        syrupProgramId
+      )
+    )[0];
+  }
+
+  private static async findLockedSharesAddress(
+    mapleLender: PublicKey,
+    syrupProgramId: PublicKey
+  ): Promise<PublicKey> {
+    return (
+      await PublicKey.findProgramAddress(
+        [
+          Buffer.from(MAPLE_INTERNAL_LOCKED_SHARES_NAMESPACE),
+          mapleLender.toBytes(),
+        ],
+        syrupProgramId
+      )
+    )[0];
+  }
+
   public info() {
-    console.groupCollapsed(
-      '[Mercurial Vault Depository debug info - Collateral mint:',
-      this.collateralMint.symbol,
-      ' - decimals',
-      this.collateralMint.decimals,
-      ']'
-    );
+    console.groupCollapsed('[Maple Pool Depository debug info]');
     console.table({
-      ['pda']: this.pda.toBase58(),
-      ['collateralMint']: this.collateralMint.mint.toBase58(),
-      ['collateralMintSymbol']: this.collateralMint.symbol.toString(),
-      ['collateralMintDecimals']: this.collateralMint.decimals.toString(),
+      ['depository']: this.depository.toBase58(),
+      ['collateralMint']: this.collateralMint.toBase58(),
       ['maplePool']: this.maplePool.toBase58(),
-      ['maplePoolLpMint']: this.maplePoolLpMint.mint.toBase58(),
-      ['depositoryLpTokenVault']: this.depositoryLpTokenVault.toBase58(),
+      ['mapleLender']: this.mapleLender.toBase58(),
+      ['mapleSharesMint']: this.mapleSharesMint.toBase58(),
+      ['mapleLockedShares']: this.mapleLockedShares.toBase58(),
+      ['mapleLenderShares']: this.mapleLenderShares.toBase58(),
     });
     console.groupEnd();
   }
@@ -119,7 +180,7 @@ export class MaplePoolDepository {
     const coder = new BorshAccountsCoder(IDL);
 
     const result = await connection.getAccountInfo(
-      this.pda,
+      this.depository,
       options.commitment
     );
 

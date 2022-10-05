@@ -1,6 +1,9 @@
 import { uiToNative, I80F48 } from '@blockworks-foundation/mango-client';
 import { InstructionNamespace } from '@project-serum/anchor';
-import { TOKEN_PROGRAM_ID } from '@solana/spl-token';
+import {
+  ASSOCIATED_TOKEN_PROGRAM_ID,
+  TOKEN_PROGRAM_ID,
+} from '@solana/spl-token';
 import {
   SystemProgram,
   SYSVAR_RENT_PUBKEY,
@@ -17,6 +20,7 @@ import NamespaceFactory from './namespace';
 import { IDL as UXD_IDL } from './idl';
 import type { Uxd as UXD_IDL_TYPE } from './idl';
 import { PnLPolarity } from './interfaces';
+import { MaplePoolDepository } from './maple_pool/depository';
 
 export class UXDClient {
   public instruction: InstructionNamespace<UXD_IDL_TYPE>;
@@ -235,6 +239,97 @@ export class UXDClient {
       },
       options,
     });
+  }
+
+  public createRegisterMaplePoolDepositoryInstruction(
+    controller: Controller,
+    depository: MaplePoolDepository,
+    authority: PublicKey,
+    options: ConfirmOptions,
+    uiAccountingSupplyRedeemableSoftCap: number,
+    accountingBpsStampFeeMint: number,
+    accountingBpsStampFeeRedeem: number,
+    payer?: PublicKey
+  ): TransactionInstruction {
+    const nativeAccountingSupplyRedeemableSoftCap = uiToNative(
+      uiAccountingSupplyRedeemableSoftCap,
+      controller.redeemableMintDecimals
+    );
+    return this.instruction.registerMaplePoolDepository(
+      nativeAccountingSupplyRedeemableSoftCap,
+      accountingBpsStampFeeMint,
+      accountingBpsStampFeeRedeem,
+      {
+        accounts: {
+          authority,
+          payer: payer ?? authority,
+          controller: controller.pda,
+          depository: depository.depository,
+          collateralMint: depository.collateralMint,
+          maplePool: depository.maplePool,
+          mapleLender: depository.mapleLender,
+          mapleSharesMint: depository.mapleSharesMint,
+          mapleLockedShares: depository.mapleLockedShares,
+          mapleLenderShares: depository.mapleLenderShares,
+          systemProgram: SystemProgram.programId,
+          tokenProgram: TOKEN_PROGRAM_ID,
+          associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+          rent: SYSVAR_RENT_PUBKEY,
+          syrup: depository.syrupProgramId,
+        },
+        options,
+      }
+    );
+  }
+
+  public createMintWithMaplePoolInstruction(
+    controller: Controller,
+    depository: MaplePoolDepository,
+    user: PublicKey,
+    uiAmmountCollateralDeposited: number,
+    options: ConfirmOptions,
+    payer?: PublicKey
+  ): TransactionInstruction {
+    const nativeAmmountCollateralDeposited = uiToNative(
+      uiAmmountCollateralDeposited,
+      depository.collateralDecimals
+    );
+
+    const collateralMint = depository.collateralMint;
+    const redeemableMint = controller.redeemableMintPda;
+
+    const [userCollateral] = findATAAddrSync(user, collateralMint);
+    const [userRedeemable] = findATAAddrSync(user, redeemableMint);
+
+    return this.instruction.mintWithMaplePool(
+      nativeAmmountCollateralDeposited,
+      {
+        accounts: {
+          user: user,
+          payer: payer ?? user,
+          controller: controller.pda,
+          depository: depository.depository,
+          redeemableMint: redeemableMint,
+          userRedeemable: userRedeemable,
+          collateralMint: collateralMint,
+          userCollateral: userCollateral,
+          mapleGlobals: depository.mapleGlobals,
+          maplePool: depository.maplePool,
+          maplePoolLocker: depository.maplePoolLocker,
+          mapleLender: depository.mapleLender,
+          mapleLenderUser: depository.mapleLenderUser,
+          mapleSharesMint: depository.mapleSharesMint,
+          mapleLockedShares: depository.mapleLockedShares,
+          mapleLenderShares: depository.mapleLenderShares,
+          systemProgram: SystemProgram.programId,
+          tokenProgram: TOKEN_PROGRAM_ID,
+          associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+          rent: SYSVAR_RENT_PUBKEY,
+          syrup: depository.syrupProgramId,
+        },
+        options,
+      }
+    );
   }
 
   public async createRebalanceMangoDepositoryLiteInstruction(

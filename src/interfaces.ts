@@ -80,19 +80,31 @@ export enum PnLPolarity {
 }
 
 export class MaplePoolDepositoryAccount {
+  bump!: number; // u8
   version!: number; // u8
-  collateralMint!: PublicKey;
-  mangoAccount!: PublicKey;
   controller!: PublicKey;
-  insuranceAmountDeposited!: BN; // u128
-  collateralAmountDeposited!: BN; // u128
-  redeemableAmountUnderManagement!: BN; // u128
-  totalAmountPaidTakerFee!: BN; // u128
-  quoteMint!: PublicKey;
-  quoteMintDecimals!: number; // u8
-  totalAmountRebalanced!: BN; // u128
-  netQuoteMinted!: BN; // i128
-  quoteMintAndRedeemFee!: number; // u8
-  totalQuoteMintAndRedeemFees!: BN; // u128
-  regularMintingDisabled!: boolean;
+  collateralMint!: PublicKey;
+  maplePool!: PublicKey;
+  mapleLender!: PublicKey;
+  mapleSharesMint!: PublicKey;
+  mapleLockedShares!: PublicKey;
+  mapleLenderShares!: PublicKey;
+  accountingSupplySheet!: AccountingSupplySheetData;
+  accountingTotalPaidStampFees!: AccountingTotalPaidStampFeesData;
+  accountingBpsStampFees!: AccountingBpsStampFeesData;
+}
+
+export class AccountingSupplySheetData {
+  supplyCollateralDeposited!: BN; // u128
+  supplyRedeemableMinted!: BN; // u128
+  supplyRedeemableSoftCap!: BN; // u128
+}
+
+export class AccountingTotalPaidStampFeesData {
+  totalPaidStampFeeMint!: BN; // u128
+  totalPaidStampFeeRedeem!: BN; // u128
+}
+export class AccountingBpsStampFeesData {
+  bpsStampFeeMint!: number; // u8
+  bpsStampFeeRedeem!: number; // u8
 }
