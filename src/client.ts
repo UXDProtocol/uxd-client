@@ -72,9 +72,9 @@ export class UXDClient {
     const fields = {
       quoteMintAndRedeemSoftCap: quoteMintAndRedeemSoftCap
         ? uiToNative(
-            quoteMintAndRedeemSoftCap.value,
-            quoteMintAndRedeemSoftCap.depository.quoteMintDecimals // special case
-          )
+          quoteMintAndRedeemSoftCap.value,
+          quoteMintAndRedeemSoftCap.depository.quoteMintDecimals // special case
+        )
         : null,
       redeemableSoftCap:
         redeemableSoftCap !== undefined
@@ -83,9 +83,9 @@ export class UXDClient {
       redeemableGlobalSupplyCap:
         redeemableGlobalSupplyCap !== undefined
           ? uiToNative(
-              redeemableGlobalSupplyCap,
-              controller.redeemableMintDecimals
-            )
+            redeemableGlobalSupplyCap,
+            controller.redeemableMintDecimals
+          )
           : null,
     };
     return this.instruction.editController(fields, {
@@ -188,7 +188,7 @@ export class UXDClient {
         depositoryLpTokenVault: depository.depositoryLpTokenVault,
         mercurialVaultCollateralTokenSafe:
           depository.mercurialVaultCollateralTokenSafe,
-        mercurialVaultProgram: depository.mercurialVaultProgram,
+        mercurialVaultProgram: MercurialVaultDepository.mercurialVaultProgramId,
         systemProgram: SystemProgram.programId,
         tokenProgram: TOKEN_PROGRAM_ID,
       },
@@ -229,7 +229,7 @@ export class UXDClient {
         depositoryLpTokenVault: depository.depositoryLpTokenVault,
         mercurialVaultCollateralTokenSafe:
           depository.mercurialVaultCollateralTokenSafe,
-        mercurialVaultProgram: depository.mercurialVaultProgram,
+        mercurialVaultProgram: MercurialVaultDepository.mercurialVaultProgramId,
         systemProgram: SystemProgram.programId,
         tokenProgram: TOKEN_PROGRAM_ID,
       },
