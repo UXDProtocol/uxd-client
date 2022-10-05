@@ -1,22 +1,34 @@
-import { AnchorProvider, BorshAccountsCoder, Program } from '@project-serum/anchor';
 import {
-  ConfirmOptions,
-  Connection,
-  PublicKey,
-  Signer,
-} from '@solana/web3.js';
+  AnchorProvider,
+  BorshAccountsCoder,
+  Program,
+} from '@project-serum/anchor';
+import { ConfirmOptions, Connection, PublicKey, Signer } from '@solana/web3.js';
 import { IDL } from '../idl';
 import { MercurialVaultDepositoryAccount } from '../interfaces';
 import { Token, TOKEN_PROGRAM_ID } from '@solana/spl-token';
-import { IDL as mercurialVaultIDL, Vault as MercurialVaultIDL } from './vaultIdl';
-import { IdlTypes, TypeDef } from '@project-serum/anchor/dist/cjs/program/namespace/types';
+import {
+  IDL as mercurialVaultIDL,
+  Vault as MercurialVaultIDL,
+} from './vaultIdl';
+import {
+  IdlTypes,
+  TypeDef,
+} from '@project-serum/anchor/dist/cjs/program/namespace/types';
 
-type VaultState = TypeDef<MercurialVaultIDL['accounts']['0'], IdlTypes<MercurialVaultIDL>>;
+type VaultState = TypeDef<
+  MercurialVaultIDL['accounts']['0'],
+  IdlTypes<MercurialVaultIDL>
+>;
 
-const VAULT_BASE_KEY = new PublicKey('HWzXGcGHy4tcpYfaRDCyLNzXqBTv3E6BttpCH2vJxArv');
+const VAULT_BASE_KEY = new PublicKey(
+  'HWzXGcGHy4tcpYfaRDCyLNzXqBTv3E6BttpCH2vJxArv'
+);
 
 export class MercurialVaultDepository {
-  public static readonly mercurialVaultProgramId = new PublicKey('24Uqj9JCLxUeoC3hGfh5W3s9FM9uCHDS2SG3LYwBpyTi');
+  public static readonly mercurialVaultProgramId = new PublicKey(
+    '24Uqj9JCLxUeoC3hGfh5W3s9FM9uCHDS2SG3LYwBpyTi'
+  );
 
   public constructor(
     public readonly pda: PublicKey,
@@ -32,8 +44,8 @@ export class MercurialVaultDepository {
       decimals: number;
     },
     public readonly depositoryLpTokenVault: PublicKey,
-    public readonly mercurialVaultCollateralTokenSafe: PublicKey,
-  ) { }
+    public readonly mercurialVaultCollateralTokenSafe: PublicKey
+  ) {}
 
   public static async initialize({
     connection,
@@ -49,22 +61,29 @@ export class MercurialVaultDepository {
     };
     uxdProgramId: PublicKey;
   }): Promise<MercurialVaultDepository> {
-    const provider = new AnchorProvider(connection, {} as any, AnchorProvider.defaultOptions());
+    const provider = new AnchorProvider(
+      connection,
+      {} as any,
+      AnchorProvider.defaultOptions()
+    );
     const mercurialVaultProgram = new Program<MercurialVaultIDL>(
       mercurialVaultIDL as MercurialVaultIDL,
       MercurialVaultDepository.mercurialVaultProgramId,
-      provider,
+      provider
     );
 
     const [vaultPda] = PublicKey.findProgramAddressSync(
-      [Buffer.from('vault'), collateralMint.mint.toBuffer(), VAULT_BASE_KEY.toBuffer()],
-      MercurialVaultDepository.mercurialVaultProgramId,
+      [
+        Buffer.from('vault'),
+        collateralMint.mint.toBuffer(),
+        VAULT_BASE_KEY.toBuffer(),
+      ],
+      MercurialVaultDepository.mercurialVaultProgramId
     );
 
-    const [tokenVaultPda] = PublicKey.findProgramAddressSync([
-      Buffer.from('token_vault'),
-      vaultPda.toBuffer()],
-      MercurialVaultDepository.mercurialVaultProgramId,
+    const [tokenVaultPda] = PublicKey.findProgramAddressSync(
+      [Buffer.from('token_vault'), vaultPda.toBuffer()],
+      MercurialVaultDepository.mercurialVaultProgramId
     );
 
     const [pda] = PublicKey.findProgramAddressSync(
@@ -85,7 +104,9 @@ export class MercurialVaultDepository {
       uxdProgramId
     );
 
-    const vaultState = (await mercurialVaultProgram.account.vault.fetchNullable(vaultPda)) as (VaultState | null);
+    const vaultState = (await mercurialVaultProgram.account.vault.fetchNullable(
+      vaultPda
+    )) as VaultState | null;
 
     if (!vaultState) {
       throw new Error('Cannot get vault state');
@@ -116,7 +137,7 @@ export class MercurialVaultDepository {
       vaultPda,
       mercurialVaultLpMint,
       depositoryLpTokenVault,
-      mercurialVaultCollateralTokenSafe,
+      mercurialVaultCollateralTokenSafe
     );
   }
 
