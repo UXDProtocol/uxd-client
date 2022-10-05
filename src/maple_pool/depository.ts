@@ -37,6 +37,7 @@ export class MaplePoolDepository {
     public readonly depository: PublicKey,
     public readonly collateralMint: PublicKey,
     public readonly collateralDecimals: number,
+    public readonly collateralSymbol: string,
     public readonly mapleGlobals: PublicKey,
     public readonly maplePool: PublicKey,
     public readonly maplePoolLocker: PublicKey,
@@ -53,6 +54,7 @@ export class MaplePoolDepository {
     uxdProgramId,
     syrupProgramId,
     collateralMint,
+    collateralSymbol,
     mapleGlobals,
     maplePool,
     mapleSharesMint,
@@ -62,6 +64,7 @@ export class MaplePoolDepository {
     uxdProgramId: PublicKey;
     syrupProgramId: PublicKey;
     collateralMint: PublicKey;
+    collateralSymbol: string;
     mapleGlobals: PublicKey;
     maplePool: PublicKey;
     mapleSharesMint: PublicKey;
@@ -115,6 +118,7 @@ export class MaplePoolDepository {
       depository,
       collateralMint,
       collateralDecimals,
+      collateralSymbol,
       mapleGlobals,
       maplePool,
       maplePoolLocker,
