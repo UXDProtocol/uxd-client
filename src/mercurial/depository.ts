@@ -45,7 +45,7 @@ export class MercurialVaultDepository {
     },
     public readonly depositoryLpTokenVault: PublicKey,
     public readonly mercurialVaultCollateralTokenSafe: PublicKey
-  ) {}
+  ) { }
 
   public static async initialize({
     connection,
