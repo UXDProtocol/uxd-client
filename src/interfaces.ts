@@ -52,6 +52,7 @@ export class MangoDepositoryAccount {
   quoteMintAndRedeemFee!: number; // u8
   totalQuoteMintAndRedeemFees!: BN; // u128
   regularMintingDisabled!: boolean;
+  redeemableDepositorySupplyCap!: BN; // u128
 }
 
 // V1
@@ -72,6 +73,7 @@ export class MercurialVaultDepositoryAccount {
   redeemingFeeInBps!: number; // u8
   totalPaidMintFees!: BN; // u128
   totalPaidRedeemFees!: BN; // u128
+  redeemableDepositorySupplyCap!: BN; // u128
 }
 
 export enum PnLPolarity {
