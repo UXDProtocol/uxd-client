@@ -1,4 +1,4 @@
-import { uiToNative, I80F48 } from '@blockworks-foundation/mango-client';
+import { uiToNative, I80F48, BN } from '@blockworks-foundation/mango-client';
 import { InstructionNamespace } from '@project-serum/anchor';
 import { TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import {
@@ -72,9 +72,9 @@ export class UXDClient {
     const fields = {
       quoteMintAndRedeemSoftCap: quoteMintAndRedeemSoftCap
         ? uiToNative(
-            quoteMintAndRedeemSoftCap.value,
-            quoteMintAndRedeemSoftCap.depository.quoteMintDecimals // special case
-          )
+          quoteMintAndRedeemSoftCap.value,
+          quoteMintAndRedeemSoftCap.depository.quoteMintDecimals // special case
+        )
         : null,
       redeemableSoftCap:
         redeemableSoftCap !== undefined
@@ -83,9 +83,9 @@ export class UXDClient {
       redeemableGlobalSupplyCap:
         redeemableGlobalSupplyCap !== undefined
           ? uiToNative(
-              redeemableGlobalSupplyCap,
-              controller.redeemableMintDecimals
-            )
+            redeemableGlobalSupplyCap,
+            controller.redeemableMintDecimals
+          )
           : null,
     };
     return this.instruction.editController(fields, {
@@ -702,14 +702,43 @@ export class UXDClient {
     authority: PublicKey,
     uiFields: {
       quoteMintAndRedeemFee?: number;
+      redeemableDepositorySupplyCap?: BN;
     },
     options: ConfirmOptions
   ): TransactionInstruction {
-    const { quoteMintAndRedeemFee } = uiFields;
+    const { quoteMintAndRedeemFee, redeemableDepositorySupplyCap } = uiFields;
     const fields = {
       quoteMintAndRedeemFee: quoteMintAndRedeemFee ?? null,
+      redeemableDepositorySupplyCap: redeemableDepositorySupplyCap ?? null,
     };
     return this.instruction.editMangoDepository(fields, {
+      accounts: {
+        authority,
+        controller: controller.pda,
+        depository: depository.pda,
+      },
+      options: options,
+    });
+  }
+
+  public createEditMercurialVaultDepositoryInstruction(
+    controller: Controller,
+    depository: MercurialVaultDepository,
+    authority: PublicKey,
+    uiFields: {
+      redeemableDepositorySupplyCap?: BN;
+      mintingFeeInBps?: number;
+      redeemingFeeInBps?: number;
+    },
+    options: ConfirmOptions
+  ): TransactionInstruction {
+    const { redeemableDepositorySupplyCap, mintingFeeInBps, redeemingFeeInBps } = uiFields;
+    const fields = {
+      redeemableDepositorySupplyCap: redeemableDepositorySupplyCap ?? null,
+      mintingFeeInBps: mintingFeeInBps ?? null,
+      redeemingFeeInBps: redeemingFeeInBps ?? null,
+    };
+    return this.instruction.editMercurialVaultDepository(fields, {
       accounts: {
         authority,
         controller: controller.pda,
