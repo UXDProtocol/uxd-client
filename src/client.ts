@@ -70,12 +70,13 @@ export class UXDClient {
       redeemableGlobalSupplyCap,
     } = uiFields;
     const fields = {
-      quoteMintAndRedeemSoftCap: typeof quoteMintAndRedeemSoftCap !== 'undefined'
-        ? uiToNative(
-          quoteMintAndRedeemSoftCap.value,
-          quoteMintAndRedeemSoftCap.depository.quoteMintDecimals // special case
-        )
-        : null,
+      quoteMintAndRedeemSoftCap:
+        typeof quoteMintAndRedeemSoftCap !== 'undefined'
+          ? uiToNative(
+              quoteMintAndRedeemSoftCap.value,
+              quoteMintAndRedeemSoftCap.depository.quoteMintDecimals // special case
+            )
+          : null,
       redeemableSoftCap:
         typeof redeemableSoftCap !== 'undefined'
           ? uiToNative(redeemableSoftCap, controller.redeemableMintDecimals)
@@ -83,9 +84,9 @@ export class UXDClient {
       redeemableGlobalSupplyCap:
         typeof redeemableGlobalSupplyCap !== 'undefined'
           ? uiToNative(
-            redeemableGlobalSupplyCap,
-            controller.redeemableMintDecimals
-          )
+              redeemableGlobalSupplyCap,
+              controller.redeemableMintDecimals
+            )
           : null,
     };
     return this.instruction.editController(fields, {
@@ -106,25 +107,31 @@ export class UXDClient {
     options: ConfirmOptions,
     payer?: PublicKey
   ): TransactionInstruction {
-    const redeemableDepositorySupplyCapBN = uiToNative(redeemableDepositorySupplyCap, controller.redeemableMintDecimals);
+    const redeemableDepositorySupplyCapBN = uiToNative(
+      redeemableDepositorySupplyCap,
+      controller.redeemableMintDecimals
+    );
 
-    return this.instruction.registerMangoDepository(redeemableDepositorySupplyCapBN, {
-      accounts: {
-        authority,
-        payer: payer ?? authority,
-        controller: controller.pda,
-        depository: depository.pda,
-        collateralMint: depository.collateralMint,
-        quoteMint: depository.quoteMint,
-        mangoAccount: depository.mangoAccountPda,
-        mangoGroup: mango.group.publicKey,
-        systemProgram: SystemProgram.programId,
-        tokenProgram: TOKEN_PROGRAM_ID,
-        mangoProgram: mango.programId,
-        rent: SYSVAR_RENT_PUBKEY,
-      },
-      options,
-    });
+    return this.instruction.registerMangoDepository(
+      redeemableDepositorySupplyCapBN,
+      {
+        accounts: {
+          authority,
+          payer: payer ?? authority,
+          controller: controller.pda,
+          depository: depository.pda,
+          collateralMint: depository.collateralMint,
+          quoteMint: depository.quoteMint,
+          mangoAccount: depository.mangoAccountPda,
+          mangoGroup: mango.group.publicKey,
+          systemProgram: SystemProgram.programId,
+          tokenProgram: TOKEN_PROGRAM_ID,
+          mangoProgram: mango.programId,
+          rent: SYSVAR_RENT_PUBKEY,
+        },
+        options,
+      }
+    );
   }
 
   public createRegisterMercurialVaultDepositoryInstruction(
@@ -137,7 +144,10 @@ export class UXDClient {
     options: ConfirmOptions,
     payer?: PublicKey
   ): TransactionInstruction {
-    const redeemableDepositorySupplyCapBN = uiToNative(redeemableDepositorySupplyCap, controller.redeemableMintDecimals);
+    const redeemableDepositorySupplyCapBN = uiToNative(
+      redeemableDepositorySupplyCap,
+      controller.redeemableMintDecimals
+    );
 
     return this.instruction.registerMercurialVaultDepository(
       mintingFeeInBps,
@@ -715,11 +725,17 @@ export class UXDClient {
   ): TransactionInstruction {
     const { quoteMintAndRedeemFee, redeemableDepositorySupplyCap } = uiFields;
     const fields = {
-      quoteMintAndRedeemFee: typeof quoteMintAndRedeemFee !== 'undefined' ? quoteMintAndRedeemFee : null,
-      redeemableDepositorySupplyCap: typeof redeemableDepositorySupplyCap !== 'undefined' ? uiToNative(
-        redeemableDepositorySupplyCap,
-        controller.redeemableMintDecimals
-      ) : null,
+      quoteMintAndRedeemFee:
+        typeof quoteMintAndRedeemFee !== 'undefined'
+          ? quoteMintAndRedeemFee
+          : null,
+      redeemableDepositorySupplyCap:
+        typeof redeemableDepositorySupplyCap !== 'undefined'
+          ? uiToNative(
+              redeemableDepositorySupplyCap,
+              controller.redeemableMintDecimals
+            )
+          : null,
     };
 
     return this.instruction.editMangoDepository(fields, {
@@ -743,14 +759,23 @@ export class UXDClient {
     },
     options: ConfirmOptions
   ): TransactionInstruction {
-    const { redeemableDepositorySupplyCap, mintingFeeInBps, redeemingFeeInBps } = uiFields;
+    const {
+      redeemableDepositorySupplyCap,
+      mintingFeeInBps,
+      redeemingFeeInBps,
+    } = uiFields;
     const fields = {
-      redeemableDepositorySupplyCap: typeof redeemableDepositorySupplyCap !== 'undefined' ? uiToNative(
-        redeemableDepositorySupplyCap,
-        controller.redeemableMintDecimals,
-      ) : null,
-      mintingFeeInBps: typeof mintingFeeInBps !== 'undefined' ? mintingFeeInBps : null,
-      redeemingFeeInBps: typeof redeemingFeeInBps !== 'undefined' ? redeemingFeeInBps : null,
+      redeemableDepositorySupplyCap:
+        typeof redeemableDepositorySupplyCap !== 'undefined'
+          ? uiToNative(
+              redeemableDepositorySupplyCap,
+              controller.redeemableMintDecimals
+            )
+          : null,
+      mintingFeeInBps:
+        typeof mintingFeeInBps !== 'undefined' ? mintingFeeInBps : null,
+      redeemingFeeInBps:
+        typeof redeemingFeeInBps !== 'undefined' ? redeemingFeeInBps : null,
     };
     return this.instruction.editMercurialVaultDepository(fields, {
       accounts: {
