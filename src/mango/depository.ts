@@ -50,7 +50,7 @@ export class MangoDepository {
     quoteMint: PublicKey,
     quoteMintName: string,
     quoteMintDecimals: number,
-    uxdProgramId: PublicKey,
+    uxdProgramId: PublicKey
   ) {
     this.collateralMint = mint;
     this.collateralMintSymbol = mintName;
