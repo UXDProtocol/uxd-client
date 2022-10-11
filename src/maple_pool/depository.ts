@@ -37,10 +37,10 @@ export class MaplePoolDepository {
 
   public constructor(
     public readonly depository: PublicKey,
+    public readonly depositoryCollateral: PublicKey,
     public readonly collateralMint: PublicKey,
     public readonly collateralDecimals: number,
     public readonly collateralSymbol: string,
-    public readonly depositoryCollateral: PublicKey,
     public readonly mapleGlobals: PublicKey,
     public readonly maplePool: PublicKey,
     public readonly maplePoolLocker: PublicKey,
@@ -123,10 +123,10 @@ export class MaplePoolDepository {
 
     return new MaplePoolDepository(
       depository,
+      depositoryCollateral,
       collateralMint,
       collateralDecimals,
       collateralSymbol,
-      depositoryCollateral,
       mapleGlobals,
       maplePool,
       maplePoolLocker,
