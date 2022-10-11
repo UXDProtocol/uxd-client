@@ -265,6 +265,7 @@ export class UXDClient {
           payer: payer ?? authority,
           controller: controller.pda,
           depository: depository.depository,
+          depositoryCollateral: depository.depositoryCollateral,
           collateralMint: depository.collateralMint,
           maplePool: depository.maplePool,
           mapleLender: depository.mapleLender,
@@ -309,6 +310,7 @@ export class UXDClient {
           payer: payer ?? user,
           controller: controller.pda,
           depository: depository.depository,
+          depositoryCollateral: depository.depositoryCollateral,
           redeemableMint: redeemableMint,
           userRedeemable: userRedeemable,
           collateralMint: collateralMint,
@@ -317,7 +319,6 @@ export class UXDClient {
           maplePool: depository.maplePool,
           maplePoolLocker: depository.maplePoolLocker,
           mapleLender: depository.mapleLender,
-          mapleLenderUser: depository.mapleLenderUser,
           mapleSharesMint: depository.mapleSharesMint,
           mapleLockedShares: depository.mapleLockedShares,
           mapleLenderShares: depository.mapleLenderShares,
@@ -803,6 +804,7 @@ export class UXDClient {
     const { quoteMintAndRedeemFee } = uiFields;
     const fields = {
       quoteMintAndRedeemFee: quoteMintAndRedeemFee ?? null,
+      redeemableDepositorySupplyCap: null, // resolve conflicts?
     };
     return this.instruction.editMangoDepository(fields, {
       accounts: {

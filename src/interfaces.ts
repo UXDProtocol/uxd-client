@@ -84,27 +84,18 @@ export class MaplePoolDepositoryAccount {
   version!: number; // u8
   controller!: PublicKey;
   collateralMint!: PublicKey;
+  depositoryCollateral!: PublicKey;
+  depositoryCollateralBump!: number; // u8
   maplePool!: PublicKey;
   mapleLender!: PublicKey;
   mapleSharesMint!: PublicKey;
   mapleLockedShares!: PublicKey;
   mapleLenderShares!: PublicKey;
-  accountingSupplySheet!: AccountingSupplySheetData;
-  accountingTotalPaidStampFees!: AccountingTotalPaidStampFeesData;
-  accountingBpsStampFees!: AccountingBpsStampFeesData;
-}
-
-export class AccountingSupplySheetData {
-  supplyCollateralDeposited!: BN; // u128
-  supplyRedeemableMinted!: BN; // u128
-  supplyRedeemableSoftCap!: BN; // u128
-}
-
-export class AccountingTotalPaidStampFeesData {
-  totalPaidStampFeeMint!: BN; // u128
-  totalPaidStampFeeRedeem!: BN; // u128
-}
-export class AccountingBpsStampFeesData {
-  bpsStampFeeMint!: number; // u8
-  bpsStampFeeRedeem!: number; // u8
+  mintedRedeemableSoftCap!: BN; // u128
+  mintingFeesBps!: number; // u8
+  redeemingFeesBps!: number; // u8
+  depositedCollateralAmount!: BN; // u128
+  mintedRedeemableAmount!: BN; // u128
+  mintingFeesTotalPaid!: BN; // u128
+  redeemingFeesTotalPaid!: BN; // u128
 }

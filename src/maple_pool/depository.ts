@@ -12,6 +12,8 @@ import { Token, TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import { getATAAddressSync } from '@saberhq/token-utils';
 
 const MAPLE_POOL_DEPOSITORY_NAMESPACE = 'MAPLE_POOL_DEPOSITORY';
+const MAPLE_POOL_DEPOSITORY_COLLATERAL_NAMESPACE =
+  'MAPLE_POOL_DEPOSITORY_COLLATERAL';
 
 const MAPLE_INTERNAL_LENDER_NAMESPACE = 'lender';
 const MAPLE_INTERNAL_LOCKED_SHARES_NAMESPACE = 'locked_shares';
@@ -38,11 +40,11 @@ export class MaplePoolDepository {
     public readonly collateralMint: PublicKey,
     public readonly collateralDecimals: number,
     public readonly collateralSymbol: string,
+    public readonly depositoryCollateral: PublicKey,
     public readonly mapleGlobals: PublicKey,
     public readonly maplePool: PublicKey,
     public readonly maplePoolLocker: PublicKey,
     public readonly mapleLender: PublicKey,
-    public readonly mapleLenderUser: PublicKey,
     public readonly mapleSharesMint: PublicKey,
     public readonly mapleLockedShares: PublicKey,
     public readonly mapleLenderShares: PublicKey,
@@ -89,19 +91,24 @@ export class MaplePoolDepository {
     );
     const collateralInfo = await collateralToken.getMintInfo();
     if (!collateralInfo) {
-      throw new Error('Cannot load vault lp mint info');
+      throw new Error('Cannot find the collateral mint');
     }
     const collateralDecimals = collateralInfo.decimals;
+
+    const depositoryCollateral = await this.findDepositoryCollateralAddress(
+      depository,
+      collateralMint,
+      uxdProgramId
+    );
 
     const maplePoolLocker = getATAAddressSync({
       mint: collateralMint,
       owner: maplePool,
     });
 
-    const mapleLenderUser = depository;
     const mapleLender = await this.findLenderAddress(
       maplePool,
-      mapleLenderUser,
+      depository,
       syrupProgramId
     );
 
@@ -119,16 +126,33 @@ export class MaplePoolDepository {
       collateralMint,
       collateralDecimals,
       collateralSymbol,
+      depositoryCollateral,
       mapleGlobals,
       maplePool,
       maplePoolLocker,
       mapleLender,
-      mapleLenderUser,
       mapleSharesMint,
       mapleLockedShares,
       mapleLenderShares,
       syrupProgramId
     );
+  }
+
+  private static async findDepositoryCollateralAddress(
+    depository: PublicKey,
+    collateralMint: PublicKey,
+    uxdProgramId: PublicKey
+  ) {
+    return (
+      await PublicKey.findProgramAddress(
+        [
+          Buffer.from(MAPLE_POOL_DEPOSITORY_COLLATERAL_NAMESPACE),
+          depository.toBytes(),
+          collateralMint.toBytes(),
+        ],
+        uxdProgramId
+      )
+    )[0];
   }
 
   private static async findLenderAddress(
