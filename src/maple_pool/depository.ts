@@ -59,6 +59,7 @@ export class MaplePoolDepository {
     collateralSymbol,
     mapleGlobals,
     maplePool,
+    maplePoolLocker,
     mapleSharesMint,
     cluster,
   }: {
@@ -69,6 +70,7 @@ export class MaplePoolDepository {
     collateralSymbol: string;
     mapleGlobals: PublicKey;
     maplePool: PublicKey;
+    maplePoolLocker: PublicKey;
     mapleSharesMint: PublicKey;
     cluster: Cluster;
   }): Promise<MaplePoolDepository> {
@@ -100,11 +102,6 @@ export class MaplePoolDepository {
       collateralMint,
       uxdProgramId
     );
-
-    const maplePoolLocker = getATAAddressSync({
-      mint: collateralMint,
-      owner: maplePool,
-    });
 
     const mapleLender = await this.findLenderAddress(
       maplePool,
