@@ -965,7 +965,7 @@ export type Uxd = {
       ];
     },
     {
-      name: 'mintWithMercurialVault';
+      name: 'mintWithMercurialVaultDepository';
       accounts: [
         {
           name: 'user';
@@ -1125,7 +1125,7 @@ export type Uxd = {
       ];
     },
     {
-      name: 'redeemFromMercurialVault';
+      name: 'redeemFromMercurialVaultDepository';
       accounts: [
         {
           name: 'user';
@@ -3552,7 +3552,7 @@ export const IDL: Uxd = {
       ],
     },
     {
-      name: 'mintWithMercurialVault',
+      name: 'mintWithMercurialVaultDepository',
       accounts: [
         {
           name: 'user',
@@ -3712,7 +3712,7 @@ export const IDL: Uxd = {
       ],
     },
     {
-      name: 'redeemFromMercurialVault',
+      name: 'redeemFromMercurialVaultDepository',
       accounts: [
         {
           name: 'user',
