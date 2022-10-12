@@ -1,5 +1,5 @@
 import { uiToNative, I80F48 } from '@blockworks-foundation/mango-client';
-import { InstructionNamespace, BN } from '@project-serum/anchor';
+import { InstructionNamespace } from '@project-serum/anchor';
 import { TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import {
   SystemProgram,
@@ -172,7 +172,7 @@ export class UXDClient {
     );
   }
 
-  public createMintWithMercurialVaultInstruction(
+  public createMintWithMercurialVaultDepositoryInstruction(
     controller: Controller,
     depository: MercurialVaultDepository,
     authority: PublicKey,
@@ -190,30 +190,34 @@ export class UXDClient {
       [depository.collateralMint.mint, controller.redeemableMintPda]
     );
 
-    return this.instruction.mintWithMercurialVault(nativeCollateralAmount, {
-      accounts: {
-        user: authority,
-        payer: payer ?? authority,
-        controller: controller.pda,
-        depository: depository.pda,
-        redeemableMint: controller.redeemableMintPda,
-        userRedeemable: userRedeemableATA,
-        userCollateral: userCollateralATA,
-        collateralMint: depository.collateralMint.mint,
-        mercurialVault: depository.mercurialVault,
-        mercurialVaultLpMint: depository.mercurialVaultLpMint.mint,
-        depositoryLpTokenVault: depository.depositoryLpTokenVault,
-        mercurialVaultCollateralTokenSafe:
-          depository.mercurialVaultCollateralTokenSafe,
-        mercurialVaultProgram: MercurialVaultDepository.mercurialVaultProgramId,
-        systemProgram: SystemProgram.programId,
-        tokenProgram: TOKEN_PROGRAM_ID,
-      },
-      options,
-    });
+    return this.instruction.mintWithMercurialVaultDepository(
+      nativeCollateralAmount,
+      {
+        accounts: {
+          user: authority,
+          payer: payer ?? authority,
+          controller: controller.pda,
+          depository: depository.pda,
+          redeemableMint: controller.redeemableMintPda,
+          userRedeemable: userRedeemableATA,
+          userCollateral: userCollateralATA,
+          collateralMint: depository.collateralMint.mint,
+          mercurialVault: depository.mercurialVault,
+          mercurialVaultLpMint: depository.mercurialVaultLpMint.mint,
+          depositoryLpTokenVault: depository.depositoryLpTokenVault,
+          mercurialVaultCollateralTokenSafe:
+            depository.mercurialVaultCollateralTokenSafe,
+          mercurialVaultProgram:
+            MercurialVaultDepository.mercurialVaultProgramId,
+          systemProgram: SystemProgram.programId,
+          tokenProgram: TOKEN_PROGRAM_ID,
+        },
+        options,
+      }
+    );
   }
 
-  public createRedeemFromMercurialVaultInstruction(
+  public createRedeemFromMercurialVaultDepositoryInstruction(
     controller: Controller,
     depository: MercurialVaultDepository,
     authority: PublicKey,
@@ -231,27 +235,31 @@ export class UXDClient {
       [depository.collateralMint.mint, controller.redeemableMintPda]
     );
 
-    return this.instruction.redeemFromMercurialVault(nativeRedeemableAmount, {
-      accounts: {
-        user: authority,
-        payer: payer ?? authority,
-        controller: controller.pda,
-        depository: depository.pda,
-        redeemableMint: controller.redeemableMintPda,
-        userRedeemable: userRedeemableATA,
-        userCollateral: userCollateralATA,
-        collateralMint: depository.collateralMint.mint,
-        mercurialVault: depository.mercurialVault,
-        mercurialVaultLpMint: depository.mercurialVaultLpMint.mint,
-        depositoryLpTokenVault: depository.depositoryLpTokenVault,
-        mercurialVaultCollateralTokenSafe:
-          depository.mercurialVaultCollateralTokenSafe,
-        mercurialVaultProgram: MercurialVaultDepository.mercurialVaultProgramId,
-        systemProgram: SystemProgram.programId,
-        tokenProgram: TOKEN_PROGRAM_ID,
-      },
-      options,
-    });
+    return this.instruction.redeemFromMercurialVaultDepository(
+      nativeRedeemableAmount,
+      {
+        accounts: {
+          user: authority,
+          payer: payer ?? authority,
+          controller: controller.pda,
+          depository: depository.pda,
+          redeemableMint: controller.redeemableMintPda,
+          userRedeemable: userRedeemableATA,
+          userCollateral: userCollateralATA,
+          collateralMint: depository.collateralMint.mint,
+          mercurialVault: depository.mercurialVault,
+          mercurialVaultLpMint: depository.mercurialVaultLpMint.mint,
+          depositoryLpTokenVault: depository.depositoryLpTokenVault,
+          mercurialVaultCollateralTokenSafe:
+            depository.mercurialVaultCollateralTokenSafe,
+          mercurialVaultProgram:
+            MercurialVaultDepository.mercurialVaultProgramId,
+          systemProgram: SystemProgram.programId,
+          tokenProgram: TOKEN_PROGRAM_ID,
+        },
+        options,
+      }
+    );
   }
 
   public async createRebalanceMangoDepositoryLiteInstruction(
