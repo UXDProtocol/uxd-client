@@ -4,9 +4,9 @@ import {
   Program,
 } from '@project-serum/anchor';
 import { ConfirmOptions, Connection, PublicKey, Signer } from '@solana/web3.js';
+import { Token, TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import { IDL } from '../idl';
 import { MercurialVaultDepositoryAccount } from '../interfaces';
-import { Token, TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import {
   IDL as mercurialVaultIDL,
   Vault as MercurialVaultIDL,
@@ -45,7 +45,7 @@ export class MercurialVaultDepository {
     },
     public readonly depositoryLpTokenVault: PublicKey,
     public readonly mercurialVaultCollateralTokenSafe: PublicKey
-  ) {}
+  ) { }
 
   public static async initialize({
     connection,

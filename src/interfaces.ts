@@ -74,6 +74,7 @@ export class MercurialVaultDepositoryAccount {
   totalPaidMintFees!: BN; // u128
   totalPaidRedeemFees!: BN; // u128
   redeemableDepositorySupplyCap!: BN; // u128
+  mintingDisabled!: boolean;
 }
 
 export enum PnLPolarity {
