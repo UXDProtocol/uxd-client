@@ -55,31 +55,31 @@ export class UXDClient {
     controller: Controller,
     authority: PublicKey,
     uiFields: {
-      quoteMintAndRedeemSoftCap?: {
+      mangoDepositoriesQuoteRedeemableSoftCap?: {
         value: number;
         depository: MangoDepository;
       };
-      redeemableSoftCap?: number;
+      mangoDepositoriesRedeemableSoftCap?: number;
       redeemableGlobalSupplyCap?: number;
     },
     options: ConfirmOptions
   ) {
     const {
-      quoteMintAndRedeemSoftCap,
-      redeemableSoftCap,
+      mangoDepositoriesQuoteRedeemableSoftCap,
+      mangoDepositoriesRedeemableSoftCap,
       redeemableGlobalSupplyCap,
     } = uiFields;
     const fields = {
-      quoteMintAndRedeemSoftCap:
-        typeof quoteMintAndRedeemSoftCap !== 'undefined'
+      mangoDepositoriesQuoteRedeemableSoftCap:
+        typeof mangoDepositoriesQuoteRedeemableSoftCap !== 'undefined'
           ? uiToNative(
-            quoteMintAndRedeemSoftCap.value,
-            quoteMintAndRedeemSoftCap.depository.quoteMintDecimals // special case
+            mangoDepositoriesQuoteRedeemableSoftCap.value,
+            mangoDepositoriesQuoteRedeemableSoftCap.depository.quoteMintDecimals // special case
           )
           : null,
-      redeemableSoftCap:
-        typeof redeemableSoftCap !== 'undefined'
-          ? uiToNative(redeemableSoftCap, controller.redeemableMintDecimals)
+      mangoDepositoriesRedeemableSoftCap:
+        typeof mangoDepositoriesRedeemableSoftCap !== 'undefined'
+          ? uiToNative(mangoDepositoriesRedeemableSoftCap, controller.redeemableMintDecimals)
           : null,
       redeemableGlobalSupplyCap:
         typeof redeemableGlobalSupplyCap !== 'undefined'
@@ -728,10 +728,11 @@ export class UXDClient {
     uiFields: {
       quoteMintAndRedeemFee?: number;
       redeemableDepositorySupplyCap?: number;
+      regularMintingDisabled?: boolean;
     },
     options: ConfirmOptions
   ): TransactionInstruction {
-    const { quoteMintAndRedeemFee, redeemableDepositorySupplyCap } = uiFields;
+    const { quoteMintAndRedeemFee, redeemableDepositorySupplyCap, regularMintingDisabled } = uiFields;
     const fields = {
       quoteMintAndRedeemFee:
         typeof quoteMintAndRedeemFee !== 'undefined'
@@ -744,6 +745,7 @@ export class UXDClient {
             controller.redeemableMintDecimals
           )
           : null,
+      regularMintingDisabled: typeof regularMintingDisabled !== 'undefined' ? regularMintingDisabled : null,
     };
 
     return this.instruction.editMangoDepository(fields, {
@@ -796,112 +798,5 @@ export class UXDClient {
       },
       options: options,
     });
-  }
-
-  public createDisableDepositoryRegularMintingInstruction(
-    disableMinting: boolean,
-    controller: Controller,
-    depository: MangoDepository,
-    authority: PublicKey,
-    options: ConfirmOptions
-  ): TransactionInstruction {
-    return this.instruction.disableDepositoryRegularMinting(disableMinting, {
-      accounts: {
-        authority: authority,
-        controller: controller.pda,
-        depository: depository.pda,
-      },
-      options,
-    });
-  }
-
-  /**
-   * @deprecated
-   * for backward compatibility only
-   * please use createEditControllerInstruction instead
-   */
-  public createSetMangoDepositoryQuoteMintAndRedeemSoftCapInstruction(
-    quoteMintAndRedeemSoftCap: number,
-    controller: Controller,
-    depository: MangoDepository,
-    authority: PublicKey,
-    options: ConfirmOptions
-  ): TransactionInstruction {
-    return this.createEditControllerInstruction(
-      controller,
-      authority,
-      {
-        quoteMintAndRedeemSoftCap: {
-          value: quoteMintAndRedeemSoftCap,
-          depository,
-        },
-      },
-      options
-    );
-  }
-
-  /**
-   * @deprecated
-   * for backward compatibility only
-   * please use createEditControllerInstruction instead
-   */
-  public createSetRedeemableGlobalSupplyCapInstruction(
-    controller: Controller,
-    authority: PublicKey,
-    redeemableGlobalSupplyCap: number,
-    options: ConfirmOptions
-  ): TransactionInstruction {
-    return this.createEditControllerInstruction(
-      controller,
-      authority,
-      {
-        redeemableGlobalSupplyCap,
-      },
-      options
-    );
-  }
-
-  /**
-   * @deprecated
-   * for backward compatibility only
-   * please use createEditControllerInstruction instead
-   */
-  public createSetMangoDepositoriesRedeemableSoftCapInstruction(
-    controller: Controller,
-    authority: PublicKey,
-    redeemableSoftCap: number,
-    options: ConfirmOptions
-  ): TransactionInstruction {
-    return this.createEditControllerInstruction(
-      controller,
-      authority,
-      {
-        redeemableSoftCap,
-      },
-      options
-    );
-  }
-
-  /**
-   * @deprecated
-   * for backward compatibility only
-   * please use createEditMangoDepositoryInstruction instead
-   */
-  public createSetMangoDepositoryQuoteMintAndRedeemFeeInstruction(
-    quoteMintAndRedeemFee: number,
-    controller: Controller,
-    depository: MangoDepository,
-    authority: PublicKey,
-    options: ConfirmOptions
-  ): TransactionInstruction {
-    return this.createEditMangoDepositoryInstruction(
-      controller,
-      depository,
-      authority,
-      {
-        quoteMintAndRedeemFee,
-      },
-      options
-    );
   }
 }
