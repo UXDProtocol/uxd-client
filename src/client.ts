@@ -73,9 +73,9 @@ export class UXDClient {
       quoteMintAndRedeemSoftCap:
         typeof quoteMintAndRedeemSoftCap !== 'undefined'
           ? uiToNative(
-            quoteMintAndRedeemSoftCap.value,
-            quoteMintAndRedeemSoftCap.depository.quoteMintDecimals // special case
-          )
+              quoteMintAndRedeemSoftCap.value,
+              quoteMintAndRedeemSoftCap.depository.quoteMintDecimals // special case
+            )
           : null,
       redeemableSoftCap:
         typeof redeemableSoftCap !== 'undefined'
@@ -84,9 +84,9 @@ export class UXDClient {
       redeemableGlobalSupplyCap:
         typeof redeemableGlobalSupplyCap !== 'undefined'
           ? uiToNative(
-            redeemableGlobalSupplyCap,
-            controller.redeemableMintDecimals
-          )
+              redeemableGlobalSupplyCap,
+              controller.redeemableMintDecimals
+            )
           : null,
     };
     return this.instruction.editController(fields, {
@@ -740,9 +740,9 @@ export class UXDClient {
       redeemableDepositorySupplyCap:
         typeof redeemableDepositorySupplyCap !== 'undefined'
           ? uiToNative(
-            redeemableDepositorySupplyCap,
-            controller.redeemableMintDecimals
-          )
+              redeemableDepositorySupplyCap,
+              controller.redeemableMintDecimals
+            )
           : null,
     };
 
@@ -778,15 +778,16 @@ export class UXDClient {
       redeemableDepositorySupplyCap:
         typeof redeemableDepositorySupplyCap !== 'undefined'
           ? uiToNative(
-            redeemableDepositorySupplyCap,
-            controller.redeemableMintDecimals
-          )
+              redeemableDepositorySupplyCap,
+              controller.redeemableMintDecimals
+            )
           : null,
       mintingFeeInBps:
         typeof mintingFeeInBps !== 'undefined' ? mintingFeeInBps : null,
       redeemingFeeInBps:
         typeof redeemingFeeInBps !== 'undefined' ? redeemingFeeInBps : null,
-      mintingDisabled: typeof mintingDisabled !== 'undefined' ? mintingDisabled : null,
+      mintingDisabled:
+        typeof mintingDisabled !== 'undefined' ? mintingDisabled : null,
     };
     return this.instruction.editMercurialVaultDepository(fields, {
       accounts: {
