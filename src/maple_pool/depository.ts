@@ -188,8 +188,13 @@ export class MaplePoolDepository {
     console.groupCollapsed('[Maple Pool Depository debug info]');
     console.table({
       ['depository']: this.depository.toBase58(),
+      ['depositoryCollateral']: this.depositoryCollateral.toBase58(),
       ['collateralMint']: this.collateralMint.toBase58(),
+      ['collateralDecimals']: this.collateralDecimals,
+      ['collateralSymbol']: this.collateralSymbol,
+      ['mapleGlobals']: this.mapleGlobals.toBase58(),
       ['maplePool']: this.maplePool.toBase58(),
+      ['maplePoolLocker']: this.maplePoolLocker.toBase58(),
       ['mapleLender']: this.mapleLender.toBase58(),
       ['mapleSharesMint']: this.mapleSharesMint.toBase58(),
       ['mapleLockedShares']: this.mapleLockedShares.toBase58(),

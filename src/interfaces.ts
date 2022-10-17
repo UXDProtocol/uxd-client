@@ -91,11 +91,11 @@ export class MaplePoolDepositoryAccount {
   mapleSharesMint!: PublicKey;
   mapleLockedShares!: PublicKey;
   mapleLenderShares!: PublicKey;
-  mintedRedeemableSoftCap!: BN; // u128
-  mintingFeesBps!: number; // u8
-  redeemingFeesBps!: number; // u8
+  redeemableAmountUnderManagementCap!: BN; // u128
+  mintingFeeInBps!: number; // u8
+  redeemingFeeInBps!: number; // u8
   depositedCollateralAmount!: BN; // u128
-  mintedRedeemableAmount!: BN; // u128
-  mintingFeesTotalPaid!: BN; // u128
-  redeemingFeesTotalPaid!: BN; // u128
+  redeemableAmountUnderManagement!: BN; // u128
+  totalPaidMintingFee!: BN; // u128
+  totalPaidRedeemingFee!: BN; // u128
 }

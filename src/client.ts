@@ -246,19 +246,19 @@ export class UXDClient {
     depository: MaplePoolDepository,
     authority: PublicKey,
     options: ConfirmOptions,
-    uiAccountingSupplyRedeemableSoftCap: number,
-    accountingBpsStampFeeMint: number,
-    accountingBpsStampFeeRedeem: number,
+    uiRedeemableAmountUnderManagementCap: number,
+    mintingFeeInBps: number,
+    redeemingFeeInBps: number,
     payer?: PublicKey
   ): TransactionInstruction {
-    const nativeAccountingSupplyRedeemableSoftCap = uiToNative(
-      uiAccountingSupplyRedeemableSoftCap,
+    const nativeRedeemableAmountUnderManagementCap = uiToNative(
+      uiRedeemableAmountUnderManagementCap,
       controller.redeemableMintDecimals
     );
     return this.instruction.registerMaplePoolDepository(
-      nativeAccountingSupplyRedeemableSoftCap,
-      accountingBpsStampFeeMint,
-      accountingBpsStampFeeRedeem,
+      nativeRedeemableAmountUnderManagementCap,
+      mintingFeeInBps,
+      redeemingFeeInBps,
       {
         accounts: {
           authority,
@@ -275,8 +275,8 @@ export class UXDClient {
           systemProgram: SystemProgram.programId,
           tokenProgram: TOKEN_PROGRAM_ID,
           associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+          syrupProgram: depository.syrupProgramId,
           rent: SYSVAR_RENT_PUBKEY,
-          syrup: depository.syrupProgramId,
         },
         options,
       }
@@ -302,7 +302,7 @@ export class UXDClient {
     const [userCollateral] = findATAAddrSync(user, collateralMint);
     const [userRedeemable] = findATAAddrSync(user, redeemableMint);
 
-    return this.instruction.mintWithMaplePool(
+    return this.instruction.mintWithMaplePoolDepository(
       nativeAmmountCollateralDeposited,
       {
         accounts: {
@@ -325,8 +325,8 @@ export class UXDClient {
           systemProgram: SystemProgram.programId,
           tokenProgram: TOKEN_PROGRAM_ID,
           associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+          syrupProgram: depository.syrupProgramId,
           rent: SYSVAR_RENT_PUBKEY,
-          syrup: depository.syrupProgramId,
         },
         options,
       }
