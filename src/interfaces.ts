@@ -96,6 +96,6 @@ export class MaplePoolDepositoryAccount {
   redeemingFeeInBps!: number; // u8
   depositedCollateralAmount!: BN; // u128
   redeemableAmountUnderManagement!: BN; // u128
-  totalPaidMintingFee!: BN; // u128
-  totalPaidRedeemingFee!: BN; // u128
+  mintingFeeTotalAccrued!: BN; // u128
+  redeemingFeeTotalAccrued!: BN; // u128
 }
