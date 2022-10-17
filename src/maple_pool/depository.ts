@@ -36,7 +36,7 @@ export class MaplePoolDepository {
   };
 
   public constructor(
-    public readonly depository: PublicKey,
+    public readonly pda: PublicKey,
     public readonly depositoryCollateral: PublicKey,
     public readonly collateralMint: PublicKey,
     public readonly collateralDecimals: number,
@@ -187,7 +187,7 @@ export class MaplePoolDepository {
   public info() {
     console.groupCollapsed('[Maple Pool Depository debug info]');
     console.table({
-      ['depository']: this.depository.toBase58(),
+      ['pda']: this.pda.toBase58(),
       ['depositoryCollateral']: this.depositoryCollateral.toBase58(),
       ['collateralMint']: this.collateralMint.toBase58(),
       ['collateralDecimals']: this.collateralDecimals,
@@ -210,7 +210,7 @@ export class MaplePoolDepository {
     const coder = new BorshAccountsCoder(IDL);
 
     const result = await connection.getAccountInfo(
-      this.depository,
+      this.pda,
       options.commitment
     );
 

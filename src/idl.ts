@@ -939,6 +939,34 @@ export type Uxd = {
       ];
     },
     {
+      name: 'editMaplePoolDepository';
+      accounts: [
+        {
+          name: 'authority';
+          isMut: false;
+          isSigner: true;
+        },
+        {
+          name: 'controller';
+          isMut: true;
+          isSigner: false;
+        },
+        {
+          name: 'depository';
+          isMut: true;
+          isSigner: false;
+        }
+      ];
+      args: [
+        {
+          name: 'fields';
+          type: {
+            defined: 'EditMaplePoolDepositoryFields';
+          };
+        }
+      ];
+    },
+    {
       name: 'disableDepositoryRegularMinting';
       accounts: [
         {
@@ -1669,19 +1697,19 @@ export type Uxd = {
             type: 'u8';
           },
           {
-            name: 'depositedCollateralAmount';
+            name: 'collateralAmountDeposited';
             type: 'u128';
           },
           {
-            name: 'mintedRedeemableAmount';
+            name: 'redeemableAmountUnderManagement';
             type: 'u128';
           },
           {
-            name: 'mintingFeeTotalPaid';
+            name: 'mintingFeeTotalAccrued';
             type: 'u128';
           },
           {
-            name: 'redeemingFeeTotalPaid';
+            name: 'redeemingFeeTotalAccrued';
             type: 'u128';
           }
         ];
@@ -1717,7 +1745,7 @@ export type Uxd = {
             type: 'u128';
           },
           {
-            name: 'mintedRedeemableAmount';
+            name: 'redeemableAmountUnderManagement';
             type: 'u128';
           },
           {
@@ -1806,6 +1834,32 @@ export type Uxd = {
             name: 'redeemableDepositorySupplyCap';
             type: {
               option: 'u128';
+            };
+          }
+        ];
+      };
+    },
+    {
+      name: 'EditMaplePoolDepositoryFields';
+      type: {
+        kind: 'struct';
+        fields: [
+          {
+            name: 'redeemableAmountUnderManagementCap';
+            type: {
+              option: 'u128';
+            };
+          },
+          {
+            name: 'mintingFeeInBps';
+            type: {
+              option: 'u8';
+            };
+          },
+          {
+            name: 'redeemingFeeInBps';
+            type: {
+              option: 'u8';
             };
           }
         ];
@@ -2077,12 +2131,12 @@ export type Uxd = {
           index: false;
         },
         {
-          name: 'redeemableMinted';
+          name: 'redeemableAmount';
           type: 'u64';
           index: false;
         },
         {
-          name: 'feesPaid';
+          name: 'mintingFeePaid';
           type: 'u64';
           index: false;
         }
@@ -2461,6 +2515,81 @@ export type Uxd = {
       ];
     },
     {
+      name: 'SetMaplePoolDepositoryRedeemableSupplyCapEvent';
+      fields: [
+        {
+          name: 'version';
+          type: 'u8';
+          index: true;
+        },
+        {
+          name: 'controller';
+          type: 'publicKey';
+          index: true;
+        },
+        {
+          name: 'depository';
+          type: 'publicKey';
+          index: true;
+        },
+        {
+          name: 'redeemableAmountUnderManagementCap';
+          type: 'u128';
+          index: true;
+        }
+      ];
+    },
+    {
+      name: 'SetMaplePoolDepositoryMintingFeeInBpsEvent';
+      fields: [
+        {
+          name: 'version';
+          type: 'u8';
+          index: true;
+        },
+        {
+          name: 'controller';
+          type: 'publicKey';
+          index: true;
+        },
+        {
+          name: 'depository';
+          type: 'publicKey';
+          index: true;
+        },
+        {
+          name: 'mintingFeeInBps';
+          type: 'u8';
+          index: true;
+        }
+      ];
+    },
+    {
+      name: 'SetMaplePoolDepositoryRedeemingFeeInBpsEvent';
+      fields: [
+        {
+          name: 'version';
+          type: 'u8';
+          index: true;
+        },
+        {
+          name: 'controller';
+          type: 'publicKey';
+          index: true;
+        },
+        {
+          name: 'depository';
+          type: 'publicKey';
+          index: true;
+        },
+        {
+          name: 'redeemingFeeInBps';
+          type: 'u8';
+          index: true;
+        }
+      ];
+    },
+    {
       name: 'SetMercurialVaultDepositoryRedeemableSupplyCapEvent';
       fields: [
         {
@@ -2719,7 +2848,7 @@ export type Uxd = {
     },
     {
       code: 6017;
-      name: 'DepositoryRedeemableSoftCapOverflow';
+      name: 'DepositoryRedeemableCapOverflow';
       msg: 'Operation not allowed due to being over the Depository redeemable soft cap.';
     },
     {
@@ -3971,6 +4100,34 @@ export const IDL: Uxd = {
       ],
     },
     {
+      name: 'editMaplePoolDepository',
+      accounts: [
+        {
+          name: 'authority',
+          isMut: false,
+          isSigner: true,
+        },
+        {
+          name: 'controller',
+          isMut: true,
+          isSigner: false,
+        },
+        {
+          name: 'depository',
+          isMut: true,
+          isSigner: false,
+        },
+      ],
+      args: [
+        {
+          name: 'fields',
+          type: {
+            defined: 'EditMaplePoolDepositoryFields',
+          },
+        },
+      ],
+    },
+    {
       name: 'disableDepositoryRegularMinting',
       accounts: [
         {
@@ -4701,19 +4858,19 @@ export const IDL: Uxd = {
             type: 'u8',
           },
           {
-            name: 'depositedCollateralAmount',
+            name: 'collateralAmountDeposited',
             type: 'u128',
           },
           {
-            name: 'mintedRedeemableAmount',
+            name: 'redeemableAmountUnderManagement',
             type: 'u128',
           },
           {
-            name: 'mintingFeeTotalPaid',
+            name: 'mintingFeeTotalAccrued',
             type: 'u128',
           },
           {
-            name: 'redeemingFeeTotalPaid',
+            name: 'redeemingFeeTotalAccrued',
             type: 'u128',
           },
         ],
@@ -4749,7 +4906,7 @@ export const IDL: Uxd = {
             type: 'u128',
           },
           {
-            name: 'mintedRedeemableAmount',
+            name: 'redeemableAmountUnderManagement',
             type: 'u128',
           },
           {
@@ -4838,6 +4995,32 @@ export const IDL: Uxd = {
             name: 'redeemableDepositorySupplyCap',
             type: {
               option: 'u128',
+            },
+          },
+        ],
+      },
+    },
+    {
+      name: 'EditMaplePoolDepositoryFields',
+      type: {
+        kind: 'struct',
+        fields: [
+          {
+            name: 'redeemableAmountUnderManagementCap',
+            type: {
+              option: 'u128',
+            },
+          },
+          {
+            name: 'mintingFeeInBps',
+            type: {
+              option: 'u8',
+            },
+          },
+          {
+            name: 'redeemingFeeInBps',
+            type: {
+              option: 'u8',
             },
           },
         ],
@@ -5109,12 +5292,12 @@ export const IDL: Uxd = {
           index: false,
         },
         {
-          name: 'redeemableMinted',
+          name: 'redeemableAmount',
           type: 'u64',
           index: false,
         },
         {
-          name: 'feesPaid',
+          name: 'mintingFeePaid',
           type: 'u64',
           index: false,
         },
@@ -5493,6 +5676,81 @@ export const IDL: Uxd = {
       ],
     },
     {
+      name: 'SetMaplePoolDepositoryRedeemableSupplyCapEvent',
+      fields: [
+        {
+          name: 'version',
+          type: 'u8',
+          index: true,
+        },
+        {
+          name: 'controller',
+          type: 'publicKey',
+          index: true,
+        },
+        {
+          name: 'depository',
+          type: 'publicKey',
+          index: true,
+        },
+        {
+          name: 'redeemableAmountUnderManagementCap',
+          type: 'u128',
+          index: true,
+        },
+      ],
+    },
+    {
+      name: 'SetMaplePoolDepositoryMintingFeeInBpsEvent',
+      fields: [
+        {
+          name: 'version',
+          type: 'u8',
+          index: true,
+        },
+        {
+          name: 'controller',
+          type: 'publicKey',
+          index: true,
+        },
+        {
+          name: 'depository',
+          type: 'publicKey',
+          index: true,
+        },
+        {
+          name: 'mintingFeeInBps',
+          type: 'u8',
+          index: true,
+        },
+      ],
+    },
+    {
+      name: 'SetMaplePoolDepositoryRedeemingFeeInBpsEvent',
+      fields: [
+        {
+          name: 'version',
+          type: 'u8',
+          index: true,
+        },
+        {
+          name: 'controller',
+          type: 'publicKey',
+          index: true,
+        },
+        {
+          name: 'depository',
+          type: 'publicKey',
+          index: true,
+        },
+        {
+          name: 'redeemingFeeInBps',
+          type: 'u8',
+          index: true,
+        },
+      ],
+    },
+    {
       name: 'SetMercurialVaultDepositoryRedeemableSupplyCapEvent',
       fields: [
         {
@@ -5751,7 +6009,7 @@ export const IDL: Uxd = {
     },
     {
       code: 6017,
-      name: 'DepositoryRedeemableSoftCapOverflow',
+      name: 'DepositoryRedeemableCapOverflow',
       msg: 'Operation not allowed due to being over the Depository redeemable soft cap.',
     },
     {

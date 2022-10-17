@@ -264,7 +264,7 @@ export class UXDClient {
           authority,
           payer: payer ?? authority,
           controller: controller.pda,
-          depository: depository.depository,
+          depository: depository.pda,
           depositoryCollateral: depository.depositoryCollateral,
           collateralMint: depository.collateralMint,
           maplePool: depository.maplePool,
@@ -309,7 +309,7 @@ export class UXDClient {
           user: user,
           payer: payer ?? user,
           controller: controller.pda,
-          depository: depository.depository,
+          depository: depository.pda,
           depositoryCollateral: depository.depositoryCollateral,
           redeemableMint: redeemableMint,
           userRedeemable: userRedeemable,
@@ -331,6 +331,42 @@ export class UXDClient {
         options,
       }
     );
+  }
+
+  public createEditMaplePoolDepositoryInstruction(
+    controller: Controller,
+    depository: MaplePoolDepository,
+    authority: PublicKey,
+    uiFields: {
+      redeemableAmountUnderManagementCap?: number;
+      mintingFeeInBps?: number;
+      redeemingFeeInBps?: number;
+    },
+    options: ConfirmOptions
+  ): TransactionInstruction {
+    const {
+      redeemableAmountUnderManagementCap,
+      mintingFeeInBps,
+      redeemingFeeInBps,
+    } = uiFields;
+    const fields = {
+      redeemableAmountUnderManagementCap: redeemableAmountUnderManagementCap
+        ? uiToNative(
+            redeemableAmountUnderManagementCap,
+            depository.collateralDecimals
+          )
+        : null,
+      mintingFeeInBps: mintingFeeInBps ?? null,
+      redeemingFeeInBps: redeemingFeeInBps ?? null,
+    };
+    return this.instruction.editMaplePoolDepository(fields, {
+      accounts: {
+        authority,
+        controller: controller.pda,
+        depository: depository.pda,
+      },
+      options: options,
+    });
   }
 
   public async createRebalanceMangoDepositoryLiteInstruction(

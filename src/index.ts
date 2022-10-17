@@ -13,6 +13,7 @@ export {
   MangoDepositoryAccount,
   PnLPolarity,
   MercurialVaultDepositoryAccount,
+  MaplePoolDepositoryAccount,
 } from './interfaces';
 export { Mango, createAndInitializeMango } from './mango';
 export { MangoDepository } from './mango/depository';
