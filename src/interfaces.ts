@@ -52,7 +52,7 @@ export class MangoDepositoryAccount {
   quoteMintAndRedeemFee!: number; // u8
   totalQuoteMintAndRedeemFees!: BN; // u128
   regularMintingDisabled!: boolean;
-  redeemableDepositorySupplyCap!: BN; // u128
+  redeemableAmountUnderManagementCap!: BN; // u128
 }
 
 // V1
@@ -63,7 +63,7 @@ export class MercurialVaultDepositoryAccount {
   collateralMintDecimals!: number; //u8
   controller!: PublicKey;
   collateralAmountDeposited!: BN; // u128
-  mintedRedeemableAmount!: BN; // u128
+  redeemableAmountUnderManagement!: BN; // u128
   mercurialVault!: PublicKey;
   mercurialVaultLpMint!: PublicKey;
   mercurialVaultLpMintDecimals!: number; // u8
@@ -71,9 +71,9 @@ export class MercurialVaultDepositoryAccount {
   lpTokenVaultBump!: number; // u8
   mintingFeeInBps!: number; // u8
   redeemingFeeInBps!: number; // u8
-  totalPaidMintFees!: BN; // u128
-  totalPaidRedeemFees!: BN; // u128
-  redeemableDepositorySupplyCap!: BN; // u128
+  mintingFeeTotalAccrued!: BN; // u128
+  redeemingFeeTotalAccrued!: BN; // u128
+  redeemableAmountUnderManagementCap!: BN; // u128
   mintingDisabled!: boolean;
 }
 
