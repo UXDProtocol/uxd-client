@@ -350,12 +350,13 @@ export class UXDClient {
       redeemingFeeInBps,
     } = uiFields;
     const fields = {
-      redeemableAmountUnderManagementCap: redeemableAmountUnderManagementCap
-        ? uiToNative(
-            redeemableAmountUnderManagementCap,
-            depository.collateralDecimals
-          )
-        : null,
+      redeemableAmountUnderManagementCap:
+        redeemableAmountUnderManagementCap !== undefined
+          ? uiToNative(
+              redeemableAmountUnderManagementCap,
+              depository.collateralDecimals
+            )
+          : null,
       mintingFeeInBps: mintingFeeInBps ?? null,
       redeemingFeeInBps: redeemingFeeInBps ?? null,
     };
