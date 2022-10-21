@@ -32,8 +32,7 @@ export class UXDClient {
     options: ConfirmOptions,
     payer?: PublicKey
   ): TransactionInstruction {
-    const redeemableMintDecimals = new BN(controller.redeemableMintDecimals);
-    return this.instruction.initializeController(redeemableMintDecimals, {
+    return this.instruction.initializeController(controller.redeemableMintDecimals, {
       accounts: {
         authority,
         payer: payer ?? authority,
@@ -68,9 +67,9 @@ export class UXDClient {
     const fields = {
       quoteMintAndRedeemSoftCap: quoteMintAndRedeemSoftCap
         ? uiToNative(
-            quoteMintAndRedeemSoftCap.value,
-            quoteMintAndRedeemSoftCap.depository.quoteMintDecimals // special case
-          )
+          quoteMintAndRedeemSoftCap.value,
+          quoteMintAndRedeemSoftCap.depository.quoteMintDecimals // special case
+        )
         : null,
       redeemableSoftCap:
         redeemableSoftCap !== undefined
@@ -79,9 +78,9 @@ export class UXDClient {
       redeemableGlobalSupplyCap:
         redeemableGlobalSupplyCap !== undefined
           ? uiToNative(
-              redeemableGlobalSupplyCap,
-              controller.redeemableMintDecimals
-            )
+            redeemableGlobalSupplyCap,
+            controller.redeemableMintDecimals
+          )
           : null,
     };
     return this.instruction.editController(fields, {
@@ -114,6 +113,51 @@ export class UXDClient {
         systemProgram: SystemProgram.programId,
         tokenProgram: TOKEN_PROGRAM_ID,
         mangoProgram: mango.programId,
+        rent: SYSVAR_RENT_PUBKEY,
+      },
+      options: options,
+    });
+  }
+
+  public createMangoReimburseInstruction(
+    controller: Controller,
+    depository: MangoDepository,
+    authority: PublicKey,
+    tokenMint: PublicKey,
+    tokenIndex: number,
+    mangoReimbursementProgram: PublicKey,
+    mangoReimbursementGroup: PublicKey,
+    mangoReimbursementVault: PublicKey,
+    mangoReimbursementAccount: PublicKey,
+    mangoReimbursementClaimMintTokenAccount: PublicKey,
+    mangoReimbursementClaimMint: PublicKey,
+    mangoReimbursementTable: any,
+    indexToTable: number,
+    options: ConfirmOptions,
+    payer?: PublicKey
+  ): TransactionInstruction {
+    const [authorityTokenAccount] = findATAAddrSync(authority, tokenMint);
+    const [depositoryTokenAccount] = findATAAddrSync(depository.pda, tokenMint);
+
+    return this.instruction.mangoReimburse(new BN(tokenIndex), new BN(indexToTable), {
+      accounts: {
+        authority,
+        payer: payer ?? authority,
+        controller: controller.pda,
+        depository: depository.pda,
+        tokenMint,
+        authorityTokenAccount,
+        depositoryTokenAccount,
+        mangoAccount: depository.mangoAccountPda,
+        mangoReimbursementGroup,
+        mangoReimbursementVault,
+        mangoReimbursementAccount,
+        mangoReimbursementClaimMintTokenAccount,
+        mangoReimbursementClaimMint,
+        mangoReimbursementTable,
+        systemProgram: SystemProgram.programId,
+        tokenProgram: TOKEN_PROGRAM_ID,
+        mangoReimbursementProgram,
         rent: SYSVAR_RENT_PUBKEY,
       },
       options: options,

@@ -51,7 +51,8 @@ export const ETH_DEVNET = new PublicKey(
 export function createAssocTokenIx(
   wallet: PublicKey,
   account: PublicKey,
-  mint: PublicKey
+  mint: PublicKey,
+  payer?: PublicKey,
 ): TransactionInstruction {
   return Token.createAssociatedTokenAccountInstruction(
     ASSOCIATED_TOKEN_PROGRAM_ID,
@@ -59,7 +60,7 @@ export function createAssocTokenIx(
     mint,
     account,
     wallet, // owner
-    wallet // payer
+    payer ?? wallet // payer
   );
 }
 
