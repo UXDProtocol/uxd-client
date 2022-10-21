@@ -32,18 +32,21 @@ export class UXDClient {
     options: ConfirmOptions,
     payer?: PublicKey
   ): TransactionInstruction {
-    return this.instruction.initializeController(controller.redeemableMintDecimals, {
-      accounts: {
-        authority,
-        payer: payer ?? authority,
-        controller: controller.pda,
-        redeemableMint: controller.redeemableMintPda,
-        systemProgram: SystemProgram.programId,
-        tokenProgram: TOKEN_PROGRAM_ID,
-        rent: SYSVAR_RENT_PUBKEY,
-      },
-      options: options,
-    });
+    return this.instruction.initializeController(
+      controller.redeemableMintDecimals,
+      {
+        accounts: {
+          authority,
+          payer: payer ?? authority,
+          controller: controller.pda,
+          redeemableMint: controller.redeemableMintPda,
+          systemProgram: SystemProgram.programId,
+          tokenProgram: TOKEN_PROGRAM_ID,
+          rent: SYSVAR_RENT_PUBKEY,
+        },
+        options: options,
+      }
+    );
   }
 
   public createEditControllerInstruction(
@@ -67,9 +70,9 @@ export class UXDClient {
     const fields = {
       quoteMintAndRedeemSoftCap: quoteMintAndRedeemSoftCap
         ? uiToNative(
-          quoteMintAndRedeemSoftCap.value,
-          quoteMintAndRedeemSoftCap.depository.quoteMintDecimals // special case
-        )
+            quoteMintAndRedeemSoftCap.value,
+            quoteMintAndRedeemSoftCap.depository.quoteMintDecimals // special case
+          )
         : null,
       redeemableSoftCap:
         redeemableSoftCap !== undefined
@@ -78,9 +81,9 @@ export class UXDClient {
       redeemableGlobalSupplyCap:
         redeemableGlobalSupplyCap !== undefined
           ? uiToNative(
-            redeemableGlobalSupplyCap,
-            controller.redeemableMintDecimals
-          )
+              redeemableGlobalSupplyCap,
+              controller.redeemableMintDecimals
+            )
           : null,
     };
     return this.instruction.editController(fields, {
@@ -139,29 +142,33 @@ export class UXDClient {
     const [authorityTokenAccount] = findATAAddrSync(authority, tokenMint);
     const [depositoryTokenAccount] = findATAAddrSync(depository.pda, tokenMint);
 
-    return this.instruction.mangoReimburse(new BN(tokenIndex), new BN(indexToTable), {
-      accounts: {
-        authority,
-        payer: payer ?? authority,
-        controller: controller.pda,
-        depository: depository.pda,
-        tokenMint,
-        authorityTokenAccount,
-        depositoryTokenAccount,
-        mangoAccount: depository.mangoAccountPda,
-        mangoReimbursementGroup,
-        mangoReimbursementVault,
-        mangoReimbursementAccount,
-        mangoReimbursementClaimMintTokenAccount,
-        mangoReimbursementClaimMint,
-        mangoReimbursementTable,
-        systemProgram: SystemProgram.programId,
-        tokenProgram: TOKEN_PROGRAM_ID,
-        mangoReimbursementProgram,
-        rent: SYSVAR_RENT_PUBKEY,
-      },
-      options: options,
-    });
+    return this.instruction.mangoReimburse(
+      new BN(tokenIndex),
+      new BN(indexToTable),
+      {
+        accounts: {
+          authority,
+          payer: payer ?? authority,
+          controller: controller.pda,
+          depository: depository.pda,
+          tokenMint,
+          authorityTokenAccount,
+          depositoryTokenAccount,
+          mangoAccount: depository.mangoAccountPda,
+          mangoReimbursementGroup,
+          mangoReimbursementVault,
+          mangoReimbursementAccount,
+          mangoReimbursementClaimMintTokenAccount,
+          mangoReimbursementClaimMint,
+          mangoReimbursementTable,
+          systemProgram: SystemProgram.programId,
+          tokenProgram: TOKEN_PROGRAM_ID,
+          mangoReimbursementProgram,
+          rent: SYSVAR_RENT_PUBKEY,
+        },
+        options: options,
+      }
+    );
   }
 
   public async createRebalanceMangoDepositoryLiteInstruction(

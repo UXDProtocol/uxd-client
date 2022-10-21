@@ -52,7 +52,7 @@ export function createAssocTokenIx(
   wallet: PublicKey,
   account: PublicKey,
   mint: PublicKey,
-  payer?: PublicKey,
+  payer?: PublicKey
 ): TransactionInstruction {
   return Token.createAssociatedTokenAccountInstruction(
     ASSOCIATED_TOKEN_PROGRAM_ID,
