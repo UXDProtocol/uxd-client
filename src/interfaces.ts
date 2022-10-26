@@ -87,6 +87,8 @@ export class MaplePoolDepositoryAccount {
   depositoryCollateral!: PublicKey;
   depositoryCollateralBump!: number; // u8
   maplePool!: PublicKey;
+  maplePoolLocker!: PublicKey;
+  mapleGlobals!: PublicKey;
   mapleLender!: PublicKey;
   mapleSharesMint!: PublicKey;
   mapleLockedShares!: PublicKey;

@@ -1277,6 +1277,16 @@ export type Uxd = {
           isSigner: false;
         },
         {
+          name: 'maplePoolLocker';
+          isMut: true;
+          isSigner: false;
+        },
+        {
+          name: 'mapleGlobals';
+          isMut: false;
+          isSigner: false;
+        },
+        {
           name: 'mapleLender';
           isMut: true;
           isSigner: false;
@@ -1361,17 +1371,7 @@ export type Uxd = {
           isSigner: false;
         },
         {
-          name: 'depositoryCollateral';
-          isMut: true;
-          isSigner: false;
-        },
-        {
           name: 'redeemableMint';
-          isMut: true;
-          isSigner: false;
-        },
-        {
-          name: 'userRedeemable';
           isMut: true;
           isSigner: false;
         },
@@ -1381,13 +1381,18 @@ export type Uxd = {
           isSigner: false;
         },
         {
+          name: 'userRedeemable';
+          isMut: true;
+          isSigner: false;
+        },
+        {
           name: 'userCollateral';
           isMut: true;
           isSigner: false;
         },
         {
-          name: 'mapleGlobals';
-          isMut: false;
+          name: 'depositoryCollateral';
+          isMut: true;
           isSigner: false;
         },
         {
@@ -1398,6 +1403,11 @@ export type Uxd = {
         {
           name: 'maplePoolLocker';
           isMut: true;
+          isSigner: false;
+        },
+        {
+          name: 'mapleGlobals';
+          isMut: false;
           isSigner: false;
         },
         {
@@ -1448,7 +1458,7 @@ export type Uxd = {
       ];
       args: [
         {
-          name: 'ammountCollateralDeposited';
+          name: 'collateralAmount';
           type: 'u64';
         }
       ];
@@ -1669,6 +1679,14 @@ export type Uxd = {
             type: 'publicKey';
           },
           {
+            name: 'maplePoolLocker';
+            type: 'publicKey';
+          },
+          {
+            name: 'mapleGlobals';
+            type: 'publicKey';
+          },
+          {
             name: 'mapleLender';
             type: 'publicKey';
           },
@@ -1840,12 +1858,12 @@ export type Uxd = {
       };
     },
     {
-      name: 'EditMaplePoolDepositoryFields';
+      name: 'EditMercurialVaultDepositoryFields';
       type: {
         kind: 'struct';
         fields: [
           {
-            name: 'redeemableAmountUnderManagementCap';
+            name: 'redeemableDepositorySupplyCap';
             type: {
               option: 'u128';
             };
@@ -1866,12 +1884,12 @@ export type Uxd = {
       };
     },
     {
-      name: 'EditMercurialVaultDepositoryFields';
+      name: 'EditMaplePoolDepositoryFields';
       type: {
         kind: 'struct';
         fields: [
           {
-            name: 'redeemableDepositorySupplyCap';
+            name: 'redeemableAmountUnderManagementCap';
             type: {
               option: 'u128';
             };
@@ -2103,27 +2121,27 @@ export type Uxd = {
         {
           name: 'controllerVersion';
           type: 'u8';
-          index: false;
+          index: true;
         },
         {
           name: 'depositoryVersion';
           type: 'u8';
-          index: false;
+          index: true;
         },
         {
           name: 'controller';
           type: 'publicKey';
-          index: false;
+          index: true;
         },
         {
           name: 'depository';
           type: 'publicKey';
-          index: false;
+          index: true;
         },
         {
           name: 'user';
           type: 'publicKey';
-          index: false;
+          index: true;
         },
         {
           name: 'collateralAmount';
@@ -2535,7 +2553,7 @@ export type Uxd = {
         {
           name: 'redeemableAmountUnderManagementCap';
           type: 'u128';
-          index: true;
+          index: false;
         }
       ];
     },
@@ -2560,7 +2578,7 @@ export type Uxd = {
         {
           name: 'mintingFeeInBps';
           type: 'u8';
-          index: true;
+          index: false;
         }
       ];
     },
@@ -2585,7 +2603,7 @@ export type Uxd = {
         {
           name: 'redeemingFeeInBps';
           type: 'u8';
-          index: true;
+          index: false;
         }
       ];
     },
@@ -3083,76 +3101,91 @@ export type Uxd = {
     },
     {
       code: 6064;
+      name: 'InvalidCollateralLocker';
+      msg: "The provided collateral locker does not match the depository's collateral locker.";
+    },
+    {
+      code: 6065;
       name: 'InvalidQuoteMint';
       msg: "The provided quote mint does not match the depository's quote mint.";
     },
     {
-      code: 6065;
+      code: 6066;
       name: 'InvalidMangoAccount';
       msg: "The Mango Account isn't the Depository one.";
     },
     {
-      code: 6066;
+      code: 6067;
       name: 'InvalidRedeemableMint';
       msg: "The Redeemable Mint provided does not match the Controller's one.";
     },
     {
-      code: 6067;
+      code: 6068;
       name: 'InvalidDexMarket';
       msg: 'The provided perp_market is not the one tied to this Depository.';
     },
     {
-      code: 6068;
+      code: 6069;
       name: 'InvalidOwner';
       msg: 'The provided token account is not owner by the expected party.';
     },
     {
-      code: 6069;
+      code: 6070;
       name: 'InvalidMaxBaseQuantity';
       msg: 'The max base quantity must be above 0.';
     },
     {
-      code: 6070;
+      code: 6071;
       name: 'InvalidMaxQuoteQuantity';
       msg: 'The max quote quantity must be above 0.';
     },
     {
-      code: 6071;
+      code: 6072;
       name: 'InvalidMercurialVault';
       msg: "The provided mercurial vault does not match the Depository's one.";
     },
     {
-      code: 6072;
+      code: 6073;
       name: 'InvalidMercurialVaultCollateralTokenSafe';
       msg: 'The provided mercurial vault collateral token safe does not match the mercurial vault one.';
     },
     {
-      code: 6073;
-      name: 'InvalidMaplePool';
-      msg: "The provided maple pool does not match the Depository's one.";
-    },
-    {
       code: 6074;
-      name: 'InvalidMapleLender';
-      msg: "The provided maple lender does not match the Depository's one.";
+      name: 'InvalidMaplePool';
+      msg: "The provided maple globals does not match the Depository's one.";
     },
     {
       code: 6075;
+      name: 'InvalidMaplePoolLocker';
+      msg: "The provided maple pool locker does not match the Depository's one.";
+    },
+    {
+      code: 6076;
+      name: 'InvalidMapleGlobals';
+      msg: "The provided maple lender does not match the Depository's one.";
+    },
+    {
+      code: 6077;
+      name: 'InvalidMapleLender';
+      msg: "The provided maple pool does not match the Depository's one.";
+    },
+    {
+      code: 6078;
       name: 'InvalidMapleSharesMint';
       msg: "The provided maple shares mint does not match the Depository's one.";
     },
     {
-      code: 6076;
+      code: 6079;
       name: 'InvalidMapleLockedShares';
       msg: "The provided maple locked shares does not match the Depository's one.";
     },
     {
-      code: 6077;
+      code: 6080;
       name: 'InvalidMapleLenderShares';
       msg: "The provided maple lender shares does not match the Depository's one.";
     },
     {
-      code: 6078;
+      code: 6081;
       name: 'Default';
       msg: 'Default - Check the source code for more info.';
     }
@@ -4438,6 +4471,16 @@ export const IDL: Uxd = {
           isSigner: false,
         },
         {
+          name: 'maplePoolLocker',
+          isMut: true,
+          isSigner: false,
+        },
+        {
+          name: 'mapleGlobals',
+          isMut: false,
+          isSigner: false,
+        },
+        {
           name: 'mapleLender',
           isMut: true,
           isSigner: false,
@@ -4522,17 +4565,7 @@ export const IDL: Uxd = {
           isSigner: false,
         },
         {
-          name: 'depositoryCollateral',
-          isMut: true,
-          isSigner: false,
-        },
-        {
           name: 'redeemableMint',
-          isMut: true,
-          isSigner: false,
-        },
-        {
-          name: 'userRedeemable',
           isMut: true,
           isSigner: false,
         },
@@ -4542,13 +4575,18 @@ export const IDL: Uxd = {
           isSigner: false,
         },
         {
+          name: 'userRedeemable',
+          isMut: true,
+          isSigner: false,
+        },
+        {
           name: 'userCollateral',
           isMut: true,
           isSigner: false,
         },
         {
-          name: 'mapleGlobals',
-          isMut: false,
+          name: 'depositoryCollateral',
+          isMut: true,
           isSigner: false,
         },
         {
@@ -4559,6 +4597,11 @@ export const IDL: Uxd = {
         {
           name: 'maplePoolLocker',
           isMut: true,
+          isSigner: false,
+        },
+        {
+          name: 'mapleGlobals',
+          isMut: false,
           isSigner: false,
         },
         {
@@ -4609,7 +4652,7 @@ export const IDL: Uxd = {
       ],
       args: [
         {
-          name: 'ammountCollateralDeposited',
+          name: 'collateralAmount',
           type: 'u64',
         },
       ],
@@ -4830,6 +4873,14 @@ export const IDL: Uxd = {
             type: 'publicKey',
           },
           {
+            name: 'maplePoolLocker',
+            type: 'publicKey',
+          },
+          {
+            name: 'mapleGlobals',
+            type: 'publicKey',
+          },
+          {
             name: 'mapleLender',
             type: 'publicKey',
           },
@@ -5001,12 +5052,12 @@ export const IDL: Uxd = {
       },
     },
     {
-      name: 'EditMaplePoolDepositoryFields',
+      name: 'EditMercurialVaultDepositoryFields',
       type: {
         kind: 'struct',
         fields: [
           {
-            name: 'redeemableAmountUnderManagementCap',
+            name: 'redeemableDepositorySupplyCap',
             type: {
               option: 'u128',
             },
@@ -5027,12 +5078,12 @@ export const IDL: Uxd = {
       },
     },
     {
-      name: 'EditMercurialVaultDepositoryFields',
+      name: 'EditMaplePoolDepositoryFields',
       type: {
         kind: 'struct',
         fields: [
           {
-            name: 'redeemableDepositorySupplyCap',
+            name: 'redeemableAmountUnderManagementCap',
             type: {
               option: 'u128',
             },
@@ -5264,27 +5315,27 @@ export const IDL: Uxd = {
         {
           name: 'controllerVersion',
           type: 'u8',
-          index: false,
+          index: true,
         },
         {
           name: 'depositoryVersion',
           type: 'u8',
-          index: false,
+          index: true,
         },
         {
           name: 'controller',
           type: 'publicKey',
-          index: false,
+          index: true,
         },
         {
           name: 'depository',
           type: 'publicKey',
-          index: false,
+          index: true,
         },
         {
           name: 'user',
           type: 'publicKey',
-          index: false,
+          index: true,
         },
         {
           name: 'collateralAmount',
@@ -5696,7 +5747,7 @@ export const IDL: Uxd = {
         {
           name: 'redeemableAmountUnderManagementCap',
           type: 'u128',
-          index: true,
+          index: false,
         },
       ],
     },
@@ -5721,7 +5772,7 @@ export const IDL: Uxd = {
         {
           name: 'mintingFeeInBps',
           type: 'u8',
-          index: true,
+          index: false,
         },
       ],
     },
@@ -5746,7 +5797,7 @@ export const IDL: Uxd = {
         {
           name: 'redeemingFeeInBps',
           type: 'u8',
-          index: true,
+          index: false,
         },
       ],
     },
@@ -6244,76 +6295,91 @@ export const IDL: Uxd = {
     },
     {
       code: 6064,
+      name: 'InvalidCollateralLocker',
+      msg: "The provided collateral locker does not match the depository's collateral locker.",
+    },
+    {
+      code: 6065,
       name: 'InvalidQuoteMint',
       msg: "The provided quote mint does not match the depository's quote mint.",
     },
     {
-      code: 6065,
+      code: 6066,
       name: 'InvalidMangoAccount',
       msg: "The Mango Account isn't the Depository one.",
     },
     {
-      code: 6066,
+      code: 6067,
       name: 'InvalidRedeemableMint',
       msg: "The Redeemable Mint provided does not match the Controller's one.",
     },
     {
-      code: 6067,
+      code: 6068,
       name: 'InvalidDexMarket',
       msg: 'The provided perp_market is not the one tied to this Depository.',
     },
     {
-      code: 6068,
+      code: 6069,
       name: 'InvalidOwner',
       msg: 'The provided token account is not owner by the expected party.',
     },
     {
-      code: 6069,
+      code: 6070,
       name: 'InvalidMaxBaseQuantity',
       msg: 'The max base quantity must be above 0.',
     },
     {
-      code: 6070,
+      code: 6071,
       name: 'InvalidMaxQuoteQuantity',
       msg: 'The max quote quantity must be above 0.',
     },
     {
-      code: 6071,
+      code: 6072,
       name: 'InvalidMercurialVault',
       msg: "The provided mercurial vault does not match the Depository's one.",
     },
     {
-      code: 6072,
+      code: 6073,
       name: 'InvalidMercurialVaultCollateralTokenSafe',
       msg: 'The provided mercurial vault collateral token safe does not match the mercurial vault one.',
     },
     {
-      code: 6073,
-      name: 'InvalidMaplePool',
-      msg: "The provided maple pool does not match the Depository's one.",
-    },
-    {
       code: 6074,
-      name: 'InvalidMapleLender',
-      msg: "The provided maple lender does not match the Depository's one.",
+      name: 'InvalidMaplePool',
+      msg: "The provided maple globals does not match the Depository's one.",
     },
     {
       code: 6075,
+      name: 'InvalidMaplePoolLocker',
+      msg: "The provided maple pool locker does not match the Depository's one.",
+    },
+    {
+      code: 6076,
+      name: 'InvalidMapleGlobals',
+      msg: "The provided maple lender does not match the Depository's one.",
+    },
+    {
+      code: 6077,
+      name: 'InvalidMapleLender',
+      msg: "The provided maple pool does not match the Depository's one.",
+    },
+    {
+      code: 6078,
       name: 'InvalidMapleSharesMint',
       msg: "The provided maple shares mint does not match the Depository's one.",
     },
     {
-      code: 6076,
+      code: 6079,
       name: 'InvalidMapleLockedShares',
       msg: "The provided maple locked shares does not match the Depository's one.",
     },
     {
-      code: 6077,
+      code: 6080,
       name: 'InvalidMapleLenderShares',
       msg: "The provided maple lender shares does not match the Depository's one.",
     },
     {
-      code: 6078,
+      code: 6081,
       name: 'Default',
       msg: 'Default - Check the source code for more info.',
     },

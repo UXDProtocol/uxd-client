@@ -24,11 +24,11 @@ export class MaplePoolDepository {
   );
 
   public static POOL_CREDORA_USDC = {
-    mapleGlobals: new PublicKey('DtnAPKSHwJaYbFdjYibNcjxihVd6pK1agpT86N5tMVPX'),
     maplePool: new PublicKey('TamdAwg85s9aZ6mwSeAHoczzAV53rFokL5FVKzaF1Tb'),
     maplePoolLocker: new PublicKey(
       '92oAd9cm4rV4K4Xx9HPRMoFn7GwMaKsjNSPe7QVxywcy'
     ),
+    mapleGlobals: new PublicKey('DtnAPKSHwJaYbFdjYibNcjxihVd6pK1agpT86N5tMVPX'),
     mapleSharesMint: new PublicKey(
       'CesxqgX4BvYudTNU45PArqTgefrRFhE1CwR7ECTDshfY'
     ),
@@ -37,13 +37,13 @@ export class MaplePoolDepository {
 
   public constructor(
     public readonly pda: PublicKey,
-    public readonly depositoryCollateral: PublicKey,
     public readonly collateralMint: PublicKey,
     public readonly collateralDecimals: number,
     public readonly collateralSymbol: string,
-    public readonly mapleGlobals: PublicKey,
+    public readonly depositoryCollateral: PublicKey,
     public readonly maplePool: PublicKey,
     public readonly maplePoolLocker: PublicKey,
+    public readonly mapleGlobals: PublicKey,
     public readonly mapleLender: PublicKey,
     public readonly mapleSharesMint: PublicKey,
     public readonly mapleLockedShares: PublicKey,
@@ -57,9 +57,9 @@ export class MaplePoolDepository {
     syrupProgramId,
     collateralMint,
     collateralSymbol,
-    mapleGlobals,
     maplePool,
     maplePoolLocker,
+    mapleGlobals,
     mapleSharesMint,
     cluster,
   }: {
@@ -68,9 +68,9 @@ export class MaplePoolDepository {
     syrupProgramId: PublicKey;
     collateralMint: PublicKey;
     collateralSymbol: string;
-    mapleGlobals: PublicKey;
     maplePool: PublicKey;
     maplePoolLocker: PublicKey;
+    mapleGlobals: PublicKey;
     mapleSharesMint: PublicKey;
     cluster: Cluster;
   }): Promise<MaplePoolDepository> {
@@ -99,7 +99,6 @@ export class MaplePoolDepository {
 
     const depositoryCollateral = await this.findDepositoryCollateralAddress(
       depository,
-      collateralMint,
       uxdProgramId
     );
 
@@ -120,13 +119,13 @@ export class MaplePoolDepository {
 
     return new MaplePoolDepository(
       depository,
-      depositoryCollateral,
       collateralMint,
       collateralDecimals,
       collateralSymbol,
-      mapleGlobals,
+      depositoryCollateral,
       maplePool,
       maplePoolLocker,
+      mapleGlobals,
       mapleLender,
       mapleSharesMint,
       mapleLockedShares,
@@ -137,7 +136,6 @@ export class MaplePoolDepository {
 
   private static async findDepositoryCollateralAddress(
     depository: PublicKey,
-    collateralMint: PublicKey,
     uxdProgramId: PublicKey
   ) {
     return (
@@ -145,7 +143,6 @@ export class MaplePoolDepository {
         [
           Buffer.from(MAPLE_POOL_DEPOSITORY_COLLATERAL_NAMESPACE),
           depository.toBytes(),
-          collateralMint.toBytes(),
         ],
         uxdProgramId
       )
@@ -192,9 +189,9 @@ export class MaplePoolDepository {
       ['collateralMint']: this.collateralMint.toBase58(),
       ['collateralDecimals']: this.collateralDecimals,
       ['collateralSymbol']: this.collateralSymbol,
-      ['mapleGlobals']: this.mapleGlobals.toBase58(),
       ['maplePool']: this.maplePool.toBase58(),
       ['maplePoolLocker']: this.maplePoolLocker.toBase58(),
+      ['mapleGlobals']: this.mapleGlobals.toBase58(),
       ['mapleLender']: this.mapleLender.toBase58(),
       ['mapleSharesMint']: this.mapleSharesMint.toBase58(),
       ['mapleLockedShares']: this.mapleLockedShares.toBase58(),
