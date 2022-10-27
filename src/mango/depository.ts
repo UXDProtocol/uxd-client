@@ -1,4 +1,5 @@
 import {
+  BN,
   I80F48,
   MangoAccount,
   nativeI80F48ToUi,
@@ -70,7 +71,7 @@ export class MangoDepository {
 
   public info() {
     console.groupCollapsed(
-      '[Depository debug info - Collateral mint:',
+      '[Mango Depository debug info - Collateral mint:',
       this.collateralMintSymbol,
       ' - decimals',
       this.collateralMintDecimals,

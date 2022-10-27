@@ -1,5 +1,5 @@
 import { uiToNative, I80F48 } from '@blockworks-foundation/mango-client';
-import { BN, InstructionNamespace } from '@project-serum/anchor';
+import { InstructionNamespace } from '@project-serum/anchor';
 import { TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import {
   SystemProgram,
@@ -10,14 +10,16 @@ import {
 } from '@solana/web3.js';
 import { Controller } from './controller';
 import { MangoDepository } from './mango/depository';
+import { MercurialVaultDepository } from './mercurial/depository';
 import { Mango } from './mango';
 import { findATAAddrSync, findMultipleATAAddSync } from './utils';
 import NamespaceFactory from './namespace';
 import { IDL as UXD_IDL } from './idl';
+import type { Uxd as UXD_IDL_TYPE } from './idl';
 import { PnLPolarity } from './interfaces';
 
 export class UXDClient {
-  public instruction: InstructionNamespace<typeof UXD_IDL>;
+  public instruction: InstructionNamespace<UXD_IDL_TYPE>;
 
   public constructor(programId: PublicKey) {
     this.instruction = NamespaceFactory.buildInstructionNamespace(
@@ -32,19 +34,21 @@ export class UXDClient {
     options: ConfirmOptions,
     payer?: PublicKey
   ): TransactionInstruction {
-    const redeemableMintDecimals = new BN(controller.redeemableMintDecimals);
-    return this.instruction.initializeController(redeemableMintDecimals, {
-      accounts: {
-        authority,
-        payer: payer ?? authority,
-        controller: controller.pda,
-        redeemableMint: controller.redeemableMintPda,
-        systemProgram: SystemProgram.programId,
-        tokenProgram: TOKEN_PROGRAM_ID,
-        rent: SYSVAR_RENT_PUBKEY,
-      },
-      options: options,
-    });
+    return this.instruction.initializeController(
+      controller.redeemableMintDecimals,
+      {
+        accounts: {
+          authority,
+          payer: payer ?? authority,
+          controller: controller.pda,
+          redeemableMint: controller.redeemableMintPda,
+          systemProgram: SystemProgram.programId,
+          tokenProgram: TOKEN_PROGRAM_ID,
+          rent: SYSVAR_RENT_PUBKEY,
+        },
+        options,
+      }
+    );
   }
 
   public createEditControllerInstruction(
@@ -66,18 +70,19 @@ export class UXDClient {
       redeemableGlobalSupplyCap,
     } = uiFields;
     const fields = {
-      quoteMintAndRedeemSoftCap: quoteMintAndRedeemSoftCap
-        ? uiToNative(
-            quoteMintAndRedeemSoftCap.value,
-            quoteMintAndRedeemSoftCap.depository.quoteMintDecimals // special case
-          )
-        : null,
+      quoteMintAndRedeemSoftCap:
+        typeof quoteMintAndRedeemSoftCap !== 'undefined'
+          ? uiToNative(
+              quoteMintAndRedeemSoftCap.value,
+              quoteMintAndRedeemSoftCap.depository.quoteMintDecimals // special case
+            )
+          : null,
       redeemableSoftCap:
-        redeemableSoftCap !== undefined
+        typeof redeemableSoftCap !== 'undefined'
           ? uiToNative(redeemableSoftCap, controller.redeemableMintDecimals)
           : null,
       redeemableGlobalSupplyCap:
-        redeemableGlobalSupplyCap !== undefined
+        typeof redeemableGlobalSupplyCap !== 'undefined'
           ? uiToNative(
               redeemableGlobalSupplyCap,
               controller.redeemableMintDecimals
@@ -98,26 +103,163 @@ export class UXDClient {
     depository: MangoDepository,
     mango: Mango,
     authority: PublicKey,
+    redeemableAmountUnderManagementCap: number,
     options: ConfirmOptions,
     payer?: PublicKey
   ): TransactionInstruction {
-    return this.instruction.registerMangoDepository({
-      accounts: {
-        authority,
-        payer: payer ?? authority,
-        controller: controller.pda,
-        depository: depository.pda,
-        collateralMint: depository.collateralMint,
-        quoteMint: depository.quoteMint,
-        mangoAccount: depository.mangoAccountPda,
-        mangoGroup: mango.group.publicKey,
-        systemProgram: SystemProgram.programId,
-        tokenProgram: TOKEN_PROGRAM_ID,
-        mangoProgram: mango.programId,
-        rent: SYSVAR_RENT_PUBKEY,
-      },
-      options: options,
-    });
+    const redeemableAmountUnderManagementCapBN = uiToNative(
+      redeemableAmountUnderManagementCap,
+      controller.redeemableMintDecimals
+    );
+
+    return this.instruction.registerMangoDepository(
+      redeemableAmountUnderManagementCapBN,
+      {
+        accounts: {
+          authority,
+          payer: payer ?? authority,
+          controller: controller.pda,
+          depository: depository.pda,
+          collateralMint: depository.collateralMint,
+          quoteMint: depository.quoteMint,
+          mangoAccount: depository.mangoAccountPda,
+          mangoGroup: mango.group.publicKey,
+          systemProgram: SystemProgram.programId,
+          tokenProgram: TOKEN_PROGRAM_ID,
+          mangoProgram: mango.programId,
+          rent: SYSVAR_RENT_PUBKEY,
+        },
+        options,
+      }
+    );
+  }
+
+  public createRegisterMercurialVaultDepositoryInstruction(
+    controller: Controller,
+    depository: MercurialVaultDepository,
+    authority: PublicKey,
+    mintingFeeInBps: number,
+    redeemingFeeInBps: number,
+    redeemableAmountUnderManagementCap: number,
+    options: ConfirmOptions,
+    payer?: PublicKey
+  ): TransactionInstruction {
+    const redeemableAmountUnderManagementCapBN = uiToNative(
+      redeemableAmountUnderManagementCap,
+      controller.redeemableMintDecimals
+    );
+
+    return this.instruction.registerMercurialVaultDepository(
+      mintingFeeInBps,
+      redeemingFeeInBps,
+      redeemableAmountUnderManagementCapBN,
+      {
+        accounts: {
+          authority,
+          payer: payer ?? authority,
+          controller: controller.pda,
+          depository: depository.pda,
+          mercurialVault: depository.mercurialVault,
+          mercurialVaultLpMint: depository.mercurialVaultLpMint.mint,
+          collateralMint: depository.collateralMint.mint,
+          depositoryLpTokenVault: depository.depositoryLpTokenVault,
+          systemProgram: SystemProgram.programId,
+          tokenProgram: TOKEN_PROGRAM_ID,
+          rent: SYSVAR_RENT_PUBKEY,
+        },
+        options,
+      }
+    );
+  }
+
+  public createMintWithMercurialVaultDepositoryInstruction(
+    controller: Controller,
+    depository: MercurialVaultDepository,
+    authority: PublicKey,
+    collateralAmount: number,
+    options: ConfirmOptions,
+    payer?: PublicKey
+  ): TransactionInstruction {
+    const nativeCollateralAmount = uiToNative(
+      collateralAmount,
+      depository.collateralMint.decimals
+    );
+
+    const [[userCollateralATA], [userRedeemableATA]] = findMultipleATAAddSync(
+      authority,
+      [depository.collateralMint.mint, controller.redeemableMintPda]
+    );
+
+    return this.instruction.mintWithMercurialVaultDepository(
+      nativeCollateralAmount,
+      {
+        accounts: {
+          user: authority,
+          payer: payer ?? authority,
+          controller: controller.pda,
+          depository: depository.pda,
+          redeemableMint: controller.redeemableMintPda,
+          userRedeemable: userRedeemableATA,
+          userCollateral: userCollateralATA,
+          collateralMint: depository.collateralMint.mint,
+          mercurialVault: depository.mercurialVault,
+          mercurialVaultLpMint: depository.mercurialVaultLpMint.mint,
+          depositoryLpTokenVault: depository.depositoryLpTokenVault,
+          mercurialVaultCollateralTokenSafe:
+            depository.mercurialVaultCollateralTokenSafe,
+          mercurialVaultProgram:
+            MercurialVaultDepository.mercurialVaultProgramId,
+          systemProgram: SystemProgram.programId,
+          tokenProgram: TOKEN_PROGRAM_ID,
+        },
+        options,
+      }
+    );
+  }
+
+  public createRedeemFromMercurialVaultDepositoryInstruction(
+    controller: Controller,
+    depository: MercurialVaultDepository,
+    authority: PublicKey,
+    redeemableAmount: number,
+    options: ConfirmOptions,
+    payer?: PublicKey
+  ): TransactionInstruction {
+    const nativeRedeemableAmount = uiToNative(
+      redeemableAmount,
+      controller.redeemableMintDecimals
+    );
+
+    const [[userCollateralATA], [userRedeemableATA]] = findMultipleATAAddSync(
+      authority,
+      [depository.collateralMint.mint, controller.redeemableMintPda]
+    );
+
+    return this.instruction.redeemFromMercurialVaultDepository(
+      nativeRedeemableAmount,
+      {
+        accounts: {
+          user: authority,
+          payer: payer ?? authority,
+          controller: controller.pda,
+          depository: depository.pda,
+          redeemableMint: controller.redeemableMintPda,
+          userRedeemable: userRedeemableATA,
+          userCollateral: userCollateralATA,
+          collateralMint: depository.collateralMint.mint,
+          mercurialVault: depository.mercurialVault,
+          mercurialVaultLpMint: depository.mercurialVaultLpMint.mint,
+          depositoryLpTokenVault: depository.depositoryLpTokenVault,
+          mercurialVaultCollateralTokenSafe:
+            depository.mercurialVaultCollateralTokenSafe,
+          mercurialVaultProgram:
+            MercurialVaultDepository.mercurialVaultProgramId,
+          systemProgram: SystemProgram.programId,
+          tokenProgram: TOKEN_PROGRAM_ID,
+        },
+        options,
+      }
+    );
   }
 
   public async createRebalanceMangoDepositoryLiteInstruction(
@@ -209,7 +351,7 @@ export class UXDClient {
           tokenProgram: TOKEN_PROGRAM_ID,
           mangoProgram: mango.programId,
         },
-        options: options,
+        options,
       }
     );
   }
@@ -257,7 +399,7 @@ export class UXDClient {
           tokenProgram: TOKEN_PROGRAM_ID,
           mangoProgram: mango.programId,
         },
-        options: options,
+        options,
       }
     );
   }
@@ -308,7 +450,7 @@ export class UXDClient {
           tokenProgram: TOKEN_PROGRAM_ID,
           mangoProgram: mango.programId,
         },
-        options: options,
+        options,
       }
     );
   }
@@ -383,7 +525,7 @@ export class UXDClient {
           tokenProgram: TOKEN_PROGRAM_ID,
           mangoProgram: mango.programId,
         },
-        options: options,
+        options,
       }
     );
   }
@@ -458,7 +600,7 @@ export class UXDClient {
           tokenProgram: TOKEN_PROGRAM_ID,
           mangoProgram: mango.programId,
         },
-        options: options,
+        options,
       }
     );
   }
@@ -513,7 +655,7 @@ export class UXDClient {
         tokenProgram: TOKEN_PROGRAM_ID,
         mangoProgram: mango.programId,
       },
-      options: options,
+      options,
     });
   }
 
@@ -574,7 +716,7 @@ export class UXDClient {
           tokenProgram: TOKEN_PROGRAM_ID,
           mangoProgram: mango.programId,
         },
-        options: options,
+        options,
       }
     );
   }
@@ -585,14 +727,70 @@ export class UXDClient {
     authority: PublicKey,
     uiFields: {
       quoteMintAndRedeemFee?: number;
+      redeemableAmountUnderManagementCap?: number;
     },
     options: ConfirmOptions
   ): TransactionInstruction {
-    const { quoteMintAndRedeemFee } = uiFields;
+    const { quoteMintAndRedeemFee, redeemableAmountUnderManagementCap } =
+      uiFields;
     const fields = {
-      quoteMintAndRedeemFee: quoteMintAndRedeemFee ?? null,
+      quoteMintAndRedeemFee:
+        typeof quoteMintAndRedeemFee !== 'undefined'
+          ? quoteMintAndRedeemFee
+          : null,
+      redeemableAmountUnderManagementCap:
+        typeof redeemableAmountUnderManagementCap !== 'undefined'
+          ? uiToNative(
+              redeemableAmountUnderManagementCap,
+              controller.redeemableMintDecimals
+            )
+          : null,
     };
+
     return this.instruction.editMangoDepository(fields, {
+      accounts: {
+        authority,
+        controller: controller.pda,
+        depository: depository.pda,
+      },
+      options: options,
+    });
+  }
+
+  public createEditMercurialVaultDepositoryInstruction(
+    controller: Controller,
+    depository: MercurialVaultDepository,
+    authority: PublicKey,
+    uiFields: {
+      redeemableAmountUnderManagementCap?: number;
+      mintingFeeInBps?: number;
+      redeemingFeeInBps?: number;
+      mintingDisabled?: boolean;
+    },
+    options: ConfirmOptions
+  ): TransactionInstruction {
+    const {
+      redeemableAmountUnderManagementCap,
+      mintingFeeInBps,
+      redeemingFeeInBps,
+      mintingDisabled,
+    } = uiFields;
+    const fields = {
+      redeemableAmountUnderManagementCap:
+        typeof redeemableAmountUnderManagementCap !== 'undefined'
+          ? uiToNative(
+              redeemableAmountUnderManagementCap,
+              controller.redeemableMintDecimals
+            )
+          : null,
+      mintingFeeInBps:
+        typeof mintingFeeInBps !== 'undefined' ? mintingFeeInBps : null,
+      redeemingFeeInBps:
+        typeof redeemingFeeInBps !== 'undefined' ? redeemingFeeInBps : null,
+      mintingDisabled:
+        typeof mintingDisabled !== 'undefined' ? mintingDisabled : null,
+    };
+    return this.instruction.editMercurialVaultDepository(fields, {
       accounts: {
         authority,
         controller: controller.pda,
@@ -615,7 +813,7 @@ export class UXDClient {
         controller: controller.pda,
         depository: depository.pda,
       },
-      options: options,
+      options,
     });
   }
 

@@ -52,6 +52,29 @@ export class MangoDepositoryAccount {
   quoteMintAndRedeemFee!: number; // u8
   totalQuoteMintAndRedeemFees!: BN; // u128
   regularMintingDisabled!: boolean;
+  redeemableAmountUnderManagementCap!: BN; // u128
+}
+
+// V1
+export class MercurialVaultDepositoryAccount {
+  bump!: number; // u8
+  version!: number; // u8
+  collateralMint!: PublicKey;
+  collateralMintDecimals!: number; //u8
+  controller!: PublicKey;
+  collateralAmountDeposited!: BN; // u128
+  redeemableAmountUnderManagement!: BN; // u128
+  mercurialVault!: PublicKey;
+  mercurialVaultLpMint!: PublicKey;
+  mercurialVaultLpMintDecimals!: number; // u8
+  lpTokenVault!: PublicKey;
+  lpTokenVaultBump!: number; // u8
+  mintingFeeInBps!: number; // u8
+  redeemingFeeInBps!: number; // u8
+  mintingFeeTotalAccrued!: BN; // u128
+  redeemingFeeTotalAccrued!: BN; // u128
+  redeemableAmountUnderManagementCap!: BN; // u128
+  mintingDisabled!: boolean;
 }
 
 export enum PnLPolarity {
