@@ -12,7 +12,11 @@ import {
   IDL as mercurialVaultIDL,
   Vault as MercurialVaultIDL,
 } from './vaultIdl';
-import { calculateWithdrawableAmount, getAmountByShare, getOnchainTime } from './utils';
+import {
+  calculateWithdrawableAmount,
+  getAmountByShare,
+  getOnchainTime,
+} from './utils';
 import { VaultState } from './types';
 
 const VAULT_BASE_KEY = new PublicKey(
@@ -39,8 +43,8 @@ export class MercurialVaultDepository {
     },
     public readonly depositoryLpTokenVault: PublicKey,
     public readonly mercurialVaultCollateralTokenSafe: PublicKey,
-    public readonly mercurialVaultProgram: Program<MercurialVaultIDL>,
-  ) { }
+    public readonly mercurialVaultProgram: Program<MercurialVaultIDL>
+  ) {}
 
   public static async initialize({
     connection,
@@ -141,36 +145,39 @@ export class MercurialVaultDepository {
     connection: Connection,
     options?: ConfirmOptions
   ): Promise<BN> {
-    const [
-      onChainAccount,
-      vaultState,
-      onChainTime,
-    ] = await Promise.all([
+    const [onChainAccount, vaultState, onChainTime] = await Promise.all([
       this.getOnchainAccount(connection, options),
 
       (await this.mercurialVaultProgram.account.vault.fetch(
-        this.mercurialVault,
+        this.mercurialVault
       )) as VaultState,
 
       getOnchainTime(connection),
     ]);
 
-    const withdrawableAmount = calculateWithdrawableAmount(onChainTime, vaultState);
+    const withdrawableAmount = calculateWithdrawableAmount(
+      onChainTime,
+      vaultState
+    );
 
-    const [
-      lpTokenTotalSupplyWrapped,
-      lpTokenBalanceWrapped,
-    ] = await Promise.all([
-      connection.getTokenSupply(vaultState.lpMint),
-      connection.getTokenAccountBalance(onChainAccount.lpTokenVault),
-    ]);
+    const [lpTokenTotalSupplyWrapped, lpTokenBalanceWrapped] =
+      await Promise.all([
+        connection.getTokenSupply(vaultState.lpMint),
+        connection.getTokenAccountBalance(onChainAccount.lpTokenVault),
+      ]);
 
     const lpTokenTotalSupply = new BN(lpTokenTotalSupplyWrapped.value.amount);
     const lpTokenBalance = new BN(lpTokenBalanceWrapped.value.amount);
 
-    const ownedLpTokenValue = getAmountByShare(lpTokenBalance, withdrawableAmount, lpTokenTotalSupply);
+    const ownedLpTokenValue = getAmountByShare(
+      lpTokenBalance,
+      withdrawableAmount,
+      lpTokenTotalSupply
+    );
 
-    const rewardsAndFees = ownedLpTokenValue.sub(onChainAccount.redeemableAmountUnderManagement);
+    const rewardsAndFees = ownedLpTokenValue.sub(
+      onChainAccount.redeemableAmountUnderManagement
+    );
 
     return rewardsAndFees;
   }
