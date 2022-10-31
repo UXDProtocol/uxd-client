@@ -9,7 +9,7 @@ import {
 import { IDL } from '../idl';
 import { MaplePoolDepositoryAccount } from '../interfaces';
 import { Token, TOKEN_PROGRAM_ID } from '@solana/spl-token';
-import { getATAAddressSync } from '@saberhq/token-utils';
+import { findATAAddrSync } from '../utils';
 
 const MAPLE_POOL_DEPOSITORY_NAMESPACE = 'MAPLE_POOL_DEPOSITORY';
 const MAPLE_POOL_DEPOSITORY_COLLATERAL_NAMESPACE =
@@ -111,10 +111,10 @@ export class MaplePoolDepository {
       mapleLender,
       syrupProgramId
     );
-    const mapleLenderShares = getATAAddressSync({
-      mint: mapleSharesMint,
-      owner: depository,
-    });
+    const mapleLenderShares = await this.findLenderSharesAddress(
+      depository,
+      mapleSharesMint
+    );
 
     return new MaplePoolDepository(
       depository,
@@ -163,6 +163,13 @@ export class MaplePoolDepository {
         syrupProgramId
       )
     )[0];
+  }
+
+  private static async findLenderSharesAddress(
+    owner: PublicKey,
+    mapleSharesMint: PublicKey
+  ): Promise<PublicKey> {
+    return (await findATAAddrSync(owner, mapleSharesMint))[0];
   }
 
   private static async findLockedSharesAddress(
