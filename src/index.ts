@@ -13,10 +13,12 @@ export {
   MangoDepositoryAccount,
   PnLPolarity,
   MercurialVaultDepositoryAccount,
+  MaplePoolDepositoryAccount,
 } from './interfaces';
 export { Mango, createAndInitializeMango } from './mango';
 export { MangoDepository } from './mango/depository';
 export { MercurialVaultDepository } from './mercurial/depository';
+export { MaplePoolDepository } from './maple_pool/depository';
 export {
   ETH_DECIMALS,
   BTC_DECIMALS,
