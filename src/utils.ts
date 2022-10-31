@@ -111,3 +111,7 @@ export async function getBalance(
 export function uiToNative(amount: number, decimals: number): BN {
   return new BN(Math.round(amount * Math.pow(10, decimals)));
 }
+
+export function nativeToUi(amount: number, decimals: number): number {
+  return amount / Math.pow(10, decimals);
+}
