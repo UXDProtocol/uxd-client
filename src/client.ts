@@ -13,6 +13,7 @@ import { findMultipleATAAddSync, uiToNative } from './utils';
 import NamespaceFactory from './namespace';
 import { IDL as UXD_IDL } from './idl';
 import type { Uxd as UXD_IDL_TYPE } from './idl';
+import { IdentityDepository } from './identity/depository';
 
 export class UXDClient {
   public instruction: InstructionNamespace<UXD_IDL_TYPE>;
@@ -62,9 +63,9 @@ export class UXDClient {
       redeemableGlobalSupplyCap:
         typeof redeemableGlobalSupplyCap !== 'undefined'
           ? uiToNative(
-              redeemableGlobalSupplyCap,
-              controller.redeemableMintDecimals
-            )
+            redeemableGlobalSupplyCap,
+            controller.redeemableMintDecimals
+          )
           : null,
     };
     return this.instruction.editController(fields, {
@@ -74,6 +75,107 @@ export class UXDClient {
       },
       options: options,
     });
+  }
+
+  public initializeIdentityDepositoryInstruction(
+    controller: Controller,
+    depository: IdentityDepository,
+    authority: PublicKey,
+    options: ConfirmOptions,
+    payer?: PublicKey
+  ): TransactionInstruction {
+    return this.instruction.initializeIdentityDepository(
+      {
+        accounts: {
+          authority,
+          payer: payer ?? authority,
+          controller: controller.pda,
+          depository: depository.pda,
+          collateralVault: depository.collateralVaultPda,
+          collateralMint: depository.collateralMint,
+          systemProgram: SystemProgram.programId,
+          tokenProgram: TOKEN_PROGRAM_ID,
+          rent: SYSVAR_RENT_PUBKEY,
+        },
+        options,
+      }
+    );
+  }
+
+  public createMintWithIdentityDepositoryInstruction(
+    controller: Controller,
+    depository: IdentityDepository,
+    authority: PublicKey,
+    collateralAmount: number,
+    options: ConfirmOptions,
+    payer?: PublicKey
+  ): TransactionInstruction {
+    const nativeCollateralAmount = uiToNative(
+      collateralAmount,
+      depository.collateralMintDecimals
+    );
+
+    const [[userCollateralATA], [userRedeemableATA]] = findMultipleATAAddSync(
+      authority,
+      [depository.collateralMint, controller.redeemableMintPda]
+    );
+
+    return this.instruction.mintWithIdentityDepository(
+      nativeCollateralAmount,
+      {
+        accounts: {
+          user: authority,
+          payer: payer ?? authority,
+          controller: controller.pda,
+          depository: depository.pda,
+          collateralVault: depository.collateralVaultPda,
+          redeemableMint: controller.redeemableMintPda,
+          userCollateral: userCollateralATA,
+          userRedeemable: userRedeemableATA,
+          systemProgram: SystemProgram.programId,
+          tokenProgram: TOKEN_PROGRAM_ID,
+        },
+        options,
+      }
+    );
+  }
+
+  public createRedeemFromIdentityDepositoryInstruction(
+    controller: Controller,
+    depository: IdentityDepository,
+    authority: PublicKey,
+    redeemableAmount: number,
+    options: ConfirmOptions,
+    payer?: PublicKey
+  ): TransactionInstruction {
+    const nativeRedeemableAmount = uiToNative(
+      redeemableAmount,
+      controller.redeemableMintDecimals
+    );
+    const [[userCollateralATA], [userRedeemableATA]] = findMultipleATAAddSync(
+      authority,
+      [depository.collateralMint, controller.redeemableMintPda]
+    );
+
+    return this.instruction.redeemFromIdentityDepository(
+      nativeRedeemableAmount,
+      {
+        accounts: {
+          user: authority,
+          payer: payer ?? authority,
+          controller: controller.pda,
+          depository: depository.pda,
+          collateralVault: depository.collateralVaultPda,
+          collateralMint: depository.collateralMint,
+          redeemableMint: controller.redeemableMintPda,
+          userCollateral: userCollateralATA,
+          userRedeemable: userRedeemableATA,
+          systemProgram: SystemProgram.programId,
+          tokenProgram: TOKEN_PROGRAM_ID,
+        },
+        options,
+      }
+    );
   }
 
   public createRegisterMercurialVaultDepositoryInstruction(
