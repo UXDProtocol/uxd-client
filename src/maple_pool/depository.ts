@@ -60,7 +60,6 @@ export class MaplePoolDepository {
     maplePoolLocker,
     mapleGlobals,
     mapleSharesMint,
-    cluster,
   }: {
     connection: Connection;
     uxdProgramId: PublicKey;
