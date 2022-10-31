@@ -77,6 +77,30 @@ export class MercurialVaultDepositoryAccount {
   mintingDisabled!: boolean;
 }
 
+export class MaplePoolDepositoryAccount {
+  bump!: number; // u8
+  version!: number; // u8
+  controller!: PublicKey;
+  collateralMint!: PublicKey;
+  depositoryCollateral!: PublicKey;
+  depositoryCollateralBump!: number; // u8
+  maplePool!: PublicKey;
+  maplePoolLocker!: PublicKey;
+  mapleGlobals!: PublicKey;
+  mapleLender!: PublicKey;
+  mapleSharesMint!: PublicKey;
+  mapleLockedShares!: PublicKey;
+  mapleLenderShares!: PublicKey;
+  redeemableAmountUnderManagementCap!: BN; // u128
+  mintingFeeInBps!: number; // u8
+  redeemingFeeInBps!: number; // u8
+  mintingDisabled!: boolean;
+  depositedCollateralAmount!: BN; // u128
+  redeemableAmountUnderManagement!: BN; // u128
+  mintingFeeTotalAccrued!: BN; // u128
+  redeemingFeeTotalAccrued!: BN; // u128
+}
+
 export enum PnLPolarity {
   Positive = `Positive`,
   Negative = `Negative`,

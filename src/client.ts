@@ -1,6 +1,9 @@
 import { uiToNative, I80F48 } from '@blockworks-foundation/mango-client';
 import { InstructionNamespace } from '@project-serum/anchor';
-import { TOKEN_PROGRAM_ID } from '@solana/spl-token';
+import {
+  ASSOCIATED_TOKEN_PROGRAM_ID,
+  TOKEN_PROGRAM_ID,
+} from '@solana/spl-token';
 import {
   SystemProgram,
   SYSVAR_RENT_PUBKEY,
@@ -17,6 +20,7 @@ import NamespaceFactory from './namespace';
 import { IDL as UXD_IDL } from './idl';
 import type { Uxd as UXD_IDL_TYPE } from './idl';
 import { PnLPolarity } from './interfaces';
+import { MaplePoolDepository } from './maple_pool/depository';
 
 export class UXDClient {
   public instruction: InstructionNamespace<UXD_IDL_TYPE>;
@@ -256,6 +260,103 @@ export class UXDClient {
             MercurialVaultDepository.mercurialVaultProgramId,
           systemProgram: SystemProgram.programId,
           tokenProgram: TOKEN_PROGRAM_ID,
+        },
+        options,
+      }
+    );
+  }
+
+  public createRegisterMaplePoolDepositoryInstruction(
+    controller: Controller,
+    depository: MaplePoolDepository,
+    authority: PublicKey,
+    mintingFeeInBps: number,
+    redeemingFeeInBps: number,
+    redeemableAmountUnderManagementCap: number,
+    options: ConfirmOptions,
+    payer?: PublicKey
+  ): TransactionInstruction {
+    const redeemableAmountUnderManagementCapBN = uiToNative(
+      redeemableAmountUnderManagementCap,
+      controller.redeemableMintDecimals
+    );
+
+    return this.instruction.registerMaplePoolDepository(
+      mintingFeeInBps,
+      redeemingFeeInBps,
+      redeemableAmountUnderManagementCapBN,
+      {
+        accounts: {
+          authority,
+          payer: payer ?? authority,
+          controller: controller.pda,
+          depository: depository.pda,
+          depositoryCollateral: depository.depositoryCollateral,
+          collateralMint: depository.collateralMint,
+          maplePool: depository.maplePool,
+          maplePoolLocker: depository.maplePoolLocker,
+          mapleGlobals: depository.mapleGlobals,
+          mapleLender: depository.mapleLender,
+          mapleSharesMint: depository.mapleSharesMint,
+          mapleLockedShares: depository.mapleLockedShares,
+          mapleLenderShares: depository.mapleLenderShares,
+          systemProgram: SystemProgram.programId,
+          associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+          tokenProgram: TOKEN_PROGRAM_ID,
+          syrupProgram: depository.syrupProgramId,
+          rent: SYSVAR_RENT_PUBKEY,
+        },
+        options,
+      }
+    );
+  }
+
+  public createMintWithMaplePoolDepositoryInstruction(
+    controller: Controller,
+    depository: MaplePoolDepository,
+    authority: PublicKey,
+    collateralAmount: number,
+    options: ConfirmOptions,
+    payer?: PublicKey
+  ): TransactionInstruction {
+    const nativeCollateralAmount = uiToNative(
+      collateralAmount,
+      depository.collateralDecimals
+    );
+
+    const collateralMint = depository.collateralMint;
+    const redeemableMint = controller.redeemableMintPda;
+
+    const [[userCollateralATA], [userRedeemableATA]] = findMultipleATAAddSync(
+      authority,
+      [collateralMint, redeemableMint]
+    );
+
+    return this.instruction.mintWithMaplePoolDepository(
+      nativeCollateralAmount,
+      {
+        accounts: {
+          user: authority,
+          payer: payer ?? authority,
+          controller: controller.pda,
+          depository: depository.pda,
+          depositoryCollateral: depository.depositoryCollateral,
+          redeemableMint: redeemableMint,
+          userRedeemable: userRedeemableATA,
+          collateralMint: collateralMint,
+          userCollateral: userCollateralATA,
+          maplePool: depository.maplePool,
+          maplePoolLocker: depository.maplePoolLocker,
+          mapleGlobals: depository.mapleGlobals,
+          mapleLender: depository.mapleLender,
+          mapleSharesMint: depository.mapleSharesMint,
+          mapleLockedShares: depository.mapleLockedShares,
+          mapleLenderShares: depository.mapleLenderShares,
+          systemProgram: SystemProgram.programId,
+          associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+          tokenProgram: TOKEN_PROGRAM_ID,
+          syrupProgram: depository.syrupProgramId,
+          rent: SYSVAR_RENT_PUBKEY,
         },
         options,
       }
@@ -791,6 +892,47 @@ export class UXDClient {
         typeof mintingDisabled !== 'undefined' ? mintingDisabled : null,
     };
     return this.instruction.editMercurialVaultDepository(fields, {
+      accounts: {
+        authority,
+        controller: controller.pda,
+        depository: depository.pda,
+      },
+      options: options,
+    });
+  }
+
+  public createEditMaplePoolDepositoryInstruction(
+    controller: Controller,
+    depository: MaplePoolDepository,
+    authority: PublicKey,
+    uiFields: {
+      redeemableAmountUnderManagementCap?: number;
+      mintingFeeInBps?: number;
+      redeemingFeeInBps?: number;
+      mintingDisabled?: boolean;
+    },
+    options: ConfirmOptions
+  ): TransactionInstruction {
+    const {
+      redeemableAmountUnderManagementCap,
+      mintingFeeInBps,
+      redeemingFeeInBps,
+      mintingDisabled,
+    } = uiFields;
+    const fields = {
+      redeemableAmountUnderManagementCap:
+        redeemableAmountUnderManagementCap !== undefined
+          ? uiToNative(
+              redeemableAmountUnderManagementCap,
+              controller.redeemableMintDecimals
+            )
+          : null,
+      mintingFeeInBps: mintingFeeInBps !== undefined ? mintingFeeInBps : null,
+      redeemingFeeInBps:
+        redeemingFeeInBps !== undefined ? redeemingFeeInBps : null,
+      mintingDisabled: mintingDisabled !== undefined ? mintingDisabled : null,
+    };
+    return this.instruction.editMaplePoolDepository(fields, {
       accounts: {
         authority,
         controller: controller.pda,
