@@ -643,7 +643,7 @@ export type Uxd = {
             "type": "u128"
           },
           {
-            "name": "mintingDisabled",
+            "name": "regularMintingDisabled",
             "type": "bool"
           }
         ]
@@ -2059,7 +2059,7 @@ export const IDL: Uxd = {
             "type": "u128"
           },
           {
-            "name": "mintingDisabled",
+            "name": "regularMintingDisabled",
             "type": "bool"
           }
         ]

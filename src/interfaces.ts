@@ -44,5 +44,6 @@ export class IdentityDepositoryAccount {
   collateralVaultBump!: number; // u8
   collateralAmountDeposited!: BN; // u128
   redeemableAmountUnderManagement!: BN; // u128
-  regularMintingDisabled!: boolean;
+  redeemableAmountUnderManagementCap!: BN; // u128
+  mintingDisabled!: boolean;
 }
