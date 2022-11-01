@@ -4,6 +4,7 @@ export { IDL } from './idl';
 export {
   ControllerAccount,
   MercurialVaultDepositoryAccount,
+  IdentityDepositoryAccount,
 } from './interfaces';
 export { MercurialVaultDepository } from './mercurial/depository';
 export { IdentityDepository } from './identity/depository';
