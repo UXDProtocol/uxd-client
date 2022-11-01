@@ -349,7 +349,6 @@ export class UXDClient {
     });
   }
 
-
   /**
    * @deprecated
    * for backward compatibility only
@@ -369,5 +368,41 @@ export class UXDClient {
       },
       options
     );
+  }
+
+
+  public createEditIdentityDepositoryInstruction(
+    controller: Controller,
+    depository: IdentityDepository,
+    authority: PublicKey,
+    uiFields: {
+      redeemableAmountUnderManagementCap?: number;
+      mintingDisabled?: boolean;
+    },
+    options: ConfirmOptions
+  ): TransactionInstruction {
+    const {
+      redeemableAmountUnderManagementCap,
+      mintingDisabled,
+    } = uiFields;
+    const fields = {
+      redeemableAmountUnderManagementCap:
+        typeof redeemableAmountUnderManagementCap !== 'undefined'
+          ? uiToNative(
+            redeemableAmountUnderManagementCap,
+            controller.redeemableMintDecimals
+          )
+          : null,
+      mintingDisabled:
+        typeof mintingDisabled !== 'undefined' ? mintingDisabled : null,
+    };
+    return this.instruction.editIdentityDepository(fields, {
+      accounts: {
+        authority,
+        controller: controller.pda,
+        depository: depository.pda,
+      },
+      options: options,
+    });
   }
 }
