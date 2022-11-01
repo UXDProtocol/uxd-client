@@ -306,6 +306,49 @@ export class UXDClient {
     );
   }
 
+  public createEditMercurialVaultDepositoryInstruction(
+    controller: Controller,
+    depository: MercurialVaultDepository,
+    authority: PublicKey,
+    uiFields: {
+      redeemableAmountUnderManagementCap?: number;
+      mintingFeeInBps?: number;
+      redeemingFeeInBps?: number;
+      mintingDisabled?: boolean;
+    },
+    options: ConfirmOptions
+  ): TransactionInstruction {
+    const {
+      redeemableAmountUnderManagementCap,
+      mintingFeeInBps,
+      redeemingFeeInBps,
+      mintingDisabled,
+    } = uiFields;
+    const fields = {
+      redeemableAmountUnderManagementCap:
+        typeof redeemableAmountUnderManagementCap !== 'undefined'
+          ? uiToNative(
+            redeemableAmountUnderManagementCap,
+            controller.redeemableMintDecimals
+          )
+          : null,
+      mintingFeeInBps:
+        typeof mintingFeeInBps !== 'undefined' ? mintingFeeInBps : null,
+      redeemingFeeInBps:
+        typeof redeemingFeeInBps !== 'undefined' ? redeemingFeeInBps : null,
+      mintingDisabled:
+        typeof mintingDisabled !== 'undefined' ? mintingDisabled : null,
+    };
+    return this.instruction.editMercurialVaultDepository(fields, {
+      accounts: {
+        authority,
+        controller: controller.pda,
+        depository: depository.pda,
+      },
+      options: options,
+    });
+  }
+
 
   /**
    * @deprecated
