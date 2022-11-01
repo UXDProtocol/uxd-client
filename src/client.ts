@@ -77,7 +77,7 @@ export class UXDClient {
     });
   }
 
-  public initializeIdentityDepositoryInstruction(
+  public createInitializeIdentityDepositoryInstruction(
     controller: Controller,
     depository: IdentityDepository,
     authority: PublicKey,
