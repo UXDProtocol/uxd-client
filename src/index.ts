@@ -6,6 +6,7 @@ export {
   MercurialVaultDepositoryAccount,
   IdentityDepositoryAccount,
 } from './interfaces';
+export { MangoDepository } from './mango/depository';
 export { MercurialVaultDepository } from './mercurial/depository';
 export { IdentityDepository } from './identity/depository';
 export {

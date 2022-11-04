@@ -10,7 +10,6 @@ import {
   TransactionInstruction,
 } from '@solana/web3.js';
 
-
 import BN from 'bn.js';
 
 // Constants
