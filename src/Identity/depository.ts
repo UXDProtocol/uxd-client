@@ -24,7 +24,7 @@ export class IdentityDepository {
       uxdProgramId
     );
     [this.collateralVaultPda] = PublicKey.findProgramAddressSync(
-      [Buffer.from('IDENTITYDEPOSITORYCOLLATERALVAULT')],
+      [Buffer.from('IDENTITYDEPOSITORYCOLLATERAL')],
       uxdProgramId
     );
   }
