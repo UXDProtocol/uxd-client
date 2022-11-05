@@ -9,7 +9,7 @@ import {
 } from '@solana/web3.js';
 import { Controller } from './controller';
 import { MercurialVaultDepository } from './mercurial/depository';
-import { findMultipleATAAddSync, uiToNative } from './utils';
+import { findATAAddrSync, findMultipleATAAddSync, uiToNative } from './utils';
 import NamespaceFactory from './namespace';
 import { IDL as UXD_IDL } from './idl';
 import type { Uxd as UXD_IDL_TYPE } from './idl';
@@ -180,10 +180,10 @@ export class UXDClient {
     options: ConfirmOptions,
     payer?: PublicKey
   ): TransactionInstruction {
-    const [[userCollateralATA]] = findMultipleATAAddSync(user, [
-      depository.collateralMint,
-      controller.redeemableMintPda,
-    ]);
+    const [userCollateralATA] = findATAAddrSync(
+      user,
+      depository.collateralMint
+    );
     return this.instruction.reinjectMangoToIdentityDepository({
       accounts: {
         user,
