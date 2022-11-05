@@ -1,4 +1,7 @@
-import { PublicKey } from '@solana/web3.js';
+import { IDL } from '../idl';
+import { BorshAccountsCoder } from '@project-serum/anchor';
+import { ConfirmOptions, Connection, PublicKey } from '@solana/web3.js';
+import { MangoDepositoryAccount } from '../interfaces';
 
 export class MangoDepository {
   public pda: PublicKey;
@@ -34,5 +37,20 @@ export class MangoDepository {
       [Buffer.from('MANGOACCOUNT'), mintBuffer],
       uxdProgramId
     );
+  }
+
+  public async getOnchainAccount(
+    connection: Connection,
+    options: ConfirmOptions
+  ): Promise<MangoDepositoryAccount> {
+    const coder = new BorshAccountsCoder(IDL);
+    const result = await connection.getAccountInfo(
+      this.pda,
+      options.commitment
+    );
+    if (!result) {
+      throw new Error('mangoDepositoryAccount not found');
+    }
+    return coder.decode('mangoDepository', result.data);
   }
 }
