@@ -32,6 +32,9 @@ export class MercurialVaultDepositoryAccount {
   redeemingFeeTotalAccrued!: BN; // u128
   redeemableAmountUnderManagementCap!: BN; // u128
   mintingDisabled!: boolean;
+  interestsAndFeesRedeemAuthority!: PublicKey;
+  interestsAndFeesTotalCollected!: BN; // u128
+  lastInterestsAndFeesCollectionUnixTimestamp!: BN; // u64
 }
 
 // V1
