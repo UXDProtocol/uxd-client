@@ -9,7 +9,7 @@ import {
 } from '@solana/web3.js';
 import { Controller } from './controller';
 import { MercurialVaultDepository } from './mercurial/depository';
-import { findMultipleATAAddSync, uiToNative } from './utils';
+import { findATAAddrSync, findMultipleATAAddSync, uiToNative } from './utils';
 import NamespaceFactory from './namespace';
 import { IDL as UXD_IDL } from './idl';
 import type { Uxd as UXD_IDL_TYPE } from './idl';
@@ -61,9 +61,9 @@ export class UXDClient {
       redeemableGlobalSupplyCap:
         typeof redeemableGlobalSupplyCap !== 'undefined'
           ? uiToNative(
-              redeemableGlobalSupplyCap,
-              controller.redeemableMintDecimals
-            )
+            redeemableGlobalSupplyCap,
+            controller.redeemableMintDecimals
+          )
           : null,
     };
     return this.instruction.editController(fields, {
@@ -174,6 +174,7 @@ export class UXDClient {
     controller: Controller,
     depository: MercurialVaultDepository,
     authority: PublicKey,
+    profitsRedeemAuthority: PublicKey,
     mintingFeeInBps: number,
     redeemingFeeInBps: number,
     redeemableAmountUnderManagementCap: number,
@@ -192,6 +193,7 @@ export class UXDClient {
       {
         accounts: {
           authority,
+          profitsRedeemAuthority,
           payer: payer ?? authority,
           controller: controller.pda,
           depository: depository.pda,
@@ -202,6 +204,38 @@ export class UXDClient {
           systemProgram: SystemProgram.programId,
           tokenProgram: TOKEN_PROGRAM_ID,
           rent: SYSVAR_RENT_PUBKEY,
+        },
+        options,
+      }
+    );
+  }
+
+  public createCollectProfitOfMercurialVaultDepositoryInstruction(
+    controller: Controller,
+    profitsRedeemAuthority: PublicKey,
+    depository: MercurialVaultDepository,
+    options: ConfirmOptions,
+    payer?: PublicKey
+  ): TransactionInstruction {
+    const [interestsAndFeesRedeemAuthorityCollateral] = findATAAddrSync(profitsRedeemAuthority, depository.collateralMint.mint);
+
+    return this.instruction.collectProfitOfMercurialVaultDepository(
+      {
+        accounts: {
+          profitsRedeemAuthority,
+          payer: payer ?? profitsRedeemAuthority,
+          controller: controller.pda,
+          depository: depository.pda,
+          collateralMint: depository.collateralMint.mint,
+          interestsAndFeesRedeemAuthorityCollateral,
+          depositoryLpTokenVault: depository.depositoryLpTokenVault,
+          mercurialVault: depository.mercurialVault,
+          mercurialVaultLpMint: depository.mercurialVaultLpMint.mint,
+          mercurialVaultCollateralTokenSafe: depository.mercurialVaultCollateralTokenSafe,
+          mercurialVaultProgram:
+            MercurialVaultDepository.mercurialVaultProgramId,
+          systemProgram: SystemProgram.programId,
+          tokenProgram: TOKEN_PROGRAM_ID,
         },
         options,
       }
@@ -307,6 +341,7 @@ export class UXDClient {
       mintingFeeInBps?: number;
       redeemingFeeInBps?: number;
       mintingDisabled?: boolean;
+      profitsRedeemAuthority?: PublicKey;
     },
     options: ConfirmOptions
   ): TransactionInstruction {
@@ -315,14 +350,15 @@ export class UXDClient {
       mintingFeeInBps,
       redeemingFeeInBps,
       mintingDisabled,
+      profitsRedeemAuthority,
     } = uiFields;
     const fields = {
       redeemableAmountUnderManagementCap:
         typeof redeemableAmountUnderManagementCap !== 'undefined'
           ? uiToNative(
-              redeemableAmountUnderManagementCap,
-              controller.redeemableMintDecimals
-            )
+            redeemableAmountUnderManagementCap,
+            controller.redeemableMintDecimals
+          )
           : null,
       mintingFeeInBps:
         typeof mintingFeeInBps !== 'undefined' ? mintingFeeInBps : null,
@@ -330,6 +366,7 @@ export class UXDClient {
         typeof redeemingFeeInBps !== 'undefined' ? redeemingFeeInBps : null,
       mintingDisabled:
         typeof mintingDisabled !== 'undefined' ? mintingDisabled : null,
+      profitsRedeemAuthority: typeof profitsRedeemAuthority !== 'undefined' ? profitsRedeemAuthority : null,
     };
     return this.instruction.editMercurialVaultDepository(fields, {
       accounts: {
@@ -377,9 +414,9 @@ export class UXDClient {
       redeemableAmountUnderManagementCap:
         typeof redeemableAmountUnderManagementCap !== 'undefined'
           ? uiToNative(
-              redeemableAmountUnderManagementCap,
-              controller.redeemableMintDecimals
-            )
+            redeemableAmountUnderManagementCap,
+            controller.redeemableMintDecimals
+          )
           : null,
       mintingDisabled:
         typeof mintingDisabled !== 'undefined' ? mintingDisabled : null,

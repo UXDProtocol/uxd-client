@@ -44,7 +44,7 @@ export class MercurialVaultDepository {
     public readonly depositoryLpTokenVault: PublicKey,
     public readonly mercurialVaultCollateralTokenSafe: PublicKey,
     public readonly mercurialVaultProgram: Program<MercurialVaultIDL>
-  ) {}
+  ) { }
 
   public static async initialize({
     connection,
@@ -141,7 +141,7 @@ export class MercurialVaultDepository {
     );
   }
 
-  public async calculateRewardsAndFeesValue(
+  public async calculateInterestsAndFeesValue(
     connection: Connection,
     options?: ConfirmOptions
   ): Promise<BN> {
@@ -175,11 +175,11 @@ export class MercurialVaultDepository {
       lpTokenTotalSupply
     );
 
-    const rewardsAndFees = ownedLpTokenValue.sub(
+    const interestsAndFees = ownedLpTokenValue.sub(
       onChainAccount.redeemableAmountUnderManagement
     );
 
-    return rewardsAndFees;
+    return interestsAndFees;
   }
 
   public info() {
@@ -191,13 +191,13 @@ export class MercurialVaultDepository {
       ']'
     );
     console.table({
-      ['pda']: this.pda.toBase58(),
-      ['collateralMint']: this.collateralMint.mint.toBase58(),
-      ['collateralMintSymbol']: this.collateralMint.symbol.toString(),
-      ['collateralMintDecimals']: this.collateralMint.decimals.toString(),
-      ['mercurialVault']: this.mercurialVault.toBase58(),
-      ['mercurialVaultLpMint']: this.mercurialVaultLpMint.mint.toBase58(),
-      ['depositoryLpTokenVault']: this.depositoryLpTokenVault.toBase58(),
+      pda: this.pda.toBase58(),
+      collateralMint: this.collateralMint.mint.toBase58(),
+      collateralMintSymbol: this.collateralMint.symbol.toString(),
+      collateralMintDecimals: this.collateralMint.decimals.toString(),
+      mercurialVault: this.mercurialVault.toBase58(),
+      mercurialVaultLpMint: this.mercurialVaultLpMint.mint.toBase58(),
+      depositoryLpTokenVault: this.depositoryLpTokenVault.toBase58(),
     });
     console.groupEnd();
   }
