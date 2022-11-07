@@ -21,6 +21,7 @@ import { IDL as UXD_IDL } from './idl';
 import type { Uxd as UXD_IDL_TYPE } from './idl';
 import { PnLPolarity } from './interfaces';
 import { MaplePoolDepository } from './maple_pool/depository';
+import { CredixLpDepository } from './credix_lp/depository';
 
 export class UXDClient {
   public instruction: InstructionNamespace<UXD_IDL_TYPE>;
@@ -327,7 +328,7 @@ export class UXDClient {
     const collateralMint = depository.collateralMint;
     const redeemableMint = controller.redeemableMintPda;
 
-    const [[userCollateralATA], [userRedeemableATA]] = findMultipleATAAddSync(
+    const [[userCollateral], [userRedeemable]] = findMultipleATAAddSync(
       authority,
       [collateralMint, redeemableMint]
     );
@@ -342,9 +343,54 @@ export class UXDClient {
           depository: depository.pda,
           depositoryCollateral: depository.depositoryCollateral,
           redeemableMint: redeemableMint,
-          userRedeemable: userRedeemableATA,
+          userRedeemable: userRedeemable,
           collateralMint: collateralMint,
-          userCollateral: userCollateralATA,
+          userCollateral: userCollateral,
+          credixPool: depository.credixPool,
+          credixPoolLocker: depository.credixPoolLocker,
+          credixGlobals: depository.credixGlobals,
+          credixLender: depository.credixLender,
+          credixSharesMint: depository.credixSharesMint,
+          credixLockedShares: depository.credixLockedShares,
+          credixLenderShares: depository.credixLenderShares,
+          systemProgram: SystemProgram.programId,
+          associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+          tokenProgram: TOKEN_PROGRAM_ID,
+          syrupProgram: depository.syrupProgramId,
+          rent: SYSVAR_RENT_PUBKEY,
+        },
+        options,
+      }
+    );
+  }
+
+  public createRegisterCredixLpDepositoryInstruction(
+    controller: Controller,
+    depository: CredixLpDepository,
+    authority: PublicKey,
+    mintingFeeInBps: number,
+    redeemingFeeInBps: number,
+    redeemableAmountUnderManagementCap: number,
+    options: ConfirmOptions,
+    payer?: PublicKey
+  ): TransactionInstruction {
+    const redeemableAmountUnderManagementCapBN = uiToNative(
+      redeemableAmountUnderManagementCap,
+      controller.redeemableMintDecimals
+    );
+
+    return this.instruction.registerCredixLpDepository(
+      mintingFeeInBps,
+      redeemingFeeInBps,
+      redeemableAmountUnderManagementCapBN,
+      {
+        accounts: {
+          authority,
+          payer: payer ?? authority,
+          controller: controller.pda,
+          depository: depository.pda,
+          depositoryCollateral: depository.depositoryCollateral,
+          collateralMint: depository.collateralMint,
           maplePool: depository.maplePool,
           maplePoolLocker: depository.maplePoolLocker,
           mapleGlobals: depository.mapleGlobals,
@@ -361,6 +407,55 @@ export class UXDClient {
         options,
       }
     );
+  }
+
+  public createMintWithCredixLpDepositoryInstruction(
+    controller: Controller,
+    depository: CredixLpDepository,
+    authority: PublicKey,
+    collateralAmount: number,
+    options: ConfirmOptions,
+    payer?: PublicKey
+  ): TransactionInstruction {
+    const nativeCollateralAmount = uiToNative(
+      collateralAmount,
+      depository.collateralDecimals
+    );
+
+    const collateralMint = depository.collateralMint;
+    const redeemableMint = controller.redeemableMintPda;
+
+    const [[userCollateralATA], [userRedeemableATA]] = findMultipleATAAddSync(
+      authority,
+      [collateralMint, redeemableMint]
+    );
+
+    return this.instruction.mintWithCredixLpDepository(nativeCollateralAmount, {
+      accounts: {
+        user: authority,
+        payer: payer ?? authority,
+        controller: controller.pda,
+        depository: depository.pda,
+        depositoryCollateral: depository.depositoryCollateral,
+        redeemableMint: redeemableMint,
+        userRedeemable: userRedeemableATA,
+        collateralMint: collateralMint,
+        userCollateral: userCollateralATA,
+        maplePool: depository.maplePool,
+        maplePoolLocker: depository.maplePoolLocker,
+        mapleGlobals: depository.mapleGlobals,
+        mapleLender: depository.mapleLender,
+        mapleSharesMint: depository.mapleSharesMint,
+        mapleLockedShares: depository.mapleLockedShares,
+        mapleLenderShares: depository.mapleLenderShares,
+        systemProgram: SystemProgram.programId,
+        associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+        tokenProgram: TOKEN_PROGRAM_ID,
+        syrupProgram: depository.syrupProgramId,
+        rent: SYSVAR_RENT_PUBKEY,
+      },
+      options,
+    });
   }
 
   public async createRebalanceMangoDepositoryLiteInstruction(
@@ -933,6 +1028,47 @@ export class UXDClient {
       mintingDisabled: mintingDisabled !== undefined ? mintingDisabled : null,
     };
     return this.instruction.editMaplePoolDepository(fields, {
+      accounts: {
+        authority,
+        controller: controller.pda,
+        depository: depository.pda,
+      },
+      options: options,
+    });
+  }
+
+  public createEditCredixLpDepositoryInstruction(
+    controller: Controller,
+    depository: CredixLpDepository,
+    authority: PublicKey,
+    uiFields: {
+      redeemableAmountUnderManagementCap?: number;
+      mintingFeeInBps?: number;
+      redeemingFeeInBps?: number;
+      mintingDisabled?: boolean;
+    },
+    options: ConfirmOptions
+  ): TransactionInstruction {
+    const {
+      redeemableAmountUnderManagementCap,
+      mintingFeeInBps,
+      redeemingFeeInBps,
+      mintingDisabled,
+    } = uiFields;
+    const fields = {
+      redeemableAmountUnderManagementCap:
+        redeemableAmountUnderManagementCap !== undefined
+          ? uiToNative(
+              redeemableAmountUnderManagementCap,
+              controller.redeemableMintDecimals
+            )
+          : null,
+      mintingFeeInBps: mintingFeeInBps !== undefined ? mintingFeeInBps : null,
+      redeemingFeeInBps:
+        redeemingFeeInBps !== undefined ? redeemingFeeInBps : null,
+      mintingDisabled: mintingDisabled !== undefined ? mintingDisabled : null,
+    };
+    return this.instruction.editCredixLpDepository(fields, {
       accounts: {
         authority,
         controller: controller.pda,
