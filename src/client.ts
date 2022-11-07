@@ -176,18 +176,18 @@ export class UXDClient {
     controller: Controller,
     depository: IdentityDepository,
     mangoDepository: MangoDepository,
-    user: PublicKey,
+    authority: PublicKey,
     options: ConfirmOptions,
     payer?: PublicKey
   ): TransactionInstruction {
     const [userCollateralATA] = findATAAddrSync(
-      user,
+      authority,
       depository.collateralMint
     );
     return this.instruction.reinjectMangoToIdentityDepository({
       accounts: {
-        user,
-        payer: payer ?? user,
+        authority,
+        payer: payer ?? authority,
         controller: controller.pda,
         depository: depository.pda,
         collateralVault: depository.collateralVaultPda,

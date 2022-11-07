@@ -555,7 +555,7 @@ export type Uxd = {
       name: 'reinjectMangoToIdentityDepository';
       accounts: [
         {
-          name: 'user';
+          name: 'authority';
           isMut: false;
           isSigner: true;
         },
@@ -2195,7 +2195,7 @@ export const IDL: Uxd = {
       name: 'reinjectMangoToIdentityDepository',
       accounts: [
         {
-          name: 'user',
+          name: 'authority',
           isMut: false,
           isSigner: true,
         },
