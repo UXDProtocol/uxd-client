@@ -221,7 +221,7 @@ export class UXDClient {
     options: ConfirmOptions,
     payer?: PublicKey
   ): TransactionInstruction {
-    const [interestsAndFeesRedeemAuthorityCollateral] = findATAAddrSync(profitsRedeemAuthority, depository.collateralMint.mint);
+    const [profitsRedeemAuthorityCollateral] = findATAAddrSync(profitsRedeemAuthority, depository.collateralMint.mint);
 
     return this.instruction.collectProfitOfMercurialVaultDepository(
       {
@@ -231,7 +231,7 @@ export class UXDClient {
           controller: controller.pda,
           depository: depository.pda,
           collateralMint: depository.collateralMint.mint,
-          interestsAndFeesRedeemAuthorityCollateral,
+          profitsRedeemAuthorityCollateral,
           depositoryLpTokenVault: depository.depositoryLpTokenVault,
           mercurialVault: depository.mercurialVault,
           mercurialVaultLpMint: depository.mercurialVaultLpMint.mint,
