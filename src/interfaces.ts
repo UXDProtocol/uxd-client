@@ -95,10 +95,11 @@ export class MaplePoolDepositoryAccount {
   mintingFeeInBps!: number; // u8
   redeemingFeeInBps!: number; // u8
   mintingDisabled!: boolean;
-  depositedCollateralAmount!: BN; // u128
+  collateralAmountDeposited!: BN; // u128
   redeemableAmountUnderManagement!: BN; // u128
   mintingFeeTotalAccrued!: BN; // u128
   redeemingFeeTotalAccrued!: BN; // u128
+  withdrawalNonce!: BN; // u64
 }
 
 export enum PnLPolarity {

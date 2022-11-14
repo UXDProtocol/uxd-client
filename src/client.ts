@@ -363,6 +363,62 @@ export class UXDClient {
     );
   }
 
+  public createRedeemFromMaplePoolDepositoryInstruction(
+    controller: Controller,
+    depository: MaplePoolDepository,
+    mapleWithdrawalRequest: PublicKey,
+    mapleWithdrawalRequestLocker: PublicKey,
+    authority: PublicKey,
+    redeemableAmount: number,
+    options: ConfirmOptions,
+    payer?: PublicKey
+  ): TransactionInstruction {
+    const nativeRedeemableAmount = uiToNative(
+      redeemableAmount,
+      controller.redeemableMintDecimals
+    );
+
+    const collateralMint = depository.collateralMint;
+    const redeemableMint = controller.redeemableMintPda;
+
+    const [[userCollateral], [userRedeemable]] = findMultipleATAAddSync(
+      authority,
+      [collateralMint, redeemableMint]
+    );
+
+    return this.instruction.redeemFromMaplePoolDepository(
+      nativeRedeemableAmount,
+      {
+        accounts: {
+          user: authority,
+          payer: payer ?? authority,
+          controller: controller.pda,
+          depository: depository.pda,
+          depositoryCollateral: depository.depositoryCollateral,
+          redeemableMint: redeemableMint,
+          userRedeemable: userRedeemable,
+          collateralMint: collateralMint,
+          userCollateral: userCollateral,
+          maplePool: depository.maplePool,
+          maplePoolLocker: depository.maplePoolLocker,
+          mapleGlobals: depository.mapleGlobals,
+          mapleLender: depository.mapleLender,
+          mapleSharesMint: depository.mapleSharesMint,
+          mapleLockedShares: depository.mapleLockedShares,
+          mapleLenderShares: depository.mapleLenderShares,
+          mapleWithdrawalRequest: mapleWithdrawalRequest,
+          mapleWithdrawalRequestLocker: mapleWithdrawalRequestLocker,
+          systemProgram: SystemProgram.programId,
+          associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+          tokenProgram: TOKEN_PROGRAM_ID,
+          syrupProgram: depository.syrupProgramId,
+          rent: SYSVAR_RENT_PUBKEY,
+        },
+        options,
+      }
+    );
+  }
+
   public async createRebalanceMangoDepositoryLiteInstruction(
     maxRebalancingAmount: number,
     slippage: number,

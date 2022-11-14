@@ -1,4 +1,4 @@
-import { BorshAccountsCoder } from '@project-serum/anchor';
+import { BN, BorshAccountsCoder } from '@project-serum/anchor';
 import {
   Cluster,
   ConfirmOptions,
@@ -17,6 +17,9 @@ const MAPLE_POOL_DEPOSITORY_COLLATERAL_NAMESPACE =
 
 const MAPLE_INTERNAL_LENDER_NAMESPACE = 'lender';
 const MAPLE_INTERNAL_LOCKED_SHARES_NAMESPACE = 'locked_shares';
+const MAPLE_INTERNAL_WITHDRAWAL_REQUEST_NAMESPACE = 'withdrawal_request';
+const MAPLE_INTERNAL_WITHDRAWAL_REQUEST_LOCKER_NAMESPACE =
+  'withdrawal_request_locker';
 
 export class MaplePoolDepository {
   public static SYRUP_PROGRAM_ID = new PublicKey(
@@ -182,6 +185,36 @@ export class MaplePoolDepository {
           mapleLender.toBytes(),
         ],
         syrupProgramId
+      )
+    )[0];
+  }
+
+  public async findWithdrawalRequestAddress(nonce: BN): Promise<PublicKey> {
+    const buffer = Buffer.alloc(8);
+    buffer.writeBigUint64BE(BigInt(nonce.toString()));
+    console.log('findWithdrawalRequestAddress', nonce, buffer);
+    return (
+      await PublicKey.findProgramAddress(
+        [
+          Buffer.from(MAPLE_INTERNAL_WITHDRAWAL_REQUEST_NAMESPACE),
+          this.mapleLender.toBytes(),
+          buffer,
+        ],
+        this.syrupProgramId
+      )
+    )[0];
+  }
+
+  public async findWithdrawalRequestLockerAddress(
+    withdrawalRequest: PublicKey
+  ): Promise<PublicKey> {
+    return (
+      await PublicKey.findProgramAddress(
+        [
+          Buffer.from(MAPLE_INTERNAL_WITHDRAWAL_REQUEST_LOCKER_NAMESPACE),
+          withdrawalRequest.toBytes(),
+        ],
+        this.syrupProgramId
       )
     )[0];
   }
