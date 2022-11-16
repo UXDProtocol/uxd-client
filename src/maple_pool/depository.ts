@@ -70,7 +70,6 @@ export class MaplePoolDepository {
     maplePoolLocker: PublicKey;
     mapleGlobals: PublicKey;
     mapleSharesMint: PublicKey;
-    cluster: Cluster;
   }): Promise<MaplePoolDepository> {
     // The depository is PDA from the pool and the collateral
     const [depository] = PublicKey.findProgramAddressSync(
