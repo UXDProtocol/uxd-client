@@ -160,7 +160,6 @@ export class UXDClient {
           controller: controller.pda,
           depository: depository.pda,
           collateralVault: depository.collateralVaultPda,
-          collateralMint: depository.collateralMint,
           redeemableMint: controller.redeemableMintPda,
           userCollateral: userCollateralATA,
           userRedeemable: userRedeemableATA,
