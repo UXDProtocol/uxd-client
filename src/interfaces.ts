@@ -108,13 +108,13 @@ export class CredixLpDepositoryAccount {
   collateralMint!: PublicKey;
   depositoryCollateral!: PublicKey;
   depositoryCollateralBump!: number; // u8
-  depositoryLpShares!: PublicKey;
-  depositoryLpSharesBump!: number; // u8
+  depositoryShares!: PublicKey;
+  depositorySharesBump!: number; // u8
+  credixProgramState!: PublicKey;
   credixGlobalMarketState!: PublicKey;
   credixSigningAuthority!: PublicKey;
-  credixTreasuryCollateral!: PublicKey;
   credixLiquidityCollateral!: PublicKey;
-  credixLpSharesMint!: PublicKey;
+  credixSharesMint!: PublicKey;
   redeemableAmountUnderManagementCap!: BN; // u128
   mintingFeeInBps!: number; // u8
   redeemingFeeInBps!: number; // u8

@@ -1,11 +1,5 @@
 import { BorshAccountsCoder } from '@project-serum/anchor';
-import {
-  Cluster,
-  ConfirmOptions,
-  Connection,
-  PublicKey,
-  Signer,
-} from '@solana/web3.js';
+import { ConfirmOptions, Connection, PublicKey, Signer } from '@solana/web3.js';
 import { IDL } from '../idl';
 import { CredixLpDepositoryAccount } from '../interfaces';
 import { Token, TOKEN_PROGRAM_ID } from '@solana/spl-token';
@@ -18,6 +12,8 @@ const CREDIX_LP_DEPOSITORY_LP_SHARES_NAMESPACE =
   'CREDIX_LP_DEPOSITORY_LP_SHARES';
 
 const CREDIX_LP_INTERNAL_PASS_NAMESPACE = 'credix-pass';
+const CREDIX_LP_INTERNAL_PROGRAM_STATE_NAMESPACE = 'program-state';
+const CREDIX_LP_INTERNAL_LP_TOKEN_MINT_NAMESPACE = 'lp-token-mint';
 
 export class CredixLpDepository {
   public constructor(
@@ -26,12 +22,13 @@ export class CredixLpDepository {
     public readonly collateralDecimals: number,
     public readonly collateralSymbol: string,
     public readonly depositoryCollateral: PublicKey,
-    public readonly depositoryLpShares: PublicKey,
+    public readonly depositoryShares: PublicKey,
+    public readonly credixProgramState: PublicKey,
     public readonly credixGlobalMarketState: PublicKey,
     public readonly credixSigningAuthority: PublicKey,
     public readonly credixTreasuryCollateral: PublicKey,
     public readonly credixLiquidityCollateral: PublicKey,
-    public readonly credixLpSharesMint: PublicKey,
+    public readonly credixSharesMint: PublicKey,
     public readonly credixPass: PublicKey,
     public readonly credixProgramId: PublicKey
   ) {}
@@ -44,7 +41,6 @@ export class CredixLpDepository {
     collateralSymbol,
     credixGlobalMarketState,
     credixTreasuryCollateral,
-    credixSharesMint,
   }: {
     connection: Connection;
     uxdProgramId: PublicKey;
@@ -53,8 +49,6 @@ export class CredixLpDepository {
     collateralSymbol: string;
     credixGlobalMarketState: PublicKey;
     credixTreasuryCollateral: PublicKey;
-    credixSharesMint: PublicKey;
-    cluster: Cluster;
   }): Promise<CredixLpDepository> {
     // The depository is PDA from the pool and the collateral
     const [depository] = PublicKey.findProgramAddressSync(
@@ -83,9 +77,13 @@ export class CredixLpDepository {
       depository,
       uxdProgramId
     );
-    const depositoryLpShares = await this.findDepositoryLpSharesAddress(
+    const depositoryShares = await this.findDepositorySharesAddress(
       depository,
       uxdProgramId
+    );
+
+    const credixProgramState = await this.findCredixProgramState(
+      credixProgramId
     );
 
     const credixSigningAuthority = await this.findCredixSigningAuthority(
@@ -97,6 +95,10 @@ export class CredixLpDepository {
       collateralMint
     );
 
+    const credixSharesMint = await this.findCredixSharesMint(
+      credixGlobalMarketState,
+      credixProgramId
+    );
     const credixPass = await this.findCredixPass(
       credixGlobalMarketState,
       depository,
@@ -109,7 +111,8 @@ export class CredixLpDepository {
       collateralDecimals,
       collateralSymbol,
       depositoryCollateral,
-      depositoryLpShares,
+      depositoryShares,
+      credixProgramState,
       credixGlobalMarketState,
       credixSigningAuthority,
       credixTreasuryCollateral,
@@ -135,7 +138,7 @@ export class CredixLpDepository {
     )[0];
   }
 
-  private static async findDepositoryLpSharesAddress(
+  private static async findDepositorySharesAddress(
     depository: PublicKey,
     uxdProgramId: PublicKey
   ) {
@@ -146,6 +149,17 @@ export class CredixLpDepository {
           depository.toBytes(),
         ],
         uxdProgramId
+      )
+    )[0];
+  }
+
+  private static async findCredixProgramState(
+    credixProgramId: PublicKey
+  ): Promise<PublicKey> {
+    return (
+      await PublicKey.findProgramAddress(
+        [Buffer.from(CREDIX_LP_INTERNAL_PROGRAM_STATE_NAMESPACE)],
+        credixProgramId
       )
     )[0];
   }
@@ -167,6 +181,21 @@ export class CredixLpDepository {
     collateralMint: PublicKey
   ): Promise<PublicKey> {
     return (await findATAAddrSync(credixSigningAuthority, collateralMint))[0];
+  }
+
+  private static async findCredixSharesMint(
+    credixGlobalMarketState: PublicKey,
+    credixProgramId: PublicKey
+  ) {
+    return (
+      await PublicKey.findProgramAddress(
+        [
+          credixGlobalMarketState.toBytes(),
+          Buffer.from(CREDIX_LP_INTERNAL_LP_TOKEN_MINT_NAMESPACE),
+        ],
+        credixProgramId
+      )
+    )[0];
   }
 
   private static async findCredixPass(
@@ -194,12 +223,13 @@ export class CredixLpDepository {
       ['collateralDecimals']: this.collateralDecimals,
       ['collateralSymbol']: this.collateralSymbol,
       ['depositoryCollateral']: this.depositoryCollateral.toBase58(),
-      ['depositoryLpShares']: this.depositoryLpShares.toBase58(),
+      ['depositoryShares']: this.depositoryShares.toBase58(),
+      ['credixProgramState']: this.credixProgramState.toBase58(),
       ['credixGlobalMarketState']: this.credixGlobalMarketState.toBase58(),
       ['credixSigningAuthority']: this.credixSigningAuthority.toBase58(),
       ['credixTreasuryCollateral']: this.credixTreasuryCollateral.toBase58(),
       ['credixLiquidityCollateral']: this.credixLiquidityCollateral.toBase58(),
-      ['credixLpSharesMint']: this.credixLpSharesMint.toBase58(),
+      ['credixSharesMint']: this.credixSharesMint.toBase58(),
       ['credixPass']: this.credixPass.toBase58(),
     });
     console.groupEnd();
