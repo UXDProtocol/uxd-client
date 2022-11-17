@@ -1695,6 +1695,137 @@ export type Uxd = {
           type: 'u64';
         }
       ];
+    },
+    {
+      name: 'redeemFromCredixLpDepository';
+      accounts: [
+        {
+          name: 'user';
+          isMut: false;
+          isSigner: true;
+        },
+        {
+          name: 'payer';
+          isMut: true;
+          isSigner: true;
+        },
+        {
+          name: 'controller';
+          isMut: true;
+          isSigner: false;
+        },
+        {
+          name: 'depository';
+          isMut: true;
+          isSigner: false;
+        },
+        {
+          name: 'redeemableMint';
+          isMut: true;
+          isSigner: false;
+        },
+        {
+          name: 'collateralMint';
+          isMut: false;
+          isSigner: false;
+        },
+        {
+          name: 'userRedeemable';
+          isMut: true;
+          isSigner: false;
+        },
+        {
+          name: 'userCollateral';
+          isMut: true;
+          isSigner: false;
+        },
+        {
+          name: 'depositoryCollateral';
+          isMut: true;
+          isSigner: false;
+        },
+        {
+          name: 'depositoryShares';
+          isMut: true;
+          isSigner: false;
+        },
+        {
+          name: 'credixProgramState';
+          isMut: true;
+          isSigner: false;
+        },
+        {
+          name: 'credixGlobalMarketState';
+          isMut: true;
+          isSigner: false;
+        },
+        {
+          name: 'credixSigningAuthority';
+          isMut: true;
+          isSigner: false;
+        },
+        {
+          name: 'credixLiquidityCollateral';
+          isMut: true;
+          isSigner: false;
+        },
+        {
+          name: 'credixSharesMint';
+          isMut: true;
+          isSigner: false;
+        },
+        {
+          name: 'credixPass';
+          isMut: true;
+          isSigner: false;
+        },
+        {
+          name: 'credixTreasuryCollateral';
+          isMut: true;
+          isSigner: false;
+        },
+        {
+          name: 'credixMultisig';
+          isMut: true;
+          isSigner: false;
+        },
+        {
+          name: 'credixMultisigCollateral';
+          isMut: true;
+          isSigner: false;
+        },
+        {
+          name: 'systemProgram';
+          isMut: false;
+          isSigner: false;
+        },
+        {
+          name: 'tokenProgram';
+          isMut: false;
+          isSigner: false;
+        },
+        {
+          name: 'associatedTokenProgram';
+          isMut: false;
+          isSigner: false;
+        },
+        {
+          name: 'credixProgram';
+          isMut: false;
+          isSigner: false;
+        },
+        {
+          name: 'rent';
+          isMut: false;
+          isSigner: false;
+        }
+      ];
+      args: [
+        {
+          name: 'redeemableAmount';
+          type: 'u64';
+        }
+      ];
     }
   ];
   accounts: [
@@ -2622,6 +2753,51 @@ export type Uxd = {
         },
         {
           name: 'mintingFeePaid';
+          type: 'u64';
+          index: false;
+        }
+      ];
+    },
+    {
+      name: 'RedeemFromCredixLpDepositoryEvent';
+      fields: [
+        {
+          name: 'controllerVersion';
+          type: 'u8';
+          index: true;
+        },
+        {
+          name: 'depositoryVersion';
+          type: 'u8';
+          index: true;
+        },
+        {
+          name: 'controller';
+          type: 'publicKey';
+          index: true;
+        },
+        {
+          name: 'depository';
+          type: 'publicKey';
+          index: true;
+        },
+        {
+          name: 'user';
+          type: 'publicKey';
+          index: true;
+        },
+        {
+          name: 'collateralAmount';
+          type: 'u64';
+          index: false;
+        },
+        {
+          name: 'redeemableAmount';
+          type: 'u64';
+          index: false;
+        },
+        {
+          name: 'redeemingFeePaid';
           type: 'u64';
           index: false;
         }
@@ -3838,26 +4014,31 @@ export type Uxd = {
     },
     {
       code: 6088;
-      name: 'InvalidCredixTreasuryCollateral';
-      msg: "The Credix TreasuryCollateral isn't the Depository one.";
-    },
-    {
-      code: 6089;
       name: 'InvalidCredixLiquidityCollateral';
       msg: "The Credix LiquidityCollateral isn't the Depository one.";
     },
     {
-      code: 6090;
+      code: 6089;
       name: 'InvalidCredixSharesMint';
       msg: "The Credix SharesMint isn't the Depository one.";
     },
     {
-      code: 6091;
+      code: 6090;
       name: 'InvalidCredixPass';
       msg: "The Credix Pass isn't the Depository one.";
     },
     {
+      code: 6091;
+      name: 'InvalidCredixMultisig';
+      msg: "The Credix Multisig isn't the ProgramState one.";
+    },
+    {
       code: 6092;
+      name: 'InvalidCredixTreasuryCollateral';
+      msg: "The Credix TreasuryCollateral isn't the GlobalMarketState one.";
+    },
+    {
+      code: 6093;
       name: 'Default';
       msg: 'Default - Check the source code for more info.';
     }
@@ -5562,6 +5743,137 @@ export const IDL: Uxd = {
         },
       ],
     },
+    {
+      name: 'redeemFromCredixLpDepository',
+      accounts: [
+        {
+          name: 'user',
+          isMut: false,
+          isSigner: true,
+        },
+        {
+          name: 'payer',
+          isMut: true,
+          isSigner: true,
+        },
+        {
+          name: 'controller',
+          isMut: true,
+          isSigner: false,
+        },
+        {
+          name: 'depository',
+          isMut: true,
+          isSigner: false,
+        },
+        {
+          name: 'redeemableMint',
+          isMut: true,
+          isSigner: false,
+        },
+        {
+          name: 'collateralMint',
+          isMut: false,
+          isSigner: false,
+        },
+        {
+          name: 'userRedeemable',
+          isMut: true,
+          isSigner: false,
+        },
+        {
+          name: 'userCollateral',
+          isMut: true,
+          isSigner: false,
+        },
+        {
+          name: 'depositoryCollateral',
+          isMut: true,
+          isSigner: false,
+        },
+        {
+          name: 'depositoryShares',
+          isMut: true,
+          isSigner: false,
+        },
+        {
+          name: 'credixProgramState',
+          isMut: true,
+          isSigner: false,
+        },
+        {
+          name: 'credixGlobalMarketState',
+          isMut: true,
+          isSigner: false,
+        },
+        {
+          name: 'credixSigningAuthority',
+          isMut: true,
+          isSigner: false,
+        },
+        {
+          name: 'credixLiquidityCollateral',
+          isMut: true,
+          isSigner: false,
+        },
+        {
+          name: 'credixSharesMint',
+          isMut: true,
+          isSigner: false,
+        },
+        {
+          name: 'credixPass',
+          isMut: true,
+          isSigner: false,
+        },
+        {
+          name: 'credixTreasuryCollateral',
+          isMut: true,
+          isSigner: false,
+        },
+        {
+          name: 'credixMultisig',
+          isMut: true,
+          isSigner: false,
+        },
+        {
+          name: 'credixMultisigCollateral',
+          isMut: true,
+          isSigner: false,
+        },
+        {
+          name: 'systemProgram',
+          isMut: false,
+          isSigner: false,
+        },
+        {
+          name: 'tokenProgram',
+          isMut: false,
+          isSigner: false,
+        },
+        {
+          name: 'associatedTokenProgram',
+          isMut: false,
+          isSigner: false,
+        },
+        {
+          name: 'credixProgram',
+          isMut: false,
+          isSigner: false,
+        },
+        {
+          name: 'rent',
+          isMut: false,
+          isSigner: false,
+        },
+      ],
+      args: [
+        {
+          name: 'redeemableAmount',
+          type: 'u64',
+        },
+      ],
+    },
   ],
   accounts: [
     {
@@ -6488,6 +6800,51 @@ export const IDL: Uxd = {
         },
         {
           name: 'mintingFeePaid',
+          type: 'u64',
+          index: false,
+        },
+      ],
+    },
+    {
+      name: 'RedeemFromCredixLpDepositoryEvent',
+      fields: [
+        {
+          name: 'controllerVersion',
+          type: 'u8',
+          index: true,
+        },
+        {
+          name: 'depositoryVersion',
+          type: 'u8',
+          index: true,
+        },
+        {
+          name: 'controller',
+          type: 'publicKey',
+          index: true,
+        },
+        {
+          name: 'depository',
+          type: 'publicKey',
+          index: true,
+        },
+        {
+          name: 'user',
+          type: 'publicKey',
+          index: true,
+        },
+        {
+          name: 'collateralAmount',
+          type: 'u64',
+          index: false,
+        },
+        {
+          name: 'redeemableAmount',
+          type: 'u64',
+          index: false,
+        },
+        {
+          name: 'redeemingFeePaid',
           type: 'u64',
           index: false,
         },
@@ -7704,26 +8061,31 @@ export const IDL: Uxd = {
     },
     {
       code: 6088,
-      name: 'InvalidCredixTreasuryCollateral',
-      msg: "The Credix TreasuryCollateral isn't the Depository one.",
-    },
-    {
-      code: 6089,
       name: 'InvalidCredixLiquidityCollateral',
       msg: "The Credix LiquidityCollateral isn't the Depository one.",
     },
     {
-      code: 6090,
+      code: 6089,
       name: 'InvalidCredixSharesMint',
       msg: "The Credix SharesMint isn't the Depository one.",
     },
     {
-      code: 6091,
+      code: 6090,
       name: 'InvalidCredixPass',
       msg: "The Credix Pass isn't the Depository one.",
     },
     {
+      code: 6091,
+      name: 'InvalidCredixMultisig',
+      msg: "The Credix Multisig isn't the ProgramState one.",
+    },
+    {
       code: 6092,
+      name: 'InvalidCredixTreasuryCollateral',
+      msg: "The Credix TreasuryCollateral isn't the GlobalMarketState one.",
+    },
+    {
+      code: 6093,
       name: 'Default',
       msg: 'Default - Check the source code for more info.',
     },

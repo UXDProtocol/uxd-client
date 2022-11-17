@@ -454,6 +454,60 @@ export class UXDClient {
     });
   }
 
+  public createRedeemFromCredixLpDepositoryInstruction(
+    controller: Controller,
+    depository: CredixLpDepository,
+    authority: PublicKey,
+    redeemableAmount: number,
+    options: ConfirmOptions,
+    payer?: PublicKey
+  ): TransactionInstruction {
+    const nativeRedeemableAmount = uiToNative(
+      redeemableAmount,
+      controller.redeemableMintDecimals
+    );
+
+    const collateralMint = depository.collateralMint;
+    const redeemableMint = controller.redeemableMintPda;
+
+    const [[userCollateral], [userRedeemable]] = findMultipleATAAddSync(
+      authority,
+      [collateralMint, redeemableMint]
+    );
+
+    return this.instruction.redeemFromCredixLpDepository(
+      nativeRedeemableAmount,
+      {
+        accounts: {
+          user: authority,
+          payer: payer ?? authority,
+          controller: controller.pda,
+          depository: depository.pda,
+          depositoryCollateral: depository.depositoryCollateral,
+          depositoryShares: depository.depositoryShares,
+          redeemableMint: redeemableMint,
+          userRedeemable: userRedeemable,
+          collateralMint: collateralMint,
+          userCollateral: userCollateral,
+          credixProgramState: depository.credixProgramState,
+          credixGlobalMarketState: depository.credixGlobalMarketState,
+          credixSigningAuthority: depository.credixSigningAuthority,
+          credixLiquidityCollateral: depository.credixLiquidityCollateral,
+          credixSharesMint: depository.credixSharesMint,
+          credixPass: depository.credixPass,
+          credixTreasuryCollateral: depository.credixTreasuryCollateral,
+          credixMultisig: depository.credixMultisig,
+          credixMultisigCollateral: depository.credixMultisigCollateral,
+          systemProgram: SystemProgram.programId,
+          associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+          tokenProgram: TOKEN_PROGRAM_ID,
+          credixProgram: depository.credixProgramId,
+          rent: SYSVAR_RENT_PUBKEY,
+        },
+        options,
+      }
+    );
+  }
   public async createRebalanceMangoDepositoryLiteInstruction(
     maxRebalancingAmount: number,
     slippage: number,

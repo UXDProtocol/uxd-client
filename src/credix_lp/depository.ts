@@ -11,7 +11,7 @@ const CREDIX_LP_DEPOSITORY_COLLATERAL_NAMESPACE =
 const CREDIX_LP_DEPOSITORY_LP_SHARES_NAMESPACE =
   'CREDIX_LP_DEPOSITORY_LP_SHARES';
 
-const CREDIX_LP_INTERNAL_PASS_NAMESPACE = 'credix-pass';
+const CREDIX_LP_INTERNAL_CREDIX_PASS_NAMESPACE = 'credix-pass';
 const CREDIX_LP_INTERNAL_PROGRAM_STATE_NAMESPACE = 'program-state';
 const CREDIX_LP_INTERNAL_LP_TOKEN_MINT_NAMESPACE = 'lp-token-mint';
 
@@ -26,10 +26,12 @@ export class CredixLpDepository {
     public readonly credixProgramState: PublicKey,
     public readonly credixGlobalMarketState: PublicKey,
     public readonly credixSigningAuthority: PublicKey,
-    //public readonly credixTreasuryCollateral: PublicKey,
     public readonly credixLiquidityCollateral: PublicKey,
     public readonly credixSharesMint: PublicKey,
     public readonly credixPass: PublicKey,
+    public readonly credixTreasuryCollateral: PublicKey,
+    public readonly credixMultisig: PublicKey,
+    public readonly credixMultisigCollateral: PublicKey,
     public readonly credixProgramId: PublicKey
   ) {}
 
@@ -39,6 +41,8 @@ export class CredixLpDepository {
     collateralMint,
     collateralSymbol,
     credixProgramId,
+    credixMultisig,
+    credixTreasuryCollateral,
     credixMarketName,
   }: {
     connection: Connection;
@@ -46,6 +50,8 @@ export class CredixLpDepository {
     collateralMint: PublicKey;
     collateralSymbol: string;
     credixProgramId: PublicKey;
+    credixMultisig: PublicKey;
+    credixTreasuryCollateral: PublicKey;
     credixMarketName: string;
   }): Promise<CredixLpDepository> {
     // First we need the credix market address
@@ -108,6 +114,10 @@ export class CredixLpDepository {
       depository,
       credixProgramId
     );
+    const credixMultisigCollateral = await this.findCredixMultisigCollateral(
+      credixMultisig,
+      collateralMint
+    );
 
     return new CredixLpDepository(
       depository,
@@ -119,10 +129,12 @@ export class CredixLpDepository {
       credixProgramState,
       credixGlobalMarketState,
       credixSigningAuthority,
-      //credixTreasuryCollateral,
       credixLiquidityCollateral,
       credixSharesMint,
       credixPass,
+      credixTreasuryCollateral,
+      credixMultisig,
+      credixMultisigCollateral,
       credixProgramId
     );
   }
@@ -224,11 +236,18 @@ export class CredixLpDepository {
         [
           credixGlobalMarketState.toBytes(),
           depository.toBytes(),
-          Buffer.from(CREDIX_LP_INTERNAL_PASS_NAMESPACE),
+          Buffer.from(CREDIX_LP_INTERNAL_CREDIX_PASS_NAMESPACE),
         ],
         credixProgramId
       )
     )[0];
+  }
+
+  private static async findCredixMultisigCollateral(
+    credixMultisig: PublicKey,
+    collateralMint: PublicKey
+  ): Promise<PublicKey> {
+    return (await findATAAddrSync(credixMultisig, collateralMint))[0];
   }
 
   public info() {
