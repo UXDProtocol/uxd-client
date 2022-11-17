@@ -26,7 +26,7 @@ export class CredixLpDepository {
     public readonly credixProgramState: PublicKey,
     public readonly credixGlobalMarketState: PublicKey,
     public readonly credixSigningAuthority: PublicKey,
-    public readonly credixTreasuryCollateral: PublicKey,
+    //public readonly credixTreasuryCollateral: PublicKey,
     public readonly credixLiquidityCollateral: PublicKey,
     public readonly credixSharesMint: PublicKey,
     public readonly credixPass: PublicKey,
@@ -36,21 +36,25 @@ export class CredixLpDepository {
   public static async initialize({
     connection,
     uxdProgramId,
-    credixProgramId,
     collateralMint,
     collateralSymbol,
-    credixGlobalMarketState,
-    credixTreasuryCollateral,
+    credixProgramId,
+    credixMarketName,
   }: {
     connection: Connection;
     uxdProgramId: PublicKey;
-    credixProgramId: PublicKey;
     collateralMint: PublicKey;
     collateralSymbol: string;
-    credixGlobalMarketState: PublicKey;
-    credixTreasuryCollateral: PublicKey;
+    credixProgramId: PublicKey;
+    credixMarketName: string;
   }): Promise<CredixLpDepository> {
-    // The depository is PDA from the pool and the collateral
+    // First we need the credix market address
+    const credixGlobalMarketState = await this.findCredixGlobalMarketState(
+      credixMarketName,
+      credixProgramId
+    );
+
+    // Then we can find the depository
     const [depository] = PublicKey.findProgramAddressSync(
       [
         Buffer.from(CREDIX_LP_DEPOSITORY_NAMESPACE),
@@ -60,7 +64,7 @@ export class CredixLpDepository {
       uxdProgramId
     );
 
-    // Read collateral decimals
+    // The read the collateral mint
     const collateralToken = new Token(
       connection,
       collateralMint,
@@ -73,6 +77,7 @@ export class CredixLpDepository {
     }
     const collateralDecimals = collateralInfo.decimals;
 
+    // The generate the depository token accounts
     const depositoryCollateral = await this.findDepositoryCollateralAddress(
       depository,
       uxdProgramId
@@ -82,10 +87,10 @@ export class CredixLpDepository {
       uxdProgramId
     );
 
+    // Then read all the credix internal accounts
     const credixProgramState = await this.findCredixProgramState(
       credixProgramId
     );
-
     const credixSigningAuthority = await this.findCredixSigningAuthority(
       credixGlobalMarketState,
       credixProgramId
@@ -94,7 +99,6 @@ export class CredixLpDepository {
       credixSigningAuthority,
       collateralMint
     );
-
     const credixSharesMint = await this.findCredixSharesMint(
       credixGlobalMarketState,
       credixProgramId
@@ -115,7 +119,7 @@ export class CredixLpDepository {
       credixProgramState,
       credixGlobalMarketState,
       credixSigningAuthority,
-      credixTreasuryCollateral,
+      //credixTreasuryCollateral,
       credixLiquidityCollateral,
       credixSharesMint,
       credixPass,
@@ -159,6 +163,18 @@ export class CredixLpDepository {
     return (
       await PublicKey.findProgramAddress(
         [Buffer.from(CREDIX_LP_INTERNAL_PROGRAM_STATE_NAMESPACE)],
+        credixProgramId
+      )
+    )[0];
+  }
+
+  private static async findCredixGlobalMarketState(
+    credixMarketName: string,
+    credixProgramId: PublicKey
+  ): Promise<PublicKey> {
+    return (
+      await PublicKey.findProgramAddress(
+        [Buffer.from(credixMarketName)],
         credixProgramId
       )
     )[0];
@@ -216,7 +232,7 @@ export class CredixLpDepository {
   }
 
   public info() {
-    console.groupCollapsed('[Maple Pool Depository debug info]');
+    console.groupCollapsed('[Credix Lp Depository debug info]');
     console.table({
       ['pda']: this.pda.toBase58(),
       ['collateralMint']: this.collateralMint.toBase58(),
@@ -227,7 +243,7 @@ export class CredixLpDepository {
       ['credixProgramState']: this.credixProgramState.toBase58(),
       ['credixGlobalMarketState']: this.credixGlobalMarketState.toBase58(),
       ['credixSigningAuthority']: this.credixSigningAuthority.toBase58(),
-      ['credixTreasuryCollateral']: this.credixTreasuryCollateral.toBase58(),
+      //['credixTreasuryCollateral']: this.credixTreasuryCollateral.toBase58(),
       ['credixLiquidityCollateral']: this.credixLiquidityCollateral.toBase58(),
       ['credixSharesMint']: this.credixSharesMint.toBase58(),
       ['credixPass']: this.credixPass.toBase58(),

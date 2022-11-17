@@ -14,11 +14,13 @@ export {
   PnLPolarity,
   MercurialVaultDepositoryAccount,
   MaplePoolDepositoryAccount,
+  CredixLpDepositoryAccount,
 } from './interfaces';
 export { Mango, createAndInitializeMango } from './mango';
 export { MangoDepository } from './mango/depository';
 export { MercurialVaultDepository } from './mercurial/depository';
 export { MaplePoolDepository } from './maple_pool/depository';
+export { CredixLpDepository } from './credix_lp/depository';
 export {
   ETH_DECIMALS,
   BTC_DECIMALS,
