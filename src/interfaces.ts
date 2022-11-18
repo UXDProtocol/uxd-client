@@ -107,9 +107,7 @@ export class CredixLpDepositoryAccount {
   controller!: PublicKey;
   collateralMint!: PublicKey;
   depositoryCollateral!: PublicKey;
-  depositoryCollateralBump!: number; // u8
   depositoryShares!: PublicKey;
-  depositorySharesBump!: number; // u8
   credixProgramState!: PublicKey;
   credixGlobalMarketState!: PublicKey;
   credixSigningAuthority!: PublicKey;

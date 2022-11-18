@@ -6,9 +6,6 @@ import { Token, TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import { findATAAddrSync } from '../utils';
 
 const CREDIX_LP_DEPOSITORY_NAMESPACE = 'CREDIX_LP_DEPOSITORY';
-const CREDIX_LP_DEPOSITORY_COLLATERAL_NAMESPACE =
-  'CREDIX_LP_DEPOSITORY_COLLATERAL';
-const CREDIX_LP_DEPOSITORY_SHARES_NAMESPACE = 'CREDIX_LP_DEPOSITORY_SHARES';
 
 const CREDIX_LP_INTERNAL_CREDIX_PASS_NAMESPACE = 'credix-pass';
 const CREDIX_LP_INTERNAL_PROGRAM_STATE_NAMESPACE = 'program-state';
@@ -82,16 +79,6 @@ export class CredixLpDepository {
     }
     const collateralDecimals = collateralInfo.decimals;
 
-    // The generate the depository token accounts
-    const depositoryCollateral = await this.findDepositoryCollateralAddress(
-      depository,
-      uxdProgramId
-    );
-    const depositoryShares = await this.findDepositorySharesAddress(
-      depository,
-      uxdProgramId
-    );
-
     // Then read all the credix internal accounts
     const credixProgramState = await this.findCredixProgramState(
       credixProgramId
@@ -118,6 +105,16 @@ export class CredixLpDepository {
       collateralMint
     );
 
+    // The generate the depository token accounts
+    const depositoryCollateral = await this.findDepositoryCollateralAddress(
+      depository,
+      collateralMint
+    );
+    const depositoryShares = await this.findDepositorySharesAddress(
+      depository,
+      credixSharesMint
+    );
+
     return new CredixLpDepository(
       depository,
       collateralMint,
@@ -140,32 +137,16 @@ export class CredixLpDepository {
 
   private static async findDepositoryCollateralAddress(
     depository: PublicKey,
-    uxdProgramId: PublicKey
+    collateralMint: PublicKey
   ) {
-    return (
-      await PublicKey.findProgramAddress(
-        [
-          Buffer.from(CREDIX_LP_DEPOSITORY_COLLATERAL_NAMESPACE),
-          depository.toBytes(),
-        ],
-        uxdProgramId
-      )
-    )[0];
+    return (await findATAAddrSync(depository, collateralMint))[0];
   }
 
   private static async findDepositorySharesAddress(
     depository: PublicKey,
-    uxdProgramId: PublicKey
+    credixSharesMint: PublicKey
   ) {
-    return (
-      await PublicKey.findProgramAddress(
-        [
-          Buffer.from(CREDIX_LP_DEPOSITORY_SHARES_NAMESPACE),
-          depository.toBytes(),
-        ],
-        uxdProgramId
-      )
-    )[0];
+    return (await findATAAddrSync(depository, credixSharesMint))[0];
   }
 
   private static async findCredixProgramState(
@@ -284,9 +265,9 @@ export class CredixLpDepository {
     );
 
     if (!result) {
-      throw new Error('credixPoolDepository not found');
+      throw new Error('credixLpDepository not found');
     }
 
-    return coder.decode('credixPoolDepository', result.data);
+    return coder.decode('credixLpDepository', result.data);
   }
 }
