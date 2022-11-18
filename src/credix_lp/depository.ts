@@ -8,8 +8,7 @@ import { findATAAddrSync } from '../utils';
 const CREDIX_LP_DEPOSITORY_NAMESPACE = 'CREDIX_LP_DEPOSITORY';
 const CREDIX_LP_DEPOSITORY_COLLATERAL_NAMESPACE =
   'CREDIX_LP_DEPOSITORY_COLLATERAL';
-const CREDIX_LP_DEPOSITORY_LP_SHARES_NAMESPACE =
-  'CREDIX_LP_DEPOSITORY_LP_SHARES';
+const CREDIX_LP_DEPOSITORY_SHARES_NAMESPACE = 'CREDIX_LP_DEPOSITORY_SHARES';
 
 const CREDIX_LP_INTERNAL_CREDIX_PASS_NAMESPACE = 'credix-pass';
 const CREDIX_LP_INTERNAL_PROGRAM_STATE_NAMESPACE = 'program-state';
@@ -161,7 +160,7 @@ export class CredixLpDepository {
     return (
       await PublicKey.findProgramAddress(
         [
-          Buffer.from(CREDIX_LP_DEPOSITORY_LP_SHARES_NAMESPACE),
+          Buffer.from(CREDIX_LP_DEPOSITORY_SHARES_NAMESPACE),
           depository.toBytes(),
         ],
         uxdProgramId
@@ -262,10 +261,13 @@ export class CredixLpDepository {
       ['credixProgramState']: this.credixProgramState.toBase58(),
       ['credixGlobalMarketState']: this.credixGlobalMarketState.toBase58(),
       ['credixSigningAuthority']: this.credixSigningAuthority.toBase58(),
-      //['credixTreasuryCollateral']: this.credixTreasuryCollateral.toBase58(),
       ['credixLiquidityCollateral']: this.credixLiquidityCollateral.toBase58(),
       ['credixSharesMint']: this.credixSharesMint.toBase58(),
       ['credixPass']: this.credixPass.toBase58(),
+      ['credixTreasuryCollateral']: this.credixTreasuryCollateral.toBase58(),
+      ['credixMultisig']: this.credixMultisig.toBase58(),
+      ['credixMultisigCollateral']: this.credixMultisigCollateral.toBase58(),
+      ['credixProgramId']: this.credixProgramId.toBase58(),
     });
     console.groupEnd();
   }
