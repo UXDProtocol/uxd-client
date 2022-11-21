@@ -7,7 +7,7 @@ export {
   IdentityDepositoryAccount,
 } from './interfaces';
 export { MercurialVaultDepository } from './mercurial/depository';
-export { IdentityDepository } from './identity/depository';
+export { IdentityDepository } from './depository';
 export {
   ETH_DECIMALS,
   BTC_DECIMALS,

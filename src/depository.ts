@@ -1,7 +1,7 @@
 import { BorshAccountsCoder } from '@project-serum/anchor';
 import { ConfirmOptions, Connection, PublicKey } from '@solana/web3.js';
-import { IDL } from '../idl';
-import { IdentityDepositoryAccount } from '../interfaces';
+import { IDL } from './idl';
+import { IdentityDepositoryAccount } from './interfaces';
 
 export class IdentityDepository {
   public pda: PublicKey;

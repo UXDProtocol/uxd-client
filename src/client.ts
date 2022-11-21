@@ -13,7 +13,7 @@ import { findMultipleATAAddSync, uiToNative } from './utils';
 import NamespaceFactory from './namespace';
 import { IDL as UXD_IDL } from './idl';
 import type { Uxd as UXD_IDL_TYPE } from './idl';
-import { IdentityDepository } from './identity/depository';
+import { IdentityDepository } from './depository';
 
 export class UXDClient {
   public instruction: InstructionNamespace<UXD_IDL_TYPE>;
