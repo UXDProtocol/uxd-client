@@ -1761,7 +1761,7 @@ export type Uxd = {
         },
         {
           name: 'credixGlobalMarketState';
-          isMut: false;
+          isMut: true;
           isSigner: false;
         },
         {
@@ -5805,7 +5805,7 @@ export const IDL: Uxd = {
         },
         {
           name: 'credixGlobalMarketState',
-          isMut: false,
+          isMut: true,
           isSigner: false,
         },
         {
