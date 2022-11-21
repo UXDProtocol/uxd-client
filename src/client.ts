@@ -56,16 +56,14 @@ export class UXDClient {
     },
     options: ConfirmOptions
   ) {
-    const {
-      redeemableGlobalSupplyCap,
-    } = uiFields;
+    const { redeemableGlobalSupplyCap } = uiFields;
     const fields = {
       redeemableGlobalSupplyCap:
         typeof redeemableGlobalSupplyCap !== 'undefined'
           ? uiToNative(
-            redeemableGlobalSupplyCap,
-            controller.redeemableMintDecimals
-          )
+              redeemableGlobalSupplyCap,
+              controller.redeemableMintDecimals
+            )
           : null,
     };
     return this.instruction.editController(fields, {
@@ -84,28 +82,26 @@ export class UXDClient {
     options: ConfirmOptions,
     payer?: PublicKey
   ): TransactionInstruction {
-    return this.instruction.initializeIdentityDepository(
-      {
-        accounts: {
-          authority,
-          payer: payer ?? authority,
-          controller: controller.pda,
-          depository: depository.pda,
-          collateralVault: depository.collateralVaultPda,
-          collateralMint: depository.collateralMint,
-          systemProgram: SystemProgram.programId,
-          tokenProgram: TOKEN_PROGRAM_ID,
-          rent: SYSVAR_RENT_PUBKEY,
-        },
-        options,
-      }
-    );
+    return this.instruction.initializeIdentityDepository({
+      accounts: {
+        authority,
+        payer: payer ?? authority,
+        controller: controller.pda,
+        depository: depository.pda,
+        collateralVault: depository.collateralVaultPda,
+        collateralMint: depository.collateralMint,
+        systemProgram: SystemProgram.programId,
+        tokenProgram: TOKEN_PROGRAM_ID,
+        rent: SYSVAR_RENT_PUBKEY,
+      },
+      options,
+    });
   }
 
   public createMintWithIdentityDepositoryInstruction(
     controller: Controller,
     depository: IdentityDepository,
-    authority: PublicKey,
+    user: PublicKey,
     collateralAmount: number,
     options: ConfirmOptions,
     payer?: PublicKey
@@ -116,34 +112,31 @@ export class UXDClient {
     );
 
     const [[userCollateralATA], [userRedeemableATA]] = findMultipleATAAddSync(
-      authority,
+      user,
       [depository.collateralMint, controller.redeemableMintPda]
     );
 
-    return this.instruction.mintWithIdentityDepository(
-      nativeCollateralAmount,
-      {
-        accounts: {
-          user: authority,
-          payer: payer ?? authority,
-          controller: controller.pda,
-          depository: depository.pda,
-          collateralVault: depository.collateralVaultPda,
-          redeemableMint: controller.redeemableMintPda,
-          userCollateral: userCollateralATA,
-          userRedeemable: userRedeemableATA,
-          systemProgram: SystemProgram.programId,
-          tokenProgram: TOKEN_PROGRAM_ID,
-        },
-        options,
-      }
-    );
+    return this.instruction.mintWithIdentityDepository(nativeCollateralAmount, {
+      accounts: {
+        user: user,
+        payer: payer ?? user,
+        controller: controller.pda,
+        depository: depository.pda,
+        collateralVault: depository.collateralVaultPda,
+        redeemableMint: controller.redeemableMintPda,
+        userCollateral: userCollateralATA,
+        userRedeemable: userRedeemableATA,
+        systemProgram: SystemProgram.programId,
+        tokenProgram: TOKEN_PROGRAM_ID,
+      },
+      options,
+    });
   }
 
   public createRedeemFromIdentityDepositoryInstruction(
     controller: Controller,
     depository: IdentityDepository,
-    authority: PublicKey,
+    user: PublicKey,
     redeemableAmount: number,
     options: ConfirmOptions,
     payer?: PublicKey
@@ -153,7 +146,7 @@ export class UXDClient {
       controller.redeemableMintDecimals
     );
     const [[userCollateralATA], [userRedeemableATA]] = findMultipleATAAddSync(
-      authority,
+      user,
       [depository.collateralMint, controller.redeemableMintPda]
     );
 
@@ -161,12 +154,11 @@ export class UXDClient {
       nativeRedeemableAmount,
       {
         accounts: {
-          user: authority,
-          payer: payer ?? authority,
+          user: user,
+          payer: payer ?? user,
           controller: controller.pda,
           depository: depository.pda,
           collateralVault: depository.collateralVaultPda,
-          collateralMint: depository.collateralMint,
           redeemableMint: controller.redeemableMintPda,
           userCollateral: userCollateralATA,
           userRedeemable: userRedeemableATA,
@@ -328,9 +320,9 @@ export class UXDClient {
       redeemableAmountUnderManagementCap:
         typeof redeemableAmountUnderManagementCap !== 'undefined'
           ? uiToNative(
-            redeemableAmountUnderManagementCap,
-            controller.redeemableMintDecimals
-          )
+              redeemableAmountUnderManagementCap,
+              controller.redeemableMintDecimals
+            )
           : null,
       mintingFeeInBps:
         typeof mintingFeeInBps !== 'undefined' ? mintingFeeInBps : null,
@@ -370,7 +362,6 @@ export class UXDClient {
     );
   }
 
-
   public createEditIdentityDepositoryInstruction(
     controller: Controller,
     depository: IdentityDepository,
@@ -381,17 +372,14 @@ export class UXDClient {
     },
     options: ConfirmOptions
   ): TransactionInstruction {
-    const {
-      redeemableAmountUnderManagementCap,
-      mintingDisabled,
-    } = uiFields;
+    const { redeemableAmountUnderManagementCap, mintingDisabled } = uiFields;
     const fields = {
       redeemableAmountUnderManagementCap:
         typeof redeemableAmountUnderManagementCap !== 'undefined'
           ? uiToNative(
-            redeemableAmountUnderManagementCap,
-            controller.redeemableMintDecimals
-          )
+              redeemableAmountUnderManagementCap,
+              controller.redeemableMintDecimals
+            )
           : null,
       mintingDisabled:
         typeof mintingDisabled !== 'undefined' ? mintingDisabled : null,
