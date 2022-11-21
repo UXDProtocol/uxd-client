@@ -3,11 +3,9 @@ export { Controller } from './controller';
 export { IDL } from './idl';
 export {
   ControllerAccount,
-  MangoDepositoryAccount,
   MercurialVaultDepositoryAccount,
   IdentityDepositoryAccount,
 } from './interfaces';
-export { MangoDepository } from './mango/depository';
 export { MercurialVaultDepository } from './mercurial/depository';
 export { IdentityDepository } from './identity/depository';
 export {

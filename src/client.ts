@@ -9,12 +9,11 @@ import {
 } from '@solana/web3.js';
 import { Controller } from './controller';
 import { MercurialVaultDepository } from './mercurial/depository';
-import { findATAAddrSync, findMultipleATAAddSync, uiToNative } from './utils';
+import { findMultipleATAAddSync, uiToNative } from './utils';
 import NamespaceFactory from './namespace';
 import { IDL as UXD_IDL } from './idl';
 import type { Uxd as UXD_IDL_TYPE } from './idl';
 import { IdentityDepository } from './identity/depository';
-import { MangoDepository } from './mango/depository';
 
 export class UXDClient {
   public instruction: InstructionNamespace<UXD_IDL_TYPE>;
@@ -169,34 +168,6 @@ export class UXDClient {
         options,
       }
     );
-  }
-
-  public createReinjectMangoToIdentityDepositoryInstruction(
-    controller: Controller,
-    depository: IdentityDepository,
-    mangoDepository: MangoDepository,
-    authority: PublicKey,
-    options: ConfirmOptions,
-    payer?: PublicKey
-  ): TransactionInstruction {
-    const [userCollateralATA] = findATAAddrSync(
-      authority,
-      depository.collateralMint
-    );
-    return this.instruction.reinjectMangoToIdentityDepository({
-      accounts: {
-        authority,
-        payer: payer ?? authority,
-        controller: controller.pda,
-        depository: depository.pda,
-        collateralVault: depository.collateralVaultPda,
-        mangoDepository: mangoDepository.pda,
-        userCollateral: userCollateralATA,
-        systemProgram: SystemProgram.programId,
-        tokenProgram: TOKEN_PROGRAM_ID,
-      },
-      options,
-    });
   }
 
   public createRegisterMercurialVaultDepositoryInstruction(

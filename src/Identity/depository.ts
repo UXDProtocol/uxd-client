@@ -31,7 +31,7 @@ export class IdentityDepository {
 
   public info() {
     console.groupCollapsed(
-      '[Mango Depository debug info - Collateral mint:',
+      '[Identity Depository debug info - Collateral mint:',
       this.collateralMintSymbol,
       ' - decimals',
       this.collateralMintDecimals,
