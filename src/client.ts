@@ -397,6 +397,7 @@ export class UXDClient {
           credixSigningAuthority: depository.credixSigningAuthority,
           credixLiquidityCollateral: depository.credixLiquidityCollateral,
           credixSharesMint: depository.credixSharesMint,
+          profitTreasuryCollateral: depository.profitTreasuryCollateral,
           systemProgram: SystemProgram.programId,
           tokenProgram: TOKEN_PROGRAM_ID,
           associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
@@ -509,6 +510,44 @@ export class UXDClient {
       }
     );
   }
+
+  public createCollectProfitOfCredixLpDepositoryInstruction(
+    controller: Controller,
+    depository: CredixLpDepository,
+    authority: PublicKey,
+    options: ConfirmOptions,
+    payer?: PublicKey
+  ): TransactionInstruction {
+    const collateralMint = depository.collateralMint;
+    return this.instruction.collectProfitOfCredixLpDepository({
+      accounts: {
+        authority: authority,
+        payer: payer ?? authority,
+        controller: controller.pda,
+        depository: depository.pda,
+        depositoryCollateral: depository.depositoryCollateral,
+        depositoryShares: depository.depositoryShares,
+        collateralMint: collateralMint,
+        credixProgramState: depository.credixProgramState,
+        credixGlobalMarketState: depository.credixGlobalMarketState,
+        credixSigningAuthority: depository.credixSigningAuthority,
+        credixLiquidityCollateral: depository.credixLiquidityCollateral,
+        credixSharesMint: depository.credixSharesMint,
+        credixPass: depository.credixPass,
+        credixTreasuryCollateral: depository.credixTreasuryCollateral,
+        credixMultisig: depository.credixMultisig,
+        credixMultisigCollateral: depository.credixMultisigCollateral,
+        profitTreasuryCollateral: depository.profitTreasuryCollateral,
+        systemProgram: SystemProgram.programId,
+        associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+        tokenProgram: TOKEN_PROGRAM_ID,
+        credixProgram: depository.credixProgramId,
+        rent: SYSVAR_RENT_PUBKEY,
+      },
+      options,
+    });
+  }
+
   public async createRebalanceMangoDepositoryLiteInstruction(
     maxRebalancingAmount: number,
     slippage: number,
@@ -1097,6 +1136,7 @@ export class UXDClient {
       mintingFeeInBps?: number;
       redeemingFeeInBps?: number;
       mintingDisabled?: boolean;
+      profitTreasuryCollateral?: PublicKey;
     },
     options: ConfirmOptions
   ): TransactionInstruction {
@@ -1105,6 +1145,7 @@ export class UXDClient {
       mintingFeeInBps,
       redeemingFeeInBps,
       mintingDisabled,
+      profitTreasuryCollateral,
     } = uiFields;
     const fields = {
       redeemableAmountUnderManagementCap:
@@ -1118,6 +1159,10 @@ export class UXDClient {
       redeemingFeeInBps:
         redeemingFeeInBps !== undefined ? redeemingFeeInBps : null,
       mintingDisabled: mintingDisabled !== undefined ? mintingDisabled : null,
+      profitTreasuryCollateral:
+        profitTreasuryCollateral !== undefined
+          ? profitTreasuryCollateral
+          : null,
     };
     return this.instruction.editCredixLpDepository(fields, {
       accounts: {

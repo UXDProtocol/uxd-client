@@ -121,6 +121,8 @@ export class CredixLpDepositoryAccount {
   redeemableAmountUnderManagement!: BN; // u128
   mintingFeeTotalAccrued!: BN; // u128
   redeemingFeeTotalAccrued!: BN; // u128
+  profitTreasuryCollateral!: PublicKey;
+  profitTreasuryTotalCollected!: BN; // u128
 }
 
 export enum PnLPolarity {
