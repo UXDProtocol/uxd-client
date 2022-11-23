@@ -1,22 +1,13 @@
-export {
-  I80F48,
-  nativeToUi,
-  nativeI80F48ToUi,
-  uiToNative,
-} from '@blockworks-foundation/mango-client';
-
 export { UXDClient } from './client';
 export { Controller } from './controller';
 export { IDL } from './idl';
 export {
   ControllerAccount,
-  MangoDepositoryAccount,
-  PnLPolarity,
   MercurialVaultDepositoryAccount,
+  IdentityDepositoryAccount,
 } from './interfaces';
-export { Mango, createAndInitializeMango } from './mango';
-export { MangoDepository } from './mango/depository';
 export { MercurialVaultDepository } from './mercurial/depository';
+export { IdentityDepository } from './identity/depository';
 export {
   ETH_DECIMALS,
   BTC_DECIMALS,
@@ -36,4 +27,6 @@ export {
   createAssocTokenIx,
   findATAAddrSync,
   findMultipleATAAddSync,
+  nativeToUi,
+  uiToNative,
 } from './utils';

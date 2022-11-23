@@ -8,51 +8,8 @@ export class ControllerAccount {
   authority!: PublicKey;
   redeemableMint!: PublicKey;
   redeemableMintDecimals!: number; // u16
-  registeredMangoDepositories!: PublicKey[]; // 8 entries max currently
-  registeredMangoDepositoriesCount!: number; // u8
   redeemableGlobalSupplyCap!: BN; // u128
-  mangoDepositoriesRedeemableSoftCap!: BN; // u64
   redeemableCirculatingSupply!: BN; // u128
-  mangoDepositoriesQuoteRedeemableSoftCap!: BN; // u64
-}
-
-// V1
-export class MangoDepositoryAccountV1 {
-  bump!: number; // u8
-  collateralPassthroughBump!: number; // u8
-  insurancePassthroughBump!: number; // u8
-  mangoAccountBump!: number; // u8
-  version!: number; // u8
-  collateralMint!: PublicKey;
-  collateralPassthrough!: PublicKey;
-  insuranceMint!: PublicKey;
-  insurancePassthrough!: PublicKey;
-  mangoAccount!: PublicKey;
-  controller!: PublicKey;
-  insuranceAmountDeposited!: BN; // u128
-  collateralAmountDeposited!: BN; // u128
-  redeemableAmountUnderManagement!: BN; // u128
-  totalAmountPaidTakerFee!: BN; // u128
-}
-
-// V2
-export class MangoDepositoryAccount {
-  version!: number; // u8
-  collateralMint!: PublicKey;
-  mangoAccount!: PublicKey;
-  controller!: PublicKey;
-  insuranceAmountDeposited!: BN; // u128
-  collateralAmountDeposited!: BN; // u128
-  redeemableAmountUnderManagement!: BN; // u128
-  totalAmountPaidTakerFee!: BN; // u128
-  quoteMint!: PublicKey;
-  quoteMintDecimals!: number; // u8
-  totalAmountRebalanced!: BN; // u128
-  netQuoteMinted!: BN; // i128
-  quoteMintAndRedeemFee!: number; // u8
-  totalQuoteMintAndRedeemFees!: BN; // u128
-  regularMintingDisabled!: boolean;
-  redeemableAmountUnderManagementCap!: BN; // u128
 }
 
 // V1
@@ -77,7 +34,16 @@ export class MercurialVaultDepositoryAccount {
   mintingDisabled!: boolean;
 }
 
-export enum PnLPolarity {
-  Positive = `Positive`,
-  Negative = `Negative`,
+// V1
+export class IdentityDepositoryAccount {
+  bump!: number; // u8
+  version!: number; // u8
+  collateralMint!: PublicKey;
+  collateralMintDecimal!: number; // u8
+  collateralVault!: PublicKey;
+  collateralVaultBump!: number; // u8
+  collateralAmountDeposited!: BN; // u128
+  redeemableAmountUnderManagement!: BN; // u128
+  redeemableAmountUnderManagementCap!: BN; // u128
+  mintingDisabled!: boolean;
 }

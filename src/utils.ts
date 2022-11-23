@@ -10,6 +10,8 @@ import {
   TransactionInstruction,
 } from '@solana/web3.js';
 
+import BN from 'bn.js';
+
 // Constants
 export const BTC_DECIMALS = 6;
 export const SOL_DECIMALS = 9;
@@ -103,4 +105,12 @@ export async function getBalance(
     throw new Error('Unable to retrieve token account balance');
   }
   return value;
+}
+
+export function uiToNative(amount: number, decimals: number): BN {
+  return new BN(Math.round(amount * Math.pow(10, decimals)));
+}
+
+export function nativeToUi(amount: number, decimals: number): number {
+  return amount / Math.pow(10, decimals);
 }
