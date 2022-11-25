@@ -392,15 +392,16 @@ export type Uxd = {
           ]
         },
         {
-          "name": "systemProgram",
+          "name": "profitsRedeemAuthority",
           "isMut": false,
           "isSigner": false,
           "docs": [
-            "#9"
+            "#9",
+            "Only wallet able to claim interests and fees"
           ]
         },
         {
-          "name": "tokenProgram",
+          "name": "systemProgram",
           "isMut": false,
           "isSigner": false,
           "docs": [
@@ -408,11 +409,19 @@ export type Uxd = {
           ]
         },
         {
-          "name": "rent",
+          "name": "tokenProgram",
           "isMut": false,
           "isSigner": false,
           "docs": [
             "#11"
+          ]
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "#12"
           ]
         }
       ],
@@ -2108,15 +2117,16 @@ export const IDL: Uxd = {
           ]
         },
         {
-          "name": "systemProgram",
+          "name": "profitsRedeemAuthority",
           "isMut": false,
           "isSigner": false,
           "docs": [
-            "#9"
+            "#9",
+            "Only wallet able to claim interests and fees"
           ]
         },
         {
-          "name": "tokenProgram",
+          "name": "systemProgram",
           "isMut": false,
           "isSigner": false,
           "docs": [
@@ -2124,11 +2134,19 @@ export const IDL: Uxd = {
           ]
         },
         {
-          "name": "rent",
+          "name": "tokenProgram",
           "isMut": false,
           "isSigner": false,
           "docs": [
             "#11"
+          ]
+        },
+        {
+          "name": "rent",
+          "isMut": false,
+          "isSigner": false,
+          "docs": [
+            "#12"
           ]
         }
       ],
