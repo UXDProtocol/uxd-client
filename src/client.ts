@@ -1,5 +1,8 @@
 import { InstructionNamespace } from '@project-serum/anchor';
-import { TOKEN_PROGRAM_ID } from '@solana/spl-token';
+import {
+  ASSOCIATED_TOKEN_PROGRAM_ID,
+  TOKEN_PROGRAM_ID,
+} from '@solana/spl-token';
 import {
   SystemProgram,
   SYSVAR_RENT_PUBKEY,
@@ -14,6 +17,7 @@ import NamespaceFactory from './namespace';
 import { IDL as UXD_IDL } from './idl';
 import type { Uxd as UXD_IDL_TYPE } from './idl';
 import { IdentityDepository } from './identity/depository';
+import { CredixLpDepository } from './credix_lp/depository';
 
 export class UXDClient {
   public instruction: InstructionNamespace<UXD_IDL_TYPE>;
@@ -391,6 +395,237 @@ export class UXDClient {
         depository: depository.pda,
       },
       options: options,
+    });
+  }
+
+  public createEditCredixLpDepositoryInstruction(
+    controller: Controller,
+    depository: CredixLpDepository,
+    authority: PublicKey,
+    uiFields: {
+      redeemableAmountUnderManagementCap?: number;
+      mintingFeeInBps?: number;
+      redeemingFeeInBps?: number;
+      mintingDisabled?: boolean;
+      profitTreasuryCollateral?: PublicKey;
+    },
+    options: ConfirmOptions
+  ): TransactionInstruction {
+    const {
+      redeemableAmountUnderManagementCap,
+      mintingFeeInBps,
+      redeemingFeeInBps,
+      mintingDisabled,
+      profitTreasuryCollateral,
+    } = uiFields;
+    const fields = {
+      redeemableAmountUnderManagementCap:
+        redeemableAmountUnderManagementCap !== undefined
+          ? uiToNative(
+              redeemableAmountUnderManagementCap,
+              controller.redeemableMintDecimals
+            )
+          : null,
+      mintingFeeInBps: mintingFeeInBps !== undefined ? mintingFeeInBps : null,
+      redeemingFeeInBps:
+        redeemingFeeInBps !== undefined ? redeemingFeeInBps : null,
+      mintingDisabled: mintingDisabled !== undefined ? mintingDisabled : null,
+      profitTreasuryCollateral:
+        profitTreasuryCollateral !== undefined
+          ? profitTreasuryCollateral
+          : null,
+    };
+    return this.instruction.editCredixLpDepository(fields, {
+      accounts: {
+        authority,
+        controller: controller.pda,
+        depository: depository.pda,
+      },
+      options: options,
+    });
+  }
+
+  public createRegisterCredixLpDepositoryInstruction(
+    controller: Controller,
+    depository: CredixLpDepository,
+    authority: PublicKey,
+    mintingFeeInBps: number,
+    redeemingFeeInBps: number,
+    redeemableAmountUnderManagementCap: number,
+    options: ConfirmOptions,
+    payer?: PublicKey
+  ): TransactionInstruction {
+    const redeemableAmountUnderManagementCapBN = uiToNative(
+      redeemableAmountUnderManagementCap,
+      controller.redeemableMintDecimals
+    );
+
+    return this.instruction.registerCredixLpDepository(
+      mintingFeeInBps,
+      redeemingFeeInBps,
+      redeemableAmountUnderManagementCapBN,
+      {
+        accounts: {
+          authority,
+          payer: payer ?? authority,
+          controller: controller.pda,
+          depository: depository.pda,
+          collateralMint: depository.collateralMint,
+          depositoryCollateral: depository.depositoryCollateral,
+          depositoryShares: depository.depositoryShares,
+          credixProgramState: depository.credixProgramState,
+          credixGlobalMarketState: depository.credixGlobalMarketState,
+          credixSigningAuthority: depository.credixSigningAuthority,
+          credixLiquidityCollateral: depository.credixLiquidityCollateral,
+          credixSharesMint: depository.credixSharesMint,
+          profitTreasuryCollateral: depository.profitTreasuryCollateral,
+          systemProgram: SystemProgram.programId,
+          tokenProgram: TOKEN_PROGRAM_ID,
+          associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+          rent: SYSVAR_RENT_PUBKEY,
+        },
+        options,
+      }
+    );
+  }
+
+  public createMintWithCredixLpDepositoryInstruction(
+    controller: Controller,
+    depository: CredixLpDepository,
+    authority: PublicKey,
+    collateralAmount: number,
+    options: ConfirmOptions,
+    payer?: PublicKey
+  ): TransactionInstruction {
+    const nativeCollateralAmount = uiToNative(
+      collateralAmount,
+      depository.collateralDecimals
+    );
+
+    const collateralMint = depository.collateralMint;
+    const redeemableMint = controller.redeemableMintPda;
+
+    const [[userCollateral], [userRedeemable]] = findMultipleATAAddSync(
+      authority,
+      [collateralMint, redeemableMint]
+    );
+
+    return this.instruction.mintWithCredixLpDepository(nativeCollateralAmount, {
+      accounts: {
+        user: authority,
+        payer: payer ?? authority,
+        controller: controller.pda,
+        depository: depository.pda,
+        depositoryCollateral: depository.depositoryCollateral,
+        depositoryShares: depository.depositoryShares,
+        redeemableMint: redeemableMint,
+        userRedeemable: userRedeemable,
+        collateralMint: collateralMint,
+        userCollateral: userCollateral,
+        credixGlobalMarketState: depository.credixGlobalMarketState,
+        credixSigningAuthority: depository.credixSigningAuthority,
+        credixLiquidityCollateral: depository.credixLiquidityCollateral,
+        credixSharesMint: depository.credixSharesMint,
+        credixPass: depository.credixPass,
+        systemProgram: SystemProgram.programId,
+        tokenProgram: TOKEN_PROGRAM_ID,
+        associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+        credixProgram: depository.credixProgramId,
+        rent: SYSVAR_RENT_PUBKEY,
+      },
+      options,
+    });
+  }
+
+  public createRedeemFromCredixLpDepositoryInstruction(
+    controller: Controller,
+    depository: CredixLpDepository,
+    authority: PublicKey,
+    redeemableAmount: number,
+    options: ConfirmOptions,
+    payer?: PublicKey
+  ): TransactionInstruction {
+    const nativeRedeemableAmount = uiToNative(
+      redeemableAmount,
+      controller.redeemableMintDecimals
+    );
+
+    const collateralMint = depository.collateralMint;
+    const redeemableMint = controller.redeemableMintPda;
+
+    const [[userCollateral], [userRedeemable]] = findMultipleATAAddSync(
+      authority,
+      [collateralMint, redeemableMint]
+    );
+
+    return this.instruction.redeemFromCredixLpDepository(
+      nativeRedeemableAmount,
+      {
+        accounts: {
+          user: authority,
+          payer: payer ?? authority,
+          controller: controller.pda,
+          depository: depository.pda,
+          depositoryCollateral: depository.depositoryCollateral,
+          depositoryShares: depository.depositoryShares,
+          redeemableMint: redeemableMint,
+          userRedeemable: userRedeemable,
+          collateralMint: collateralMint,
+          userCollateral: userCollateral,
+          credixProgramState: depository.credixProgramState,
+          credixGlobalMarketState: depository.credixGlobalMarketState,
+          credixSigningAuthority: depository.credixSigningAuthority,
+          credixLiquidityCollateral: depository.credixLiquidityCollateral,
+          credixSharesMint: depository.credixSharesMint,
+          credixPass: depository.credixPass,
+          credixTreasuryCollateral: depository.credixTreasuryCollateral,
+          credixMultisig: depository.credixMultisig,
+          credixMultisigCollateral: depository.credixMultisigCollateral,
+          systemProgram: SystemProgram.programId,
+          associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+          tokenProgram: TOKEN_PROGRAM_ID,
+          credixProgram: depository.credixProgramId,
+          rent: SYSVAR_RENT_PUBKEY,
+        },
+        options,
+      }
+    );
+  }
+
+  public createCollectProfitOfCredixLpDepositoryInstruction(
+    controller: Controller,
+    depository: CredixLpDepository,
+    authority: PublicKey,
+    options: ConfirmOptions,
+    payer?: PublicKey
+  ): TransactionInstruction {
+    const collateralMint = depository.collateralMint;
+    return this.instruction.collectProfitOfCredixLpDepository({
+      accounts: {
+        authority: authority,
+        payer: payer ?? authority,
+        controller: controller.pda,
+        depository: depository.pda,
+        depositoryCollateral: depository.depositoryCollateral,
+        depositoryShares: depository.depositoryShares,
+        collateralMint: collateralMint,
+        credixProgramState: depository.credixProgramState,
+        credixGlobalMarketState: depository.credixGlobalMarketState,
+        credixSigningAuthority: depository.credixSigningAuthority,
+        credixLiquidityCollateral: depository.credixLiquidityCollateral,
+        credixSharesMint: depository.credixSharesMint,
+        credixPass: depository.credixPass,
+        credixTreasuryCollateral: depository.credixTreasuryCollateral,
+        credixMultisig: depository.credixMultisig,
+        credixMultisigCollateral: depository.credixMultisigCollateral,
+        profitTreasuryCollateral: depository.profitTreasuryCollateral,
+        systemProgram: SystemProgram.programId,
+        associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+        tokenProgram: TOKEN_PROGRAM_ID,
+        credixProgram: depository.credixProgramId,
+        rent: SYSVAR_RENT_PUBKEY,
+      },
+      options,
     });
   }
 }

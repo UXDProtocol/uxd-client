@@ -47,3 +47,28 @@ export class IdentityDepositoryAccount {
   redeemableAmountUnderManagementCap!: BN; // u128
   mintingDisabled!: boolean;
 }
+
+// V1
+export class CredixLpDepositoryAccount {
+  bump!: number; // u8
+  version!: number; // u8
+  controller!: PublicKey;
+  collateralMint!: PublicKey;
+  depositoryCollateral!: PublicKey;
+  depositoryShares!: PublicKey;
+  credixProgramState!: PublicKey;
+  credixGlobalMarketState!: PublicKey;
+  credixSigningAuthority!: PublicKey;
+  credixLiquidityCollateral!: PublicKey;
+  credixSharesMint!: PublicKey;
+  redeemableAmountUnderManagementCap!: BN; // u128
+  mintingFeeInBps!: number; // u8
+  redeemingFeeInBps!: number; // u8
+  mintingDisabled!: boolean;
+  collateralAmountDeposited!: BN; // u128
+  redeemableAmountUnderManagement!: BN; // u128
+  mintingFeeTotalAccrued!: BN; // u128
+  redeemingFeeTotalAccrued!: BN; // u128
+  profitTreasuryCollateral!: PublicKey;
+  profitTreasuryTotalCollected!: BN; // u128
+}
