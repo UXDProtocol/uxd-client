@@ -153,14 +153,14 @@ export class CredixLpDepository {
     depository: PublicKey,
     collateralMint: PublicKey
   ) {
-    return (await findATAAddrSync(depository, collateralMint))[0];
+    return findATAAddrSync(depository, collateralMint)[0];
   }
 
   private static async findDepositorySharesAddress(
     depository: PublicKey,
     credixSharesMint: PublicKey
   ) {
-    return (await findATAAddrSync(depository, credixSharesMint))[0];
+    return findATAAddrSync(depository, credixSharesMint)[0];
   }
 
   private static async findCredixProgramState(
@@ -202,7 +202,7 @@ export class CredixLpDepository {
     credixSigningAuthority: PublicKey,
     collateralMint: PublicKey
   ): Promise<PublicKey> {
-    return (await findATAAddrSync(credixSigningAuthority, collateralMint))[0];
+    return findATAAddrSync(credixSigningAuthority, collateralMint)[0];
   }
 
   private static async findCredixSharesMint(
@@ -241,14 +241,14 @@ export class CredixLpDepository {
     credixMultisig: PublicKey,
     collateralMint: PublicKey
   ): Promise<PublicKey> {
-    return (await findATAAddrSync(credixMultisig, collateralMint))[0];
+    return findATAAddrSync(credixMultisig, collateralMint)[0];
   }
 
   private static async findProfitTreasuryCollateralAddress(
     profitTreasury: PublicKey,
     collateralMint: PublicKey
   ): Promise<PublicKey> {
-    return (await findATAAddrSync(profitTreasury, collateralMint))[0];
+    return findATAAddrSync(profitTreasury, collateralMint)[0];
   }
 
   public info() {
