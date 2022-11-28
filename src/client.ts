@@ -178,7 +178,6 @@ export class UXDClient {
     controller: Controller,
     depository: MercurialVaultDepository,
     authority: PublicKey,
-    profitsRedeemAuthority: PublicKey,
     mintingFeeInBps: number,
     redeemingFeeInBps: number,
     redeemableAmountUnderManagementCap: number,
@@ -197,7 +196,6 @@ export class UXDClient {
       {
         accounts: {
           authority,
-          profitsRedeemAuthority,
           payer: payer ?? authority,
           controller: controller.pda,
           depository: depository.pda,
@@ -216,22 +214,22 @@ export class UXDClient {
 
   public createCollectProfitOfMercurialVaultDepositoryInstruction(
     controller: Controller,
-    profitsRedeemAuthority: PublicKey,
+    authority: PublicKey,
     depository: MercurialVaultDepository,
     options: ConfirmOptions,
     payer?: PublicKey
   ): TransactionInstruction {
-    const [profitsRedeemAuthorityCollateral] = findATAAddrSync(profitsRedeemAuthority, depository.collateralMint.mint);
+    const [authorityCollateral] = findATAAddrSync(authority, depository.collateralMint.mint);
 
     return this.instruction.collectProfitOfMercurialVaultDepository(
       {
         accounts: {
-          profitsRedeemAuthority,
-          payer: payer ?? profitsRedeemAuthority,
+          authority,
+          payer: payer ?? authority,
           controller: controller.pda,
           depository: depository.pda,
           collateralMint: depository.collateralMint.mint,
-          profitsRedeemAuthorityCollateral,
+          authorityCollateral,
           depositoryLpTokenVault: depository.depositoryLpTokenVault,
           mercurialVault: depository.mercurialVault,
           mercurialVaultLpMint: depository.mercurialVaultLpMint.mint,
@@ -345,7 +343,6 @@ export class UXDClient {
       mintingFeeInBps?: number;
       redeemingFeeInBps?: number;
       mintingDisabled?: boolean;
-      profitsRedeemAuthority?: PublicKey;
     },
     options: ConfirmOptions
   ): TransactionInstruction {
@@ -354,7 +351,6 @@ export class UXDClient {
       mintingFeeInBps,
       redeemingFeeInBps,
       mintingDisabled,
-      profitsRedeemAuthority,
     } = uiFields;
     const fields = {
       redeemableAmountUnderManagementCap:
@@ -370,7 +366,6 @@ export class UXDClient {
         typeof redeemingFeeInBps !== 'undefined' ? redeemingFeeInBps : null,
       mintingDisabled:
         typeof mintingDisabled !== 'undefined' ? mintingDisabled : null,
-      profitsRedeemAuthority: typeof profitsRedeemAuthority !== 'undefined' ? profitsRedeemAuthority : null,
     };
     return this.instruction.editMercurialVaultDepository(fields, {
       accounts: {

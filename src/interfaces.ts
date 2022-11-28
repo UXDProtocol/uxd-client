@@ -11,6 +11,7 @@ export class ControllerAccount {
   redeemableGlobalSupplyCap!: BN; // u128
   redeemableCirculatingSupply!: BN; // u128
   isFrozen!: boolean;
+  profitsTotalCollected!: BN; // u128
 }
 
 // V1
@@ -33,7 +34,6 @@ export class MercurialVaultDepositoryAccount {
   redeemingFeeTotalAccrued!: BN; // u128
   redeemableAmountUnderManagementCap!: BN; // u128
   mintingDisabled!: boolean;
-  profitsRedeemAuthority!: PublicKey;
   profitsTotalCollected!: BN; // u128
   lastProfitsCollectionUnixTimestamp!: BN; // u64
 }
