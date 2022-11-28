@@ -141,7 +141,7 @@ export class MercurialVaultDepository {
     );
   }
 
-  public async calculateInterestsAndFeesValue(
+  public async calculateProfitsValue(
     connection: Connection,
     options?: ConfirmOptions
   ): Promise<BN> {
