@@ -472,7 +472,6 @@ export class UXDClient {
           credixSigningAuthority: depository.credixSigningAuthority,
           credixLiquidityCollateral: depository.credixLiquidityCollateral,
           credixSharesMint: depository.credixSharesMint,
-          authorityCollateral: depository.authorityCollateral,
           systemProgram: SystemProgram.programId,
           tokenProgram: TOKEN_PROGRAM_ID,
           associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
