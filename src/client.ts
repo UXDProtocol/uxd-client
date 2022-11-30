@@ -407,7 +407,6 @@ export class UXDClient {
       mintingFeeInBps?: number;
       redeemingFeeInBps?: number;
       mintingDisabled?: boolean;
-      profitTreasuryCollateral?: PublicKey;
     },
     options: ConfirmOptions
   ): TransactionInstruction {
@@ -416,7 +415,6 @@ export class UXDClient {
       mintingFeeInBps,
       redeemingFeeInBps,
       mintingDisabled,
-      profitTreasuryCollateral,
     } = uiFields;
     const fields = {
       redeemableAmountUnderManagementCap:
@@ -430,10 +428,6 @@ export class UXDClient {
       redeemingFeeInBps:
         redeemingFeeInBps !== undefined ? redeemingFeeInBps : null,
       mintingDisabled: mintingDisabled !== undefined ? mintingDisabled : null,
-      profitTreasuryCollateral:
-        profitTreasuryCollateral !== undefined
-          ? profitTreasuryCollateral
-          : null,
     };
     return this.instruction.editCredixLpDepository(fields, {
       accounts: {
@@ -478,7 +472,7 @@ export class UXDClient {
           credixSigningAuthority: depository.credixSigningAuthority,
           credixLiquidityCollateral: depository.credixLiquidityCollateral,
           credixSharesMint: depository.credixSharesMint,
-          profitTreasuryCollateral: depository.profitTreasuryCollateral,
+          authorityCollateral: depository.authorityCollateral,
           systemProgram: SystemProgram.programId,
           tokenProgram: TOKEN_PROGRAM_ID,
           associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
@@ -492,7 +486,7 @@ export class UXDClient {
   public createMintWithCredixLpDepositoryInstruction(
     controller: Controller,
     depository: CredixLpDepository,
-    authority: PublicKey,
+    user: PublicKey,
     collateralAmount: number,
     options: ConfirmOptions,
     payer?: PublicKey
@@ -505,15 +499,15 @@ export class UXDClient {
     const collateralMint = depository.collateralMint;
     const redeemableMint = controller.redeemableMintPda;
 
-    const [[userCollateral], [userRedeemable]] = findMultipleATAAddSync(
-      authority,
-      [collateralMint, redeemableMint]
-    );
+    const [[userCollateral], [userRedeemable]] = findMultipleATAAddSync(user, [
+      collateralMint,
+      redeemableMint,
+    ]);
 
     return this.instruction.mintWithCredixLpDepository(nativeCollateralAmount, {
       accounts: {
-        user: authority,
-        payer: payer ?? authority,
+        user: user,
+        payer: payer ?? user,
         controller: controller.pda,
         depository: depository.pda,
         depositoryCollateral: depository.depositoryCollateral,
@@ -540,7 +534,7 @@ export class UXDClient {
   public createRedeemFromCredixLpDepositoryInstruction(
     controller: Controller,
     depository: CredixLpDepository,
-    authority: PublicKey,
+    user: PublicKey,
     redeemableAmount: number,
     options: ConfirmOptions,
     payer?: PublicKey
@@ -553,17 +547,17 @@ export class UXDClient {
     const collateralMint = depository.collateralMint;
     const redeemableMint = controller.redeemableMintPda;
 
-    const [[userCollateral], [userRedeemable]] = findMultipleATAAddSync(
-      authority,
-      [collateralMint, redeemableMint]
-    );
+    const [[userCollateral], [userRedeemable]] = findMultipleATAAddSync(user, [
+      collateralMint,
+      redeemableMint,
+    ]);
 
     return this.instruction.redeemFromCredixLpDepository(
       nativeRedeemableAmount,
       {
         accounts: {
-          user: authority,
-          payer: payer ?? authority,
+          user: user,
+          payer: payer ?? user,
           controller: controller.pda,
           depository: depository.pda,
           depositoryCollateral: depository.depositoryCollateral,
@@ -618,7 +612,7 @@ export class UXDClient {
         credixTreasuryCollateral: depository.credixTreasuryCollateral,
         credixMultisig: depository.credixMultisig,
         credixMultisigCollateral: depository.credixMultisigCollateral,
-        profitTreasuryCollateral: depository.profitTreasuryCollateral,
+        authorityCollateral: depository.authorityCollateral,
         systemProgram: SystemProgram.programId,
         associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
         tokenProgram: TOKEN_PROGRAM_ID,

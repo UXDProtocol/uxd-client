@@ -29,8 +29,8 @@ export class CredixLpDepository {
     public readonly credixMultisig: PublicKey,
     public readonly credixMultisigCollateral: PublicKey,
     public readonly credixProgramId: PublicKey,
-    public readonly profitTreasury: PublicKey,
-    public readonly profitTreasuryCollateral: PublicKey
+    public readonly authority: PublicKey,
+    public readonly authorityCollateral: PublicKey
   ) {}
 
   public static async initialize({
@@ -42,7 +42,7 @@ export class CredixLpDepository {
     credixMultisig,
     credixTreasuryCollateral,
     credixMarketName,
-    profitTreasury,
+    authority,
   }: {
     connection: Connection;
     uxdProgramId: PublicKey;
@@ -52,7 +52,7 @@ export class CredixLpDepository {
     credixMultisig: PublicKey;
     credixTreasuryCollateral: PublicKey;
     credixMarketName: string;
-    profitTreasury: PublicKey;
+    authority: PublicKey;
   }): Promise<CredixLpDepository> {
     // First we need the credix market address
     const credixGlobalMarketState = await this.findCredixGlobalMarketState(
@@ -120,11 +120,10 @@ export class CredixLpDepository {
     );
 
     // Generate the profit treasury token account
-    const profitTreasuryCollateral =
-      await this.findProfitTreasuryCollateralAddress(
-        profitTreasury,
-        collateralMint
-      );
+    const authorityCollateral = await this.findAuthorityCollateralAddress(
+      authority,
+      collateralMint
+    );
 
     // Done
     return new CredixLpDepository(
@@ -144,8 +143,8 @@ export class CredixLpDepository {
       credixMultisig,
       credixMultisigCollateral,
       credixProgramId,
-      profitTreasury,
-      profitTreasuryCollateral
+      authority,
+      authorityCollateral
     );
   }
 
@@ -244,11 +243,11 @@ export class CredixLpDepository {
     return findATAAddrSync(credixMultisig, collateralMint)[0];
   }
 
-  private static async findProfitTreasuryCollateralAddress(
-    profitTreasury: PublicKey,
+  private static async findAuthorityCollateralAddress(
+    authority: PublicKey,
     collateralMint: PublicKey
   ): Promise<PublicKey> {
-    return findATAAddrSync(profitTreasury, collateralMint)[0];
+    return findATAAddrSync(authority, collateralMint)[0];
   }
 
   public info() {
@@ -270,8 +269,8 @@ export class CredixLpDepository {
       ['credixMultisig']: this.credixMultisig.toBase58(),
       ['credixMultisigCollateral']: this.credixMultisigCollateral.toBase58(),
       ['credixProgramId']: this.credixProgramId.toBase58(),
-      ['profitTreasury']: this.profitTreasury.toBase58(),
-      ['profitTreasuryCollateral']: this.profitTreasuryCollateral.toBase58(),
+      ['authority']: this.authority.toBase58(),
+      ['authorityCollateral']: this.authorityCollateral.toBase58(),
     });
     console.groupEnd();
   }
