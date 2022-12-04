@@ -26,7 +26,7 @@ export class CredixLpDepository {
     public readonly credixSharesMint: PublicKey,
     public readonly credixPass: PublicKey,
     public readonly credixTreasuryCollateral: PublicKey,
-    public readonly credixMultisig: PublicKey,
+    public readonly credixMultisigKey: PublicKey,
     public readonly credixMultisigCollateral: PublicKey,
     public readonly credixProgramId: PublicKey,
     public readonly authority: PublicKey,
@@ -39,7 +39,7 @@ export class CredixLpDepository {
     collateralMint,
     collateralSymbol,
     credixProgramId,
-    credixMultisig,
+    credixMultisigKey,
     credixTreasuryCollateral,
     credixMarketName,
     authority,
@@ -49,7 +49,7 @@ export class CredixLpDepository {
     collateralMint: PublicKey;
     collateralSymbol: string;
     credixProgramId: PublicKey;
-    credixMultisig: PublicKey;
+    credixMultisigKey: PublicKey;
     credixTreasuryCollateral: PublicKey;
     credixMarketName: string;
     authority: PublicKey;
@@ -105,7 +105,7 @@ export class CredixLpDepository {
       credixProgramId
     );
     const credixMultisigCollateral = await this.findCredixMultisigCollateral(
-      credixMultisig,
+      credixMultisigKey,
       collateralMint
     );
 
@@ -140,7 +140,7 @@ export class CredixLpDepository {
       credixSharesMint,
       credixPass,
       credixTreasuryCollateral,
-      credixMultisig,
+      credixMultisigKey,
       credixMultisigCollateral,
       credixProgramId,
       authority,
@@ -266,7 +266,7 @@ export class CredixLpDepository {
       ['credixSharesMint']: this.credixSharesMint.toBase58(),
       ['credixPass']: this.credixPass.toBase58(),
       ['credixTreasuryCollateral']: this.credixTreasuryCollateral.toBase58(),
-      ['credixMultisig']: this.credixMultisig.toBase58(),
+      ['credixMultisigKey']: this.credixMultisigKey.toBase58(),
       ['credixMultisigCollateral']: this.credixMultisigCollateral.toBase58(),
       ['credixProgramId']: this.credixProgramId.toBase58(),
       ['authority']: this.authority.toBase58(),
