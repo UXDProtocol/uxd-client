@@ -237,10 +237,10 @@ export class CredixLpDepository {
   }
 
   private static async findCredixMultisigCollateral(
-    credixMultisig: PublicKey,
+    credixMultisigKey: PublicKey,
     collateralMint: PublicKey
   ): Promise<PublicKey> {
-    return findATAAddrSync(credixMultisig, collateralMint)[0];
+    return findATAAddrSync(credixMultisigKey, collateralMint)[0];
   }
 
   private static async findAuthorityCollateralAddress(
