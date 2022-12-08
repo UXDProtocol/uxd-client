@@ -191,7 +191,7 @@ export class CredixLpDepository {
   ): Promise<PublicKey> {
     return (
       await PublicKey.findProgramAddress(
-        [credixGlobalMarketState.toBytes()],
+        [credixGlobalMarketState.toBuffer()],
         credixProgramId
       )
     )[0];
@@ -211,7 +211,7 @@ export class CredixLpDepository {
     return (
       await PublicKey.findProgramAddress(
         [
-          credixGlobalMarketState.toBytes(),
+          credixGlobalMarketState.toBuffer(),
           Buffer.from(CREDIX_LP_INTERNAL_LP_TOKEN_MINT_NAMESPACE),
         ],
         credixProgramId
@@ -227,8 +227,8 @@ export class CredixLpDepository {
     return (
       await PublicKey.findProgramAddress(
         [
-          credixGlobalMarketState.toBytes(),
-          depository.toBytes(),
+          credixGlobalMarketState.toBuffer(),
+          depository.toBuffer(),
           Buffer.from(CREDIX_LP_INTERNAL_CREDIX_PASS_NAMESPACE),
         ],
         credixProgramId
@@ -253,24 +253,24 @@ export class CredixLpDepository {
   public info() {
     console.groupCollapsed('[Credix Lp Depository debug info]');
     console.table({
-      ['pda']: this.pda.toBase58(),
-      ['collateralMint']: this.collateralMint.toBase58(),
-      ['collateralDecimals']: this.collateralDecimals,
-      ['collateralSymbol']: this.collateralSymbol,
-      ['depositoryCollateral']: this.depositoryCollateral.toBase58(),
-      ['depositoryShares']: this.depositoryShares.toBase58(),
-      ['credixProgramState']: this.credixProgramState.toBase58(),
-      ['credixGlobalMarketState']: this.credixGlobalMarketState.toBase58(),
-      ['credixSigningAuthority']: this.credixSigningAuthority.toBase58(),
-      ['credixLiquidityCollateral']: this.credixLiquidityCollateral.toBase58(),
-      ['credixSharesMint']: this.credixSharesMint.toBase58(),
-      ['credixPass']: this.credixPass.toBase58(),
-      ['credixTreasuryCollateral']: this.credixTreasuryCollateral.toBase58(),
-      ['credixMultisigKey']: this.credixMultisigKey.toBase58(),
-      ['credixMultisigCollateral']: this.credixMultisigCollateral.toBase58(),
-      ['credixProgramId']: this.credixProgramId.toBase58(),
-      ['authority']: this.authority.toBase58(),
-      ['authorityCollateral']: this.authorityCollateral.toBase58(),
+      pda: this.pda.toBase58(),
+      collateralMint: this.collateralMint.toBase58(),
+      collateralDecimals: this.collateralDecimals,
+      collateralSymbol: this.collateralSymbol,
+      depositoryCollateral: this.depositoryCollateral.toBase58(),
+      depositoryShares: this.depositoryShares.toBase58(),
+      credixProgramState: this.credixProgramState.toBase58(),
+      credixGlobalMarketState: this.credixGlobalMarketState.toBase58(),
+      credixSigningAuthority: this.credixSigningAuthority.toBase58(),
+      credixLiquidityCollateral: this.credixLiquidityCollateral.toBase58(),
+      credixSharesMint: this.credixSharesMint.toBase58(),
+      credixPass: this.credixPass.toBase58(),
+      credixTreasuryCollateral: this.credixTreasuryCollateral.toBase58(),
+      credixMultisigKey: this.credixMultisigKey.toBase58(),
+      credixMultisigCollateral: this.credixMultisigCollateral.toBase58(),
+      credixProgramId: this.credixProgramId.toBase58(),
+      authority: this.authority.toBase58(),
+      authorityCollateral: this.authorityCollateral.toBase58(),
     });
     console.groupEnd();
   }
