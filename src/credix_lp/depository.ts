@@ -1,4 +1,4 @@
-import { BorshAccountsCoder } from '@project-serum/anchor';
+import { BorshAccountsCoder, Wallet } from '@project-serum/anchor';
 import { ConfirmOptions, Connection, PublicKey, Signer } from '@solana/web3.js';
 import { IDL } from '../idl';
 import { CredixLpDepositoryAccount } from '../interfaces';
@@ -15,7 +15,7 @@ const CREDIX_LP_INTERNAL_PROGRAM_STATE_NAMESPACE = 'program-state';
 const CREDIX_LP_INTERNAL_LP_TOKEN_MINT_NAMESPACE = 'lp-token-mint';
 
 export class CredixLpDepository {
-  public readonly credixMarketName = 'credix-marketplace';
+  public readonly credixMarketName: string = 'credix-marketplace';
 
   public constructor(
     public readonly pda: PublicKey,
@@ -115,7 +115,7 @@ export class CredixLpDepository {
     // Load credix IDL to be able to read onchain data
     const provider = new AnchorProvider(
       connection,
-      {} as any,
+      {} as Wallet,
       AnchorProvider.defaultOptions()
     );
     const credixProgram = new Program<CredixIDL>(
@@ -123,15 +123,6 @@ export class CredixLpDepository {
       credixProgramId,
       provider
     );
-
-    // Then we read the content of the credixProgramState
-    const credixProgramStateData =
-      await credixProgram.account.programState.fetchNullable(
-        credixProgramState
-      );
-    if (!credixProgramStateData) {
-      throw new Error('Could not read credixProgramState');
-    }
 
     // Then we read the content of the credixGlobalMarketState
     const credixGlobalMarketStateData =
@@ -142,10 +133,19 @@ export class CredixLpDepository {
       throw new Error('Could not read credixGlobalMarketState');
     }
 
+    // Then we read the content of the credixProgramState
+    const credixProgramStateData =
+      await credixProgram.account.programState.fetchNullable(
+        credixProgramState
+      );
+    if (!credixProgramStateData) {
+      throw new Error('Could not read credixProgramState');
+    }
+
     // We now have all the data we need
     const credixTreasuryCollateral =
-      credixProgramStateData.treasuryPoolTokenAccount;
-    const credixMultisigKey = credixGlobalMarketStateData.credixMultisigKey;
+      credixGlobalMarketStateData.treasuryPoolTokenAccount;
+    const credixMultisigKey = credixProgramStateData.credixMultisigKey;
     const credixMultisigCollateral = await this.findCredixMultisigCollateral(
       credixMultisigKey,
       collateralMint
