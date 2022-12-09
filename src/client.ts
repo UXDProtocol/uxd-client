@@ -12,7 +12,7 @@ import {
 } from '@solana/web3.js';
 import { Controller } from './controller';
 import { MercurialVaultDepository } from './mercurial/depository';
-import { findMultipleATAAddSync, uiToNative } from './utils';
+import { findATAAddrSync, findMultipleATAAddSync, uiToNative } from './utils';
 import NamespaceFactory from './namespace';
 import { IDL as UXD_IDL } from './idl';
 import type { Uxd as UXD_IDL_TYPE } from './idl';
@@ -593,6 +593,9 @@ export class UXDClient {
     payer?: PublicKey
   ): TransactionInstruction {
     const collateralMint = depository.collateralMint;
+    const [authorityCollateral] = findATAAddrSync(
+      authority, depository.collateralMint,
+    );
     return this.instruction.collectProfitOfCredixLpDepository({
       accounts: {
         authority: authority,
@@ -611,7 +614,7 @@ export class UXDClient {
         credixTreasuryCollateral: depository.credixTreasuryCollateral,
         credixMultisigKey: depository.credixMultisigKey,
         credixMultisigCollateral: depository.credixMultisigCollateral,
-        authorityCollateral: depository.authorityCollateral,
+        authorityCollateral: authorityCollateral,
         systemProgram: SystemProgram.programId,
         associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
         tokenProgram: TOKEN_PROGRAM_ID,

@@ -4,6 +4,12 @@ import { IDL } from '../idl';
 import { CredixLpDepositoryAccount } from '../interfaces';
 import { Token, TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import { findATAAddrSync } from '../utils';
+import { AnchorProvider } from '@project-serum/anchor';
+import {
+  IDL as credixIDL,
+  Credix as CredixIDL,
+} from './credixIdl';
+import { Program } from '@project-serum/anchor';
 
 const CREDIX_LP_DEPOSITORY_NAMESPACE = 'CREDIX_LP_DEPOSITORY';
 
@@ -12,6 +18,8 @@ const CREDIX_LP_INTERNAL_PROGRAM_STATE_NAMESPACE = 'program-state';
 const CREDIX_LP_INTERNAL_LP_TOKEN_MINT_NAMESPACE = 'lp-token-mint';
 
 export class CredixLpDepository {
+  public readonly credixMarketName = "credix-marketplace";
+
   public constructor(
     public readonly pda: PublicKey,
     public readonly collateralMint: PublicKey,
@@ -29,8 +37,6 @@ export class CredixLpDepository {
     public readonly credixMultisigKey: PublicKey,
     public readonly credixMultisigCollateral: PublicKey,
     public readonly credixProgramId: PublicKey,
-    public readonly authority: PublicKey,
-    public readonly authorityCollateral: PublicKey
   ) {}
 
   public static async initialize({
@@ -39,21 +45,16 @@ export class CredixLpDepository {
     collateralMint,
     collateralSymbol,
     credixProgramId,
-    credixMultisigKey,
-    credixTreasuryCollateral,
     credixMarketName,
-    authority,
   }: {
     connection: Connection;
     uxdProgramId: PublicKey;
     collateralMint: PublicKey;
     collateralSymbol: string;
     credixProgramId: PublicKey;
-    credixMultisigKey: PublicKey;
-    credixTreasuryCollateral: PublicKey;
     credixMarketName: string;
-    authority: PublicKey;
   }): Promise<CredixLpDepository> {
+
     // First we need the credix market address
     const credixGlobalMarketState = await this.findCredixGlobalMarketState(
       credixMarketName,
@@ -104,10 +105,6 @@ export class CredixLpDepository {
       depository,
       credixProgramId
     );
-    const credixMultisigCollateral = await this.findCredixMultisigCollateral(
-      credixMultisigKey,
-      collateralMint
-    );
 
     // Then generate the depository token accounts
     const depositoryCollateral = await this.findDepositoryCollateralAddress(
@@ -119,9 +116,35 @@ export class CredixLpDepository {
       credixSharesMint
     );
 
-    // Generate the profit treasury token account
-    const authorityCollateral = await this.findAuthorityCollateralAddress(
-      authority,
+    // Load credix IDL to be able to read onchain data
+    const provider = new AnchorProvider(
+      connection,
+      {} as any,
+      AnchorProvider.defaultOptions()
+    );
+    const credixProgram = new Program<CredixIDL>(
+      credixIDL,
+      credixProgramId,
+      provider
+    );
+
+    // Then we read the content of the credixProgramState
+    const credixProgramStateData = await credixProgram.account.programState.fetchNullable(credixProgramState);
+    if (!credixProgramStateData) {
+      throw new Error('Could not read credixProgramState');
+    }
+
+    // Then we read the content of the credixGlobalMarketState
+    const credixGlobalMarketStateData = await credixProgram.account.globalMarketState.fetchNullable(credixGlobalMarketState);
+    if (!credixGlobalMarketStateData) {
+      throw new Error('Could not read credixGlobalMarketState');
+    }
+
+    // We now have all the data we need
+    const credixTreasuryCollateral = credixProgramStateData.treasuryPoolTokenAccount;
+    const credixMultisigKey = credixGlobalMarketStateData.credixMultisigKey;
+    const credixMultisigCollateral = await this.findCredixMultisigCollateral(
+      credixMultisigKey,
       collateralMint
     );
 
@@ -143,8 +166,6 @@ export class CredixLpDepository {
       credixMultisigKey,
       credixMultisigCollateral,
       credixProgramId,
-      authority,
-      authorityCollateral
     );
   }
 
@@ -243,13 +264,6 @@ export class CredixLpDepository {
     return findATAAddrSync(credixMultisigKey, collateralMint)[0];
   }
 
-  private static async findAuthorityCollateralAddress(
-    authority: PublicKey,
-    collateralMint: PublicKey
-  ): Promise<PublicKey> {
-    return findATAAddrSync(authority, collateralMint)[0];
-  }
-
   public info() {
     console.groupCollapsed('[Credix Lp Depository debug info]');
     console.table({
@@ -269,8 +283,6 @@ export class CredixLpDepository {
       credixMultisigKey: this.credixMultisigKey.toBase58(),
       credixMultisigCollateral: this.credixMultisigCollateral.toBase58(),
       credixProgramId: this.credixProgramId.toBase58(),
-      authority: this.authority.toBase58(),
-      authorityCollateral: this.authorityCollateral.toBase58(),
     });
     console.groupEnd();
   }
