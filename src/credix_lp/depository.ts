@@ -5,10 +5,7 @@ import { CredixLpDepositoryAccount } from '../interfaces';
 import { Token, TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import { findATAAddrSync } from '../utils';
 import { AnchorProvider } from '@project-serum/anchor';
-import {
-  IDL as credixIDL,
-  Credix as CredixIDL,
-} from './credixIdl';
+import { IDL as credixIDL, Credix as CredixIDL } from './credixIdl';
 import { Program } from '@project-serum/anchor';
 
 const CREDIX_LP_DEPOSITORY_NAMESPACE = 'CREDIX_LP_DEPOSITORY';
@@ -18,7 +15,7 @@ const CREDIX_LP_INTERNAL_PROGRAM_STATE_NAMESPACE = 'program-state';
 const CREDIX_LP_INTERNAL_LP_TOKEN_MINT_NAMESPACE = 'lp-token-mint';
 
 export class CredixLpDepository {
-  public readonly credixMarketName = "credix-marketplace";
+  public readonly credixMarketName = 'credix-marketplace';
 
   public constructor(
     public readonly pda: PublicKey,
@@ -36,7 +33,7 @@ export class CredixLpDepository {
     public readonly credixTreasuryCollateral: PublicKey,
     public readonly credixMultisigKey: PublicKey,
     public readonly credixMultisigCollateral: PublicKey,
-    public readonly credixProgramId: PublicKey,
+    public readonly credixProgramId: PublicKey
   ) {}
 
   public static async initialize({
@@ -54,7 +51,6 @@ export class CredixLpDepository {
     credixProgramId: PublicKey;
     credixMarketName: string;
   }): Promise<CredixLpDepository> {
-
     // First we need the credix market address
     const credixGlobalMarketState = await this.findCredixGlobalMarketState(
       credixMarketName,
@@ -129,19 +125,26 @@ export class CredixLpDepository {
     );
 
     // Then we read the content of the credixProgramState
-    const credixProgramStateData = await credixProgram.account.programState.fetchNullable(credixProgramState);
+    const credixProgramStateData =
+      await credixProgram.account.programState.fetchNullable(
+        credixProgramState
+      );
     if (!credixProgramStateData) {
       throw new Error('Could not read credixProgramState');
     }
 
     // Then we read the content of the credixGlobalMarketState
-    const credixGlobalMarketStateData = await credixProgram.account.globalMarketState.fetchNullable(credixGlobalMarketState);
+    const credixGlobalMarketStateData =
+      await credixProgram.account.globalMarketState.fetchNullable(
+        credixGlobalMarketState
+      );
     if (!credixGlobalMarketStateData) {
       throw new Error('Could not read credixGlobalMarketState');
     }
 
     // We now have all the data we need
-    const credixTreasuryCollateral = credixProgramStateData.treasuryPoolTokenAccount;
+    const credixTreasuryCollateral =
+      credixProgramStateData.treasuryPoolTokenAccount;
     const credixMultisigKey = credixGlobalMarketStateData.credixMultisigKey;
     const credixMultisigCollateral = await this.findCredixMultisigCollateral(
       credixMultisigKey,
@@ -165,7 +168,7 @@ export class CredixLpDepository {
       credixTreasuryCollateral,
       credixMultisigKey,
       credixMultisigCollateral,
-      credixProgramId,
+      credixProgramId
     );
   }
 

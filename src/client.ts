@@ -594,7 +594,8 @@ export class UXDClient {
   ): TransactionInstruction {
     const collateralMint = depository.collateralMint;
     const [authorityCollateral] = findATAAddrSync(
-      authority, depository.collateralMint,
+      authority,
+      depository.collateralMint
     );
     return this.instruction.collectProfitOfCredixLpDepository({
       accounts: {
