@@ -15,8 +15,6 @@ const CREDIX_LP_INTERNAL_PROGRAM_STATE_NAMESPACE = 'program-state';
 const CREDIX_LP_INTERNAL_LP_TOKEN_MINT_NAMESPACE = 'lp-token-mint';
 
 export class CredixLpDepository {
-  public readonly credixMarketName: string = 'credix-marketplace';
-
   public constructor(
     public readonly pda: PublicKey,
     public readonly collateralMint: PublicKey,
