@@ -10,6 +10,7 @@ import { Program } from '@project-serum/anchor';
 
 const CREDIX_LP_DEPOSITORY_NAMESPACE = 'CREDIX_LP_DEPOSITORY';
 
+const CREDIX_LP_INTERNAL_CREDIX_MARKETPLACE_NAMESPACE = 'credix-marketplace';
 const CREDIX_LP_INTERNAL_CREDIX_PASS_NAMESPACE = 'credix-pass';
 const CREDIX_LP_INTERNAL_PROGRAM_STATE_NAMESPACE = 'program-state';
 
@@ -39,18 +40,15 @@ export class CredixLpDepository {
     collateralMint,
     collateralSymbol,
     credixProgramId,
-    credixMarketName,
   }: {
     connection: Connection;
     uxdProgramId: PublicKey;
     collateralMint: PublicKey;
     collateralSymbol: string;
     credixProgramId: PublicKey;
-    credixMarketName: string;
   }): Promise<CredixLpDepository> {
     // First we need the credix global market state address
     const credixGlobalMarketState = await this.findCredixGlobalMarketState(
-      credixMarketName,
       credixProgramId
     );
     // Then the credix program state address
@@ -192,12 +190,11 @@ export class CredixLpDepository {
   }
 
   private static async findCredixGlobalMarketState(
-    credixMarketName: string,
     credixProgramId: PublicKey
   ): Promise<PublicKey> {
     return (
       await PublicKey.findProgramAddress(
-        [Buffer.from(credixMarketName)],
+        [Buffer.from(CREDIX_LP_INTERNAL_CREDIX_MARKETPLACE_NAMESPACE)],
         credixProgramId
       )
     )[0];
