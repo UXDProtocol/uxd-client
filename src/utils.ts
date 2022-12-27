@@ -112,5 +112,9 @@ export function uiToNative(uiAmount: number, decimals: number): BN {
 }
 
 export function nativeToUi(nativeAmount: BN, decimals: number): number {
-  return nativeAmount.toNumber() / Math.pow(10, decimals);
+  const nativeAmountDecimalString = nativeAmount.toString(10, decimals + 1);
+  const pointPosition = nativeAmountDecimalString.length - decimals;
+  const integerString = nativeAmountDecimalString.substring(0, pointPosition);
+  const floatingString = nativeAmountDecimalString.substring(pointPosition);
+  return parseFloat(integerString + "." + floatingString);
 }
