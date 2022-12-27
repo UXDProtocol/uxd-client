@@ -544,10 +544,8 @@ export class UXDClient {
     const collateralMint = depository.collateralMint;
     const redeemableMint = controller.redeemableMintPda;
 
-    const [[userCollateral], [userRedeemable]] = findMultipleATAAddSync(user, [
-      collateralMint,
-      redeemableMint,
-    ]);
+    const userCollateral = findATAAddrSync(user, collateralMint)[0];
+    const userRedeemable = findATAAddrSync(user, redeemableMint)[0];
 
     return this.instruction.redeemFromCredixLpDepository(
       nativeRedeemableAmount,
