@@ -11,6 +11,7 @@ import {
 } from '@solana/web3.js';
 
 import BN from 'bn.js';
+import { number } from 'superstruct';
 
 // Constants
 export const BTC_DECIMALS = 6;
@@ -107,36 +108,51 @@ export async function getBalance(
   return value;
 }
 
-export function uiToNative(uiAmount: number, decimals: number): BN {
-  const uiAmountString = uiAmount.toString(10).toLowerCase();
-  let exponentPosition = uiAmountString.indexOf("e");
+export function exp10ToNative(exponent: number) {
+  return new BN(10).pow(new BN(exponent));
+}
+
+export function numberToFraction(value: number) {
+  const valueString = value.toExponential().toLowerCase();
+  let exponentPosition = valueString.indexOf('e');
   if (exponentPosition == -1) {
-    exponentPosition = uiAmountString.length;
+    exponentPosition = valueString.length;
   }
-  let pointPosition = uiAmountString.indexOf('.');
+  let pointPosition = valueString.indexOf('.');
   if (pointPosition == -1) {
     pointPosition = exponentPosition;
   }
-  const integerPartString = uiAmountString.substring(0, pointPosition);
-  const floatingPartString = uiAmountString.substring(pointPosition, exponentPosition);
-  const exponentPartString = uiAmountString.substring(exponentPosition + 1);
-  const nativePartString = floatingPartString
-    .substring(1, decimals + 1)
-    .padEnd(decimals, '0');
-  const nativeAmount = new BN(integerPartString + nativePartString);
-  if (exponentPartString.length == 0) {
-    return nativeAmount;
+  const integerDigits = valueString.substring(0, pointPosition);
+  const floatingDigits = valueString
+    .substring(pointPosition, exponentPosition)
+    .substring(1);
+  const exponentDigits = valueString.substring(exponentPosition + 1);
+  const denominatorDigits = floatingDigits.length - parseInt(exponentDigits);
+  const numeratorBase = new BN(integerDigits + floatingDigits);
+  if (denominatorDigits >= 0) {
+    return {
+      numerator: numeratorBase,
+      denominator: exp10ToNative(denominatorDigits),
+    };
+  } else {
+    return {
+      numerator: numeratorBase.mul(exp10ToNative(-denominatorDigits)),
+      denominator: new BN(1),
+    };
   }
-  const nativeExponent = new BN(parseInt(exponentPartString, 10));
-  const nativeMagnitude = new BN(10).pow(nativeExponent);
-  return nativeAmount.mul(nativeMagnitude);
+}
+
+export function uiToNative(uiAmount: number, decimals: number): BN {
+  const fraction = numberToFraction(uiAmount);
+  return fraction.numerator
+    .mul(exp10ToNative(decimals))
+    .div(fraction.denominator);
 }
 
 export function nativeToUi(nativeAmount: BN, decimals: number): number {
   const nativeAmountString = nativeAmount.toString(10, decimals + 1);
   const pointPosition = nativeAmountString.length - decimals;
-  const integerPartString = nativeAmountString.substring(0, pointPosition);
-  const nativePartString = nativeAmountString.substring(pointPosition);
-  const floatingPartString = "." + nativePartString;
-  return parseFloat(integerPartString + floatingPartString);
+  const integerDigits = nativeAmountString.substring(0, pointPosition);
+  const floatingDigits = nativeAmountString.substring(pointPosition);
+  return parseFloat(integerDigits + '.' + floatingDigits);
 }

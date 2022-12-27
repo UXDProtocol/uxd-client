@@ -1,5 +1,38 @@
 import { BN } from 'bn.js';
-import { nativeToUi, uiToNative } from './utils';
+import { nativeToUi, numberToFraction, uiToNative } from './utils';
+
+describe('numberToFraction', () => {
+  it('should return correct amount with tiny value', () => {
+    const fraction = numberToFraction(0.00000025);
+    expect(fraction.numerator.toString()).toEqual('25');
+    expect(fraction.denominator.toString()).toEqual('100000000');
+  });
+  it('should return correct amount with small value', () => {
+    const fraction = numberToFraction(0.25);
+    expect(fraction.numerator.toString()).toEqual('25');
+    expect(fraction.denominator.toString()).toEqual('100');
+  });
+  it('should return correct amount with typical value', () => {
+    const fraction = numberToFraction(900.9);
+    expect(fraction.numerator.toString()).toEqual('9009');
+    expect(fraction.denominator.toString()).toEqual('10');
+  });
+  it('should return correct amount with floating value', () => {
+    const fraction = numberToFraction(9.000009);
+    expect(fraction.numerator.toString()).toEqual('9000009');
+    expect(fraction.denominator.toString()).toEqual('1000000');
+  });
+  it('should return correct amount with big value', () => {
+    const fraction = numberToFraction(9000000);
+    expect(fraction.numerator.toString()).toEqual('9000000');
+    expect(fraction.denominator.toString()).toEqual('1');
+  });
+  it('should return correct amount with large value', () => {
+    const fraction = numberToFraction(9000000.000009);
+    expect(fraction.numerator.toString()).toEqual('9000000000009');
+    expect(fraction.denominator.toString()).toEqual('1000000');
+  });
+});
 
 describe('uiToNative', () => {
   it('should return correct amount with regular value (1 native)', () => {

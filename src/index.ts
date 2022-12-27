@@ -29,6 +29,7 @@ export {
   createAssocTokenIx,
   findATAAddrSync,
   findMultipleATAAddSync,
+  numberToFraction,
   nativeToUi,
   uiToNative,
 } from './utils';
