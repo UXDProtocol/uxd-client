@@ -13,8 +13,8 @@ describe('nativeToUi', () => {
   it('should return correct amount with extremely large value', () => {
     const decimals = 64;
     const nativeZeroes = '0'.repeat(decimals - 1);
-    const uiAmount = nativeToUi(new BN('11' + nativeZeroes), decimals);
-    expect(uiAmount).toEqual(1.1);
+    const uiAmount = nativeToUi(new BN('15' + nativeZeroes), decimals);
+    expect(uiAmount).toEqual(1.5);
   });
   it('should return correct amount converting back and forth', () => {
     const decimals = 64;
