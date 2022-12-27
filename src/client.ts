@@ -495,11 +495,11 @@ export class UXDClient {
       depository.collateralDecimals
     );
 
-    const collateralMint = depository.collateralMint;
     const redeemableMint = controller.redeemableMintPda;
-
-    const userCollateral = findATAAddrSync(user, collateralMint)[0];
     const userRedeemable = findATAAddrSync(user, redeemableMint)[0];
+
+    const collateralMint = depository.collateralMint;
+    const userCollateral = findATAAddrSync(user, collateralMint)[0];
 
     return this.instruction.mintWithCredixLpDepository(nativeCollateralAmount, {
       accounts: {
@@ -541,11 +541,11 @@ export class UXDClient {
       controller.redeemableMintDecimals
     );
 
-    const collateralMint = depository.collateralMint;
     const redeemableMint = controller.redeemableMintPda;
-
-    const userCollateral = findATAAddrSync(user, collateralMint)[0];
     const userRedeemable = findATAAddrSync(user, redeemableMint)[0];
+
+    const collateralMint = depository.collateralMint;
+    const userCollateral = findATAAddrSync(user, collateralMint)[0];
 
     return this.instruction.redeemFromCredixLpDepository(
       nativeRedeemableAmount,
