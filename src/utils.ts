@@ -108,13 +108,33 @@ export async function getBalance(
 }
 
 export function uiToNative(uiAmount: number, decimals: number): BN {
-  return new BN(Math.round(uiAmount * Math.pow(10, decimals)));
+  const uiAmountDecimalString = uiAmount.toString(10);
+  let pointPosition = uiAmountDecimalString.indexOf('.');
+  if (pointPosition == -1) {
+    pointPosition = uiAmountDecimalString.length;
+  }
+  const integerDecimalString = uiAmountDecimalString.substring(
+    0,
+    pointPosition
+  );
+  const floatingDecimalString = uiAmountDecimalString.substring(
+    pointPosition + 1
+  );
+  const nativeDecimalString = floatingDecimalString
+    .substring(0, decimals)
+    .padEnd(decimals, '0');
+  return new BN(integerDecimalString + nativeDecimalString);
 }
 
 export function nativeToUi(nativeAmount: BN, decimals: number): number {
   const nativeAmountDecimalString = nativeAmount.toString(10, decimals + 1);
   const pointPosition = nativeAmountDecimalString.length - decimals;
-  const integerString = nativeAmountDecimalString.substring(0, pointPosition);
-  const floatingString = nativeAmountDecimalString.substring(pointPosition);
-  return parseFloat(integerString + '.' + floatingString);
+  const integerDecimalString = nativeAmountDecimalString.substring(
+    0,
+    pointPosition
+  );
+  const nativeDecimalString =
+    nativeAmountDecimalString.substring(pointPosition);
+  const floatingDecimalString = '.' + nativeDecimalString;
+  return parseFloat(integerDecimalString + floatingDecimalString);
 }
