@@ -114,9 +114,9 @@ export function uiToNative(uiAmount: number, decimals: number): BN {
     pointPosition = uiAmountString.length;
   }
   const integerString = uiAmountString.substring(0, pointPosition);
-  const floatingString = uiAmountString.substring(pointPosition + 1);
+  const floatingString = uiAmountString.substring(pointPosition);
   const nativeString = floatingString
-    .substring(0, decimals)
+    .substring(1, decimals + 1)
     .padEnd(decimals, '0');
   return new BN(integerString + nativeString);
 }
