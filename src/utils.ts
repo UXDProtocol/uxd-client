@@ -108,33 +108,24 @@ export async function getBalance(
 }
 
 export function uiToNative(uiAmount: number, decimals: number): BN {
-  const uiAmountDecimalString = uiAmount.toString(10);
-  let pointPosition = uiAmountDecimalString.indexOf('.');
+  const uiAmountString = uiAmount.toString(10);
+  let pointPosition = uiAmountString.indexOf('.');
   if (pointPosition == -1) {
-    pointPosition = uiAmountDecimalString.length;
+    pointPosition = uiAmountString.length;
   }
-  const integerDecimalString = uiAmountDecimalString.substring(
-    0,
-    pointPosition
-  );
-  const floatingDecimalString = uiAmountDecimalString.substring(
-    pointPosition + 1
-  );
-  const nativeDecimalString = floatingDecimalString
+  const integerString = uiAmountString.substring(0, pointPosition);
+  const floatingString = uiAmountString.substring(pointPosition + 1);
+  const nativeString = floatingString
     .substring(0, decimals)
     .padEnd(decimals, '0');
-  return new BN(integerDecimalString + nativeDecimalString);
+  return new BN(integerString + nativeString);
 }
 
 export function nativeToUi(nativeAmount: BN, decimals: number): number {
-  const nativeAmountDecimalString = nativeAmount.toString(10, decimals + 1);
-  const pointPosition = nativeAmountDecimalString.length - decimals;
-  const integerDecimalString = nativeAmountDecimalString.substring(
-    0,
-    pointPosition
-  );
-  const nativeDecimalString =
-    nativeAmountDecimalString.substring(pointPosition);
-  const floatingDecimalString = '.' + nativeDecimalString;
-  return parseFloat(integerDecimalString + floatingDecimalString);
+  const nativeAmountString = nativeAmount.toString(10, decimals + 1);
+  const pointPosition = nativeAmountString.length - decimals;
+  const integerString = nativeAmountString.substring(0, pointPosition);
+  const nativeString = nativeAmountString.substring(pointPosition);
+  const floatingString = '.' + nativeString;
+  return parseFloat(integerString + floatingString);
 }
