@@ -75,7 +75,7 @@ export class UXDClient {
         authority,
         controller: controller.pda,
       },
-      options: options,
+      options,
     });
   }
 
@@ -184,7 +184,7 @@ export class UXDClient {
     options: ConfirmOptions,
     payer?: PublicKey
   ): TransactionInstruction {
-    const redeemableAmountUnderManagementCapBN = uiToNative(
+    const nativeRedeemableAmountUnderManagementCap = uiToNative(
       redeemableAmountUnderManagementCap,
       controller.redeemableMintDecimals
     );
@@ -192,7 +192,7 @@ export class UXDClient {
     return this.instruction.registerMercurialVaultDepository(
       mintingFeeInBps,
       redeemingFeeInBps,
-      redeemableAmountUnderManagementCapBN,
+      nativeRedeemableAmountUnderManagementCap,
       {
         accounts: {
           authority,
@@ -341,7 +341,7 @@ export class UXDClient {
         controller: controller.pda,
         depository: depository.pda,
       },
-      options: options,
+      options,
     });
   }
 
@@ -394,7 +394,7 @@ export class UXDClient {
         controller: controller.pda,
         depository: depository.pda,
       },
-      options: options,
+      options,
     });
   }
 
@@ -435,7 +435,7 @@ export class UXDClient {
         controller: controller.pda,
         depository: depository.pda,
       },
-      options: options,
+      options,
     });
   }
 
@@ -449,7 +449,7 @@ export class UXDClient {
     options: ConfirmOptions,
     payer?: PublicKey
   ): TransactionInstruction {
-    const redeemableAmountUnderManagementCapBN = uiToNative(
+    const nativeRedeemableAmountUnderManagementCap = uiToNative(
       redeemableAmountUnderManagementCap,
       controller.redeemableMintDecimals
     );
@@ -457,7 +457,7 @@ export class UXDClient {
     return this.instruction.registerCredixLpDepository(
       mintingFeeInBps,
       redeemingFeeInBps,
-      redeemableAmountUnderManagementCapBN,
+      nativeRedeemableAmountUnderManagementCap,
       {
         accounts: {
           authority,
@@ -498,10 +498,8 @@ export class UXDClient {
     const collateralMint = depository.collateralMint;
     const redeemableMint = controller.redeemableMintPda;
 
-    const [[userCollateral], [userRedeemable]] = findMultipleATAAddSync(user, [
-      collateralMint,
-      redeemableMint,
-    ]);
+    const userCollateral = findATAAddrSync(user, collateralMint)[0];
+    const userRedeemable = findATAAddrSync(user, redeemableMint)[0];
 
     return this.instruction.mintWithCredixLpDepository(nativeCollateralAmount, {
       accounts: {
@@ -511,10 +509,10 @@ export class UXDClient {
         depository: depository.pda,
         depositoryCollateral: depository.depositoryCollateral,
         depositoryShares: depository.depositoryShares,
-        redeemableMint: redeemableMint,
-        userRedeemable: userRedeemable,
-        collateralMint: collateralMint,
-        userCollateral: userCollateral,
+        redeemableMint,
+        userRedeemable,
+        collateralMint,
+        userCollateral,
         credixGlobalMarketState: depository.credixGlobalMarketState,
         credixSigningAuthority: depository.credixSigningAuthority,
         credixLiquidityCollateral: depository.credixLiquidityCollateral,
@@ -555,16 +553,16 @@ export class UXDClient {
       nativeRedeemableAmount,
       {
         accounts: {
-          user: user,
+          user,
           payer: payer ?? user,
           controller: controller.pda,
           depository: depository.pda,
           depositoryCollateral: depository.depositoryCollateral,
           depositoryShares: depository.depositoryShares,
-          redeemableMint: redeemableMint,
-          userRedeemable: userRedeemable,
-          collateralMint: collateralMint,
-          userCollateral: userCollateral,
+          redeemableMint,
+          userRedeemable,
+          collateralMint,
+          userCollateral,
           credixProgramState: depository.credixProgramState,
           credixGlobalMarketState: depository.credixGlobalMarketState,
           credixSigningAuthority: depository.credixSigningAuthority,
@@ -605,7 +603,7 @@ export class UXDClient {
         depository: depository.pda,
         depositoryCollateral: depository.depositoryCollateral,
         depositoryShares: depository.depositoryShares,
-        collateralMint: collateralMint,
+        collateralMint,
         credixProgramState: depository.credixProgramState,
         credixGlobalMarketState: depository.credixGlobalMarketState,
         credixSigningAuthority: depository.credixSigningAuthority,

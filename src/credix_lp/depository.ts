@@ -1,12 +1,15 @@
-import { BorshAccountsCoder, Wallet } from '@project-serum/anchor';
+import {
+  BorshAccountsCoder,
+  Wallet,
+  AnchorProvider,
+  Program,
+} from '@project-serum/anchor';
 import { ConfirmOptions, Connection, PublicKey, Signer } from '@solana/web3.js';
 import { IDL } from '../idl';
 import { CredixLpDepositoryAccount } from '../interfaces';
 import { Token, TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import { findATAAddrSync } from '../utils';
-import { AnchorProvider } from '@project-serum/anchor';
 import { IDL as credixIDL, Credix as CredixIDL } from './credixIdl';
-import { Program } from '@project-serum/anchor';
 
 const CREDIX_LP_DEPOSITORY_NAMESPACE = 'CREDIX_LP_DEPOSITORY';
 
@@ -90,7 +93,7 @@ export class CredixLpDepository {
     const credixTreasuryCollateral =
       credixGlobalMarketStateData.treasuryPoolTokenAccount;
     const credixMultisigKey = credixProgramStateData.credixMultisigKey;
-    const credixMultisigCollateral = await this.findCredixMultisigCollateral(
+    const credixMultisigCollateral = this.findCredixMultisigCollateral(
       credixMultisigKey,
       collateralMint
     );
@@ -123,7 +126,7 @@ export class CredixLpDepository {
       credixGlobalMarketState,
       credixProgramId
     );
-    const credixLiquidityCollateral = await this.findCredixLiquidityCollateral(
+    const credixLiquidityCollateral = this.findCredixLiquidityCollateral(
       credixSigningAuthority,
       collateralMint
     );
@@ -134,11 +137,11 @@ export class CredixLpDepository {
     );
 
     // Then generate the depository token accounts
-    const depositoryCollateral = await this.findDepositoryCollateralAddress(
+    const depositoryCollateral = this.findDepositoryCollateralAddress(
       depository,
       collateralMint
     );
-    const depositoryShares = await this.findDepositorySharesAddress(
+    const depositoryShares = this.findDepositorySharesAddress(
       depository,
       credixSharesMint
     );
@@ -164,17 +167,17 @@ export class CredixLpDepository {
     );
   }
 
-  private static async findDepositoryCollateralAddress(
+  private static findDepositoryCollateralAddress(
     depository: PublicKey,
     collateralMint: PublicKey
-  ) {
+  ): PublicKey {
     return findATAAddrSync(depository, collateralMint)[0];
   }
 
-  private static async findDepositorySharesAddress(
+  private static findDepositorySharesAddress(
     depository: PublicKey,
     credixSharesMint: PublicKey
-  ) {
+  ): PublicKey {
     return findATAAddrSync(depository, credixSharesMint)[0];
   }
 
@@ -212,10 +215,10 @@ export class CredixLpDepository {
     )[0];
   }
 
-  private static async findCredixLiquidityCollateral(
+  private static findCredixLiquidityCollateral(
     credixSigningAuthority: PublicKey,
     collateralMint: PublicKey
-  ): Promise<PublicKey> {
+  ): PublicKey {
     return findATAAddrSync(credixSigningAuthority, collateralMint)[0];
   }
 
@@ -236,10 +239,10 @@ export class CredixLpDepository {
     )[0];
   }
 
-  private static async findCredixMultisigCollateral(
+  private static findCredixMultisigCollateral(
     credixMultisigKey: PublicKey,
     collateralMint: PublicKey
-  ): Promise<PublicKey> {
+  ): PublicKey {
     return findATAAddrSync(credixMultisigKey, collateralMint)[0];
   }
 
