@@ -589,10 +589,10 @@ export class UXDClient {
     payer?: PublicKey
   ): TransactionInstruction {
     const collateralMint = depository.collateralMint;
-    const [authorityCollateral] = findATAAddrSync(
+    const authorityCollateral = findATAAddrSync(
       authority,
       depository.collateralMint
-    );
+    )[0];
     return this.instruction.collectProfitOfCredixLpDepository({
       accounts: {
         authority: authority,
