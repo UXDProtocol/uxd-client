@@ -108,24 +108,35 @@ export async function getBalance(
 }
 
 export function uiToNative(uiAmount: number, decimals: number): BN {
-  const uiAmountString = uiAmount.toString(10);
+  const uiAmountString = uiAmount.toString(10).toLowerCase();
+  let exponentPosition = uiAmountString.indexOf("e");
+  if (exponentPosition == -1) {
+    exponentPosition = uiAmountString.length;
+  }
   let pointPosition = uiAmountString.indexOf('.');
   if (pointPosition == -1) {
-    pointPosition = uiAmountString.length;
+    pointPosition = exponentPosition;
   }
-  const integerString = uiAmountString.substring(0, pointPosition);
-  const floatingString = uiAmountString.substring(pointPosition);
-  const nativeString = floatingString
+  const integerPartString = uiAmountString.substring(0, pointPosition);
+  const floatingPartString = uiAmountString.substring(pointPosition, exponentPosition);
+  const exponentPartString = uiAmountString.substring(exponentPosition + 1);
+  const nativePartString = floatingPartString
     .substring(1, decimals + 1)
     .padEnd(decimals, '0');
-  return new BN(integerString + nativeString);
+  const nativeAmount = new BN(integerPartString + nativePartString);
+  if (exponentPartString.length == 0) {
+    return nativeAmount;
+  }
+  const nativeExponent = new BN(parseInt(exponentPartString, 10));
+  const nativeMagnitude = new BN(10).pow(nativeExponent);
+  return nativeAmount.mul(nativeMagnitude);
 }
 
 export function nativeToUi(nativeAmount: BN, decimals: number): number {
   const nativeAmountString = nativeAmount.toString(10, decimals + 1);
   const pointPosition = nativeAmountString.length - decimals;
-  const integerString = nativeAmountString.substring(0, pointPosition);
-  const nativeString = nativeAmountString.substring(pointPosition);
-  const floatingString = '.' + nativeString;
-  return parseFloat(integerString + floatingString);
+  const integerPartString = nativeAmountString.substring(0, pointPosition);
+  const nativePartString = nativeAmountString.substring(pointPosition);
+  const floatingPartString = "." + nativePartString;
+  return parseFloat(integerPartString + floatingPartString);
 }
