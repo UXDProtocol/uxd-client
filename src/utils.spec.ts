@@ -32,6 +32,11 @@ describe('numberToFraction', () => {
     expect(fraction.numerator.toString()).toEqual('9000000000009');
     expect(fraction.denominator.toString()).toEqual('1000000');
   });
+  it('should return correct amount with negative value', () => {
+    const fraction = numberToFraction(-900.9);
+    expect(fraction.numerator.toString()).toEqual('-9009');
+    expect(fraction.denominator.toString()).toEqual('10');
+  });
 });
 
 describe('uiToNative', () => {
@@ -42,6 +47,15 @@ describe('uiToNative', () => {
   it('should return correct amount with regular value (1 ui)', () => {
     const nativeAmount = uiToNative(1, 6);
     expect(nativeAmount.toString(10)).toEqual('1000000');
+  });
+  it('should return correct amount with negative value', () => {
+    const nativeAmount = uiToNative(-1, 6);
+    expect(nativeAmount.toString(10)).toEqual('-1000000');
+  });
+  it('should return correct amount with zero decimals', () => {
+    const decimals = 0;
+    const nativeAmount = uiToNative(15, decimals);
+    expect(nativeAmount.toString(10)).toEqual('15');
   });
   it('should return correct amount with one decimals', () => {
     const decimals = 1;
@@ -77,6 +91,15 @@ describe('nativeToUi', () => {
   it('should return correct amount with regular value (1 ui)', () => {
     const uiAmount = nativeToUi(new BN('1000000'), 6);
     expect(uiAmount).toEqual(1);
+  });
+  it('should return correct amount with negative value', () => {
+    const uiAmount = nativeToUi(new BN('-1000000'), 6);
+    expect(uiAmount).toEqual(-1);
+  });
+  it('should return correct amount with zero decimals', () => {
+    const decimals = 0;
+    const uiAmount = nativeToUi(new BN('15'), decimals);
+    expect(uiAmount).toEqual(15);
   });
   it('should return correct amount with one decimals', () => {
     const decimals = 1;
