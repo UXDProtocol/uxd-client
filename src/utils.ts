@@ -11,7 +11,6 @@ import {
 } from '@solana/web3.js';
 
 import BN from 'bn.js';
-import { number } from 'superstruct';
 
 // Constants
 export const BTC_DECIMALS = 6;
@@ -109,7 +108,10 @@ export async function getBalance(
 }
 
 export function nativeExp10(exponent: number) {
-  return new BN(10).pow(new BN(exponent));
+  if (exponent < 0) {
+    throw new Error('BN does not support negative exponents (fractional values)');
+  }
+  return new BN('1' + '0'.repeat(exponent));
 }
 
 export function numberToFraction(value: number) {
