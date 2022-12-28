@@ -109,7 +109,9 @@ export async function getBalance(
 
 export function nativeExp10(exponent: number) {
   if (exponent < 0) {
-    throw new Error('BN does not support negative exponents (fractional values)');
+    throw new Error(
+      'BN does not support negative exponents (fractional values)'
+    );
   }
   return new BN('1' + '0'.repeat(exponent));
 }
