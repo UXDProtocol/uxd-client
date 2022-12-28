@@ -108,7 +108,7 @@ export async function getBalance(
   return value;
 }
 
-export function exp10ToNative(exponent: number) {
+export function nativeExp10(exponent: number) {
   return new BN(10).pow(new BN(exponent));
 }
 
@@ -132,11 +132,11 @@ export function numberToFraction(value: number) {
   if (denominatorDigits >= 0) {
     return {
       numerator: numeratorBase,
-      denominator: exp10ToNative(denominatorDigits),
+      denominator: nativeExp10(denominatorDigits),
     };
   } else {
     return {
-      numerator: numeratorBase.mul(exp10ToNative(-denominatorDigits)),
+      numerator: numeratorBase.mul(nativeExp10(-denominatorDigits)),
       denominator: new BN(1),
     };
   }
@@ -145,7 +145,7 @@ export function numberToFraction(value: number) {
 export function uiToNative(uiAmount: number, decimals: number): BN {
   const fraction = numberToFraction(uiAmount);
   return fraction.numerator
-    .mul(exp10ToNative(decimals))
+    .mul(nativeExp10(decimals))
     .div(fraction.denominator);
 }
 
