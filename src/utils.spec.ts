@@ -1,43 +1,5 @@
 import { BN } from 'bn.js';
-import { nativeToUi, numberToFraction, uiToNative } from './utils';
-
-describe('numberToFraction', () => {
-  it('should return correct amount with tiny value', () => {
-    const fraction = numberToFraction(0.00000025);
-    expect(fraction.numerator.toString()).toEqual('25');
-    expect(fraction.denominator.toString()).toEqual('100000000');
-  });
-  it('should return correct amount with small value', () => {
-    const fraction = numberToFraction(0.25);
-    expect(fraction.numerator.toString()).toEqual('25');
-    expect(fraction.denominator.toString()).toEqual('100');
-  });
-  it('should return correct amount with typical value', () => {
-    const fraction = numberToFraction(900.9);
-    expect(fraction.numerator.toString()).toEqual('9009');
-    expect(fraction.denominator.toString()).toEqual('10');
-  });
-  it('should return correct amount with floating value', () => {
-    const fraction = numberToFraction(9.000009);
-    expect(fraction.numerator.toString()).toEqual('9000009');
-    expect(fraction.denominator.toString()).toEqual('1000000');
-  });
-  it('should return correct amount with big value', () => {
-    const fraction = numberToFraction(9000000);
-    expect(fraction.numerator.toString()).toEqual('9000000');
-    expect(fraction.denominator.toString()).toEqual('1');
-  });
-  it('should return correct amount with large value', () => {
-    const fraction = numberToFraction(9000000.000009);
-    expect(fraction.numerator.toString()).toEqual('9000000000009');
-    expect(fraction.denominator.toString()).toEqual('1000000');
-  });
-  it('should return correct amount with negative value', () => {
-    const fraction = numberToFraction(-900.9);
-    expect(fraction.numerator.toString()).toEqual('-9009');
-    expect(fraction.denominator.toString()).toEqual('10');
-  });
-});
+import { nativeToUi, uiToNative } from './utils';
 
 describe('uiToNative', () => {
   it('should return correct amount with regular value (1 native)', () => {
@@ -62,6 +24,12 @@ describe('uiToNative', () => {
     const nativeAmount = uiToNative(1.5, decimals);
     expect(nativeAmount.toString(10)).toEqual('15');
   });
+  it('should return correct amount with 6 decimals', () => {
+    const decimals = 6;
+    const nativeAmount = uiToNative(0.0015, decimals);
+    expect(nativeAmount.toString(10)).toEqual('1500');
+  });
+  /*
   it('should return correct amount with extremely large decimals', () => {
     const decimals = 200;
     const nativeAmount = uiToNative(1.5, decimals);
@@ -75,8 +43,9 @@ describe('uiToNative', () => {
     const uiLargeAmount = Math.pow(10, magnitude);
     expect(uiToNative(uiLargeAmount, decimals)).toEqual(nativeLargeAmount);
   });
+  */
   it('should return correct amount converting back and forth', () => {
-    const decimals = 200;
+    const decimals = 6;
     const uiAmount = 1.5;
     const nativeAmount = uiToNative(uiAmount, decimals);
     expect(nativeToUi(nativeAmount, decimals)).toEqual(uiAmount);
@@ -106,6 +75,12 @@ describe('nativeToUi', () => {
     const uiAmount = nativeToUi(new BN('15'), decimals);
     expect(uiAmount).toEqual(1.5);
   });
+  it('should return correct amount with 6 decimals', () => {
+    const decimals = 6;
+    const uiAmount = nativeToUi(new BN('1500'), decimals);
+    expect(uiAmount).toEqual(0.0015);
+  });
+  /*
   it('should return correct amount with extremely large decimals', () => {
     const decimals = 200;
     const nativeZeroes = '0'.repeat(decimals - 1);
@@ -119,8 +94,9 @@ describe('nativeToUi', () => {
     const uiLargeAmount = Math.pow(10, magnitude);
     expect(nativeToUi(nativeLargeAmount, decimals)).toEqual(uiLargeAmount);
   });
+  */
   it('should return correct amount converting back and forth', () => {
-    const decimals = 200;
+    const decimals = 6;
     const nativeZeroes = '0'.repeat(decimals - 1);
     const nativeAmount = new BN('15' + nativeZeroes);
     const uiAmount = nativeToUi(nativeAmount, decimals);

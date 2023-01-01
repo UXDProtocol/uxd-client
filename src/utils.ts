@@ -107,56 +107,10 @@ export async function getBalance(
   return value;
 }
 
-export function nativeExp10(exponent: number) {
-  if (exponent < 0) {
-    throw new Error(
-      'BN does not support negative exponents (fractional values)'
-    );
-  }
-  return new BN('1' + '0'.repeat(exponent));
-}
-
-export function numberToFraction(value: number) {
-  const valueString = value.toExponential().toLowerCase();
-  let exponentPosition = valueString.indexOf('e');
-  if (exponentPosition == -1) {
-    exponentPosition = valueString.length;
-  }
-  let pointPosition = valueString.indexOf('.');
-  if (pointPosition == -1) {
-    pointPosition = exponentPosition;
-  }
-  const integerDigits = valueString.substring(0, pointPosition);
-  const floatingDigits = valueString
-    .substring(pointPosition, exponentPosition)
-    .substring(1);
-  const exponentDigits = valueString.substring(exponentPosition + 1);
-  const denominatorDigits = floatingDigits.length - parseInt(exponentDigits);
-  const numeratorBase = new BN(integerDigits + floatingDigits);
-  if (denominatorDigits >= 0) {
-    return {
-      numerator: numeratorBase,
-      denominator: nativeExp10(denominatorDigits),
-    };
-  } else {
-    return {
-      numerator: numeratorBase.mul(nativeExp10(-denominatorDigits)),
-      denominator: new BN(1),
-    };
-  }
-}
-
 export function uiToNative(uiAmount: number, decimals: number): BN {
-  const fraction = numberToFraction(uiAmount);
-  return fraction.numerator
-    .mul(nativeExp10(decimals))
-    .div(fraction.denominator);
+  return new BN(Math.round(uiAmount * Math.pow(10, decimals)));
 }
 
 export function nativeToUi(nativeAmount: BN, decimals: number): number {
-  const nativeAmountString = nativeAmount.toString(10, decimals + 1);
-  const pointPosition = nativeAmountString.length - decimals;
-  const integerDigits = nativeAmountString.substring(0, pointPosition);
-  const floatingDigits = nativeAmountString.substring(pointPosition);
-  return parseFloat(integerDigits + '.' + floatingDigits);
+  return +nativeAmount / Math.pow(10, decimals);
 }
