@@ -92,12 +92,9 @@ export class CredixLpDepository {
       credixProgram.account.programState.fetchNullable(credixProgramState);
 
     // Then we can find the depository
-    const [depository] = PublicKey.findProgramAddressSync(
-      [
-        Buffer.from(CREDIX_LP_DEPOSITORY_NAMESPACE),
-        credixGlobalMarketState.toBuffer(),
-        collateralMint.toBuffer(),
-      ],
+    const depository = await this.findDepositoryAddress(
+      credixGlobalMarketState,
+      collateralMint,
       uxdProgramId
     );
 
@@ -177,6 +174,23 @@ export class CredixLpDepository {
       credixMultisigCollateral,
       credixProgramId
     );
+  }
+
+  private static async findDepositoryAddress(
+    credixGlobalMarketState: PublicKey,
+    collateralMint: PublicKey,
+    uxdProgramId: PublicKey
+  ): Promise<PublicKey> {
+    return (
+      await PublicKey.findProgramAddress(
+        [
+          Buffer.from(CREDIX_LP_DEPOSITORY_NAMESPACE),
+          credixGlobalMarketState.toBuffer(),
+          collateralMint.toBuffer(),
+        ],
+        uxdProgramId
+      )
+    )[0];
   }
 
   private static findDepositoryCollateralAddress(
