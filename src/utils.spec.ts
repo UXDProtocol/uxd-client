@@ -29,21 +29,6 @@ describe('uiToNative', () => {
     const nativeAmount = uiToNative(0.0015, decimals);
     expect(nativeAmount.toString(10)).toEqual('1500');
   });
-  /*
-  it('should return correct amount with extremely large decimals', () => {
-    const decimals = 200;
-    const nativeAmount = uiToNative(1.5, decimals);
-    const nativeZeroes = '0'.repeat(decimals - 1);
-    expect(nativeAmount.toString(10)).toEqual('15' + nativeZeroes);
-  });
-  it('should return correct amount with extremely large numbers', () => {
-    const decimals = 6;
-    const magnitude = 100;
-    const nativeLargeAmount = new BN('1' + '0'.repeat(magnitude + decimals));
-    const uiLargeAmount = Math.pow(10, magnitude);
-    expect(uiToNative(uiLargeAmount, decimals)).toEqual(nativeLargeAmount);
-  });
-  */
   it('should return correct amount converting back and forth', () => {
     const decimals = 6;
     const uiAmount = 1.5;
@@ -80,21 +65,6 @@ describe('nativeToUi', () => {
     const uiAmount = nativeToUi(new BN('1500'), decimals);
     expect(uiAmount).toEqual(0.0015);
   });
-  /*
-  it('should return correct amount with extremely large decimals', () => {
-    const decimals = 200;
-    const nativeZeroes = '0'.repeat(decimals - 1);
-    const uiAmount = nativeToUi(new BN('15' + nativeZeroes), decimals);
-    expect(uiAmount).toEqual(1.5);
-  });
-  it('should return correct amount with extremely large numbers', () => {
-    const decimals = 6;
-    const magnitude = 100;
-    const nativeLargeAmount = new BN('1' + '0'.repeat(magnitude + decimals));
-    const uiLargeAmount = Math.pow(10, magnitude);
-    expect(nativeToUi(nativeLargeAmount, decimals)).toEqual(uiLargeAmount);
-  });
-  */
   it('should return correct amount converting back and forth', () => {
     const decimals = 6;
     const nativeZeroes = '0'.repeat(decimals - 1);
