@@ -107,10 +107,10 @@ export async function getBalance(
   return value;
 }
 
-export function uiToNative(amount: number, decimals: number): BN {
-  return new BN(Math.round(amount * Math.pow(10, decimals)));
+export function uiToNative(uiAmount: number, decimals: number): BN {
+  return new BN(Math.round(uiAmount * Math.pow(10, decimals)));
 }
 
-export function nativeToUi(amount: number, decimals: number): number {
-  return amount / Math.pow(10, decimals);
+export function nativeToUi(nativeAmount: BN, decimals: number): number {
+  return +nativeAmount / Math.pow(10, decimals);
 }

@@ -5,9 +5,11 @@ export {
   ControllerAccount,
   MercurialVaultDepositoryAccount,
   IdentityDepositoryAccount,
+  CredixLpDepositoryAccount,
 } from './interfaces';
 export { MercurialVaultDepository } from './mercurial/depository';
 export { IdentityDepository } from './identity/depository';
+export { CredixLpDepository } from './credix_lp/depository';
 export {
   ETH_DECIMALS,
   BTC_DECIMALS,

@@ -2,6 +2,7 @@ import {
   AnchorProvider,
   BorshAccountsCoder,
   Program,
+  Wallet,
 } from '@project-serum/anchor';
 import { ConfirmOptions, Connection, PublicKey, Signer } from '@solana/web3.js';
 import { Token, TOKEN_PROGRAM_ID } from '@solana/spl-token';
@@ -63,7 +64,7 @@ export class MercurialVaultDepository {
   }): Promise<MercurialVaultDepository> {
     const provider = new AnchorProvider(
       connection,
-      {} as any,
+      {} as Wallet,
       AnchorProvider.defaultOptions()
     );
     const mercurialVaultProgram = new Program<MercurialVaultIDL>(
