@@ -3223,27 +3223,6 @@ export const IDL: Uxd = {
         },
       ],
     },
-    {
-      name: 'freezeProgram',
-      accounts: [
-        {
-          name: 'authority',
-          isMut: false,
-          isSigner: true,
-        },
-        {
-          name: 'controller',
-          isMut: true,
-          isSigner: false,
-        },
-      ],
-      args: [
-        {
-          name: 'freeze',
-          type: 'bool',
-        },
-      ],
-    },
   ],
   accounts: [
     {
