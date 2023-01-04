@@ -621,4 +621,19 @@ export class UXDClient {
       options,
     });
   }
+
+  public createFreezeProgramInstruction(
+    freeze: boolean,
+    controller: Controller,
+    authority: PublicKey,
+    options: ConfirmOptions
+  ): TransactionInstruction {
+    return this.instruction.freezeProgram(freeze, {
+      accounts: {
+        authority: authority,
+        controller: controller.pda,
+      },
+      options: options,
+    });
+  }
 }
