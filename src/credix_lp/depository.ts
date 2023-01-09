@@ -3,6 +3,7 @@ import {
   Wallet,
   AnchorProvider,
   Program,
+  BN,
 } from '@project-serum/anchor';
 import { ConfirmOptions, Connection, PublicKey, Signer } from '@solana/web3.js';
 import { IDL } from '../idl';
@@ -34,7 +35,9 @@ export class CredixLpDepository {
     public readonly credixTreasuryCollateral: PublicKey,
     public readonly credixMultisigKey: PublicKey,
     public readonly credixMultisigCollateral: PublicKey,
-    public readonly credixProgramId: PublicKey
+    public readonly credixProgramId: PublicKey,
+    public readonly credixPoolOutstandingCredit: BN,
+    public readonly credixReleaseTimestamp: BN
   ) {}
 
   public static async initialize({
@@ -50,85 +53,78 @@ export class CredixLpDepository {
     collateralSymbol: string;
     credixProgramId: PublicKey;
   }): Promise<CredixLpDepository> {
-    // First we need the credix global market state address
-    const credixGlobalMarketStatePromise =
-      this.findCredixGlobalMarketState(credixProgramId);
-    // Then the credix program state address
-    const credixProgramStatePromise =
-      this.findCredixProgramState(credixProgramId);
-
-    // Then schedule reading the collateral mint
-    const collateralToken = new Token(
+    // Collateral decimals can be resolved asynchronously
+    const collateralDecimalsPromise = this.getCollateralDecimals(
       connection,
-      collateralMint,
-      TOKEN_PROGRAM_ID,
-      null as unknown as Signer
-    );
-    const collateralInfoPromise = collateralToken.getMintInfo();
-
-    // Load credix IDL to be able to read onchain data
-    const provider = new AnchorProvider(
-      connection,
-      {} as Wallet,
-      AnchorProvider.defaultOptions()
-    );
-    const credixProgram = new Program<CredixIDL>(
-      credixIDL,
-      credixProgramId,
-      provider
+      collateralMint
     );
 
-    // Now we read the results from initial finds
-    const credixGlobalMarketState = await credixGlobalMarketStatePromise;
-    const credixProgramState = await credixProgramStatePromise;
+    // First we need to resolve the basic credix accounts address
+    const credixGlobalMarketStateAddressPromise =
+      this.findCredixGlobalMarketStateAddress(credixProgramId);
+    const credixProgramStateAddressPromise =
+      this.findCredixProgramStateAddress(credixProgramId);
 
-    // Then we schedule reading the content of the credixGlobalMarketState onchain
-    const credixGlobalMarketStateDataPromise =
-      credixProgram.account.globalMarketState.fetchNullable(
-        credixGlobalMarketState
+    // We need to resolve the credix addresses before we progress further
+    const credixGlobalMarketState = await credixGlobalMarketStateAddressPromise;
+    const credixProgramState = await credixProgramStateAddressPromise;
+
+    // Then derive remaining credix internal accounts that depends on the above
+    const credixSigningAuthorityPromise =
+      this.findCredixSigningAuthorityAddress(
+        credixGlobalMarketState,
+        credixProgramId
       );
-    // Then we schedule reading the content of the credixProgramState onchain
-    const credixProgramStateDataPromise =
-      credixProgram.account.programState.fetchNullable(credixProgramState);
 
-    // Then we can find the depository
+    // Then we can find the depository address
     const depository = await this.findDepositoryAddress(
       credixGlobalMarketState,
       collateralMint,
       uxdProgramId
     );
-
-    // Then derive remaining credix internal accounts from other PDAs
-    const credixSigningAuthorityPromise = this.findCredixSigningAuthority(
-      credixGlobalMarketState,
-      credixProgramId
-    );
-    const credixPassPromise = this.findCredixPass(
+    // Then the credix pass which depends on the depository
+    const credixPass = await this.findCredixPassAddress(
       credixGlobalMarketState,
       depository,
       credixProgramId
     );
 
-    // Verify that all reading was successful
-    const credixGlobalMarketStateData =
-      await credixGlobalMarketStateDataPromise;
-    if (!credixGlobalMarketStateData) {
-      throw new Error('Could not read credixGlobalMarketState');
-    }
-    const credixProgramStateData = await credixProgramStateDataPromise;
-    if (!credixProgramStateData) {
-      throw new Error('Could not read credixProgramState');
-    }
+    // Then we can read the content of all credix accounts on chain
+    const credixProgram = this.getCredixProgram(connection, credixProgramId);
+    const credixGlobalMarketStateAccountPromise =
+      this.getCredixGlobalMarketStateAccount(
+        credixProgram,
+        credixGlobalMarketState
+      );
+    const credixProgramStateAccountPromise = this.getCredixProgramStateAccount(
+      credixProgram,
+      credixProgramState
+    );
+    const credixPassAccountPromise = this.getCredixPassAccount(
+      credixProgram,
+      credixPass
+    );
 
-    // We now have all the data we need from the onchain credix configuration
-    const credixSharesMint = credixGlobalMarketStateData.lpTokenMint;
+    // Wait until we have all the accounts deserialized data before progressing further
+    const credixGlobalMarketStateAccount =
+      await credixGlobalMarketStateAccountPromise;
+    const credixProgramStateAccount = await credixProgramStateAccountPromise;
+    const credixPassAccount = await credixPassAccountPromise;
+
+    // Then we can read all the informations needed from the onchain accounts
+    const credixSharesMint = credixGlobalMarketStateAccount.lpTokenMint;
     const credixTreasuryCollateral =
-      credixGlobalMarketStateData.treasuryPoolTokenAccount;
-    const credixMultisigKey = credixProgramStateData.credixMultisigKey;
-    const credixMultisigCollateral = this.findCredixMultisigCollateral(
+      credixGlobalMarketStateAccount.treasuryPoolTokenAccount;
+
+    const credixMultisigKey = credixProgramStateAccount.credixMultisigKey;
+    const credixMultisigCollateral = this.findCredixMultisigCollateralAddress(
       credixMultisigKey,
       collateralMint
     );
+
+    const credixPoolOutstandingCredit =
+      credixGlobalMarketStateAccount.poolOutstandingCredit;
+    const credixReleaseTimestamp = credixPassAccount.releaseTimestamp;
 
     // Then generate the depository token accounts
     const depositoryCollateral = this.findDepositoryCollateralAddress(
@@ -140,20 +136,13 @@ export class CredixLpDepository {
       credixSharesMint
     );
 
-    // Finally we read the result from the collateral info reading
-    const collateralInfo = await collateralInfoPromise;
-    if (!collateralInfo) {
-      throw new Error('Cannot find the collateral mint');
-    }
-    const collateralDecimals = collateralInfo.decimals;
-
     // Resolve final informations when all scheduled work is done
+    const collateralDecimals = await collateralDecimalsPromise;
     const credixSigningAuthority = await credixSigningAuthorityPromise;
-    const credixLiquidityCollateral = this.findCredixLiquidityCollateral(
+    const credixLiquidityCollateral = this.findCredixLiquidityCollateralAddress(
       credixSigningAuthority,
       collateralMint
     );
-    const credixPass = await credixPassPromise;
 
     // Done
     return new CredixLpDepository(
@@ -172,7 +161,9 @@ export class CredixLpDepository {
       credixTreasuryCollateral,
       credixMultisigKey,
       credixMultisigCollateral,
-      credixProgramId
+      credixProgramId,
+      credixPoolOutstandingCredit,
+      credixReleaseTimestamp
     );
   }
 
@@ -207,7 +198,7 @@ export class CredixLpDepository {
     return findATAAddrSync(depository, credixSharesMint)[0];
   }
 
-  private static async findCredixProgramState(
+  private static async findCredixProgramStateAddress(
     credixProgramId: PublicKey
   ): Promise<PublicKey> {
     return (
@@ -218,7 +209,7 @@ export class CredixLpDepository {
     )[0];
   }
 
-  private static async findCredixGlobalMarketState(
+  private static async findCredixGlobalMarketStateAddress(
     credixProgramId: PublicKey
   ): Promise<PublicKey> {
     return (
@@ -229,7 +220,7 @@ export class CredixLpDepository {
     )[0];
   }
 
-  private static async findCredixSigningAuthority(
+  private static async findCredixSigningAuthorityAddress(
     credixGlobalMarketState: PublicKey,
     credixProgramId: PublicKey
   ): Promise<PublicKey> {
@@ -241,14 +232,14 @@ export class CredixLpDepository {
     )[0];
   }
 
-  private static findCredixLiquidityCollateral(
+  private static findCredixLiquidityCollateralAddress(
     credixSigningAuthority: PublicKey,
     collateralMint: PublicKey
   ): PublicKey {
     return findATAAddrSync(credixSigningAuthority, collateralMint)[0];
   }
 
-  private static async findCredixPass(
+  private static async findCredixPassAddress(
     credixGlobalMarketState: PublicKey,
     depository: PublicKey,
     credixProgramId: PublicKey
@@ -265,11 +256,80 @@ export class CredixLpDepository {
     )[0];
   }
 
-  private static findCredixMultisigCollateral(
+  private static findCredixMultisigCollateralAddress(
     credixMultisigKey: PublicKey,
     collateralMint: PublicKey
   ): PublicKey {
     return findATAAddrSync(credixMultisigKey, collateralMint)[0];
+  }
+
+  public static getCredixProgram(
+    connection: Connection,
+    credixProgramId: PublicKey
+  ): Program<CredixIDL> {
+    const provider = new AnchorProvider(
+      connection,
+      {} as Wallet,
+      AnchorProvider.defaultOptions()
+    );
+    return new Program<CredixIDL>(credixIDL, credixProgramId, provider);
+  }
+
+  public static async getCredixGlobalMarketStateAccount(
+    credixProgram: Program<CredixIDL>,
+    credixGlobalMarketState: PublicKey
+  ) {
+    const credixGlobalMarketStateAccount =
+      await credixProgram.account.globalMarketState.fetchNullable(
+        credixGlobalMarketState
+      );
+    if (!credixGlobalMarketStateAccount) {
+      throw new Error('Could not read credixGlobalMarketState account');
+    }
+    return credixGlobalMarketStateAccount;
+  }
+
+  public static async getCredixProgramStateAccount(
+    credixProgram: Program<CredixIDL>,
+    credixProgramState: PublicKey
+  ) {
+    const credixProgramStateAccount =
+      await credixProgram.account.programState.fetchNullable(
+        credixProgramState
+      );
+    if (!credixProgramStateAccount) {
+      throw new Error('Could not read credixProgramState account');
+    }
+    return credixProgramStateAccount;
+  }
+
+  public static async getCredixPassAccount(
+    credixProgram: Program<CredixIDL>,
+    credixPass: PublicKey
+  ) {
+    const credixPassAccount =
+      await credixProgram.account.credixPass.fetchNullable(credixPass);
+    if (!credixPassAccount) {
+      throw new Error('Could not read credixPass account');
+    }
+    return credixPassAccount;
+  }
+
+  public static async getCollateralDecimals(
+    connection: Connection,
+    collateralMint: PublicKey
+  ): Promise<number> {
+    const collateralToken = new Token(
+      connection,
+      collateralMint,
+      TOKEN_PROGRAM_ID,
+      null as unknown as Signer
+    );
+    const collateralInfo = await collateralToken.getMintInfo();
+    if (!collateralInfo) {
+      throw new Error('Cannot find the collateral mint');
+    }
+    return collateralInfo.decimals;
   }
 
   public info() {
@@ -300,16 +360,13 @@ export class CredixLpDepository {
     options: ConfirmOptions
   ): Promise<CredixLpDepositoryAccount> {
     const coder = new BorshAccountsCoder(IDL);
-
     const result = await connection.getAccountInfo(
       this.pda,
       options.commitment
     );
-
     if (!result) {
       throw new Error('credixLpDepository not found');
     }
-
     return coder.decode('credixLpDepository', result.data);
   }
 }
