@@ -588,14 +588,12 @@ export class UXDClient {
   public createCollectProfitOfCredixLpDepositoryInstruction(
     controller: Controller,
     depository: CredixLpDepository,
-    user: PublicKey,
-    options: ConfirmOptions,
-    payer?: PublicKey
+    payer: PublicKey,
+    options: ConfirmOptions
   ): TransactionInstruction {
     return this.instruction.collectProfitOfCredixLpDepository({
       accounts: {
-        user: user,
-        payer: payer ?? user,
+        payer: payer,
         controller: controller.pda,
         depository: depository.pda,
         depositoryCollateral: depository.depositoryCollateral,

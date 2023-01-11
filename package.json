@@ -1,6 +1,6 @@
 {
   "name": "@uxd-protocol/uxd-client",
-  "version": "6.2.0-profits-credix-rc2",
+  "version": "6.2.0-profits-credix-rc3",
   "description": "JavaScript Client for the UXD Solana Program",
   "keywords": [
     "solana",
