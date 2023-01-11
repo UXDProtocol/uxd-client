@@ -407,6 +407,7 @@ export class UXDClient {
       mintingFeeInBps?: number;
       redeemingFeeInBps?: number;
       mintingDisabled?: boolean;
+      profitsBeneficiaryKey?: PublicKey;
     },
     options: ConfirmOptions
   ): TransactionInstruction {
@@ -415,6 +416,7 @@ export class UXDClient {
       mintingFeeInBps,
       redeemingFeeInBps,
       mintingDisabled,
+      profitsBeneficiaryKey,
     } = uiFields;
     const fields = {
       redeemableAmountUnderManagementCap:
@@ -428,6 +430,8 @@ export class UXDClient {
       redeemingFeeInBps:
         redeemingFeeInBps !== undefined ? redeemingFeeInBps : null,
       mintingDisabled: mintingDisabled !== undefined ? mintingDisabled : null,
+      profitsBeneficiaryKey:
+        profitsBeneficiaryKey !== undefined ? profitsBeneficiaryKey : null,
     };
     return this.instruction.editCredixLpDepository(fields, {
       accounts: {
@@ -584,24 +588,19 @@ export class UXDClient {
   public createCollectProfitOfCredixLpDepositoryInstruction(
     controller: Controller,
     depository: CredixLpDepository,
-    authority: PublicKey,
+    user: PublicKey,
     options: ConfirmOptions,
     payer?: PublicKey
   ): TransactionInstruction {
-    const collateralMint = depository.collateralMint;
-    const authorityCollateral = findATAAddrSync(
-      authority,
-      depository.collateralMint
-    )[0];
     return this.instruction.collectProfitOfCredixLpDepository({
       accounts: {
-        authority: authority,
-        payer: payer ?? authority,
+        user: user,
+        payer: payer ?? user,
         controller: controller.pda,
         depository: depository.pda,
         depositoryCollateral: depository.depositoryCollateral,
         depositoryShares: depository.depositoryShares,
-        collateralMint,
+        collateralMint: depository.collateralMint,
         credixProgramState: depository.credixProgramState,
         credixGlobalMarketState: depository.credixGlobalMarketState,
         credixSigningAuthority: depository.credixSigningAuthority,
@@ -611,7 +610,8 @@ export class UXDClient {
         credixTreasuryCollateral: depository.credixTreasuryCollateral,
         credixMultisigKey: depository.credixMultisigKey,
         credixMultisigCollateral: depository.credixMultisigCollateral,
-        authorityCollateral: authorityCollateral,
+        profitsBeneficiaryKey: depository.profitsBeneficiaryKey,
+        profitsBeneficiaryCollateral: depository.profitsBeneficiaryCollateral,
         systemProgram: SystemProgram.programId,
         associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
         tokenProgram: TOKEN_PROGRAM_ID,

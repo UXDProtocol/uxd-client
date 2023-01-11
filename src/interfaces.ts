@@ -71,4 +71,5 @@ export class CredixLpDepositoryAccount {
   mintingFeeTotalAccrued!: BN; // u128
   redeemingFeeTotalAccrued!: BN; // u128
   profitsTotalCollected!: BN; // u128
+  profitsBeneficiaryKey!: PublicKey;
 }

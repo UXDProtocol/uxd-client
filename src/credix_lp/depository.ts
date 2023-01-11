@@ -6,7 +6,7 @@ import {
   BN,
 } from '@project-serum/anchor';
 import { ConfirmOptions, Connection, PublicKey, Signer } from '@solana/web3.js';
-import { IDL } from '../idl';
+import { IDL, Uxd } from '../idl';
 import { CredixLpDepositoryAccount } from '../interfaces';
 import { Token, TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import { findATAAddrSync } from '../utils';
@@ -26,6 +26,8 @@ export class CredixLpDepository {
     public readonly collateralSymbol: string,
     public readonly depositoryCollateral: PublicKey,
     public readonly depositoryShares: PublicKey,
+    public readonly profitsBeneficiaryKey: PublicKey,
+    public readonly profitsBeneficiaryCollateral: PublicKey,
     public readonly credixProgramState: PublicKey,
     public readonly credixGlobalMarketState: PublicKey,
     public readonly credixSigningAuthority: PublicKey,
@@ -89,6 +91,13 @@ export class CredixLpDepository {
       credixProgramId
     );
 
+    // Fetch the on chain state of our own depository
+    const uxdProgram = this.getUxdProgram(connection, uxdProgramId);
+    const depositoryAccountPromise = this.getUxdCredixLpDepositoryAccount(
+      uxdProgram,
+      depository
+    );
+
     // Then we can read the content of all credix accounts on chain
     const credixProgram = this.getCredixProgram(connection, credixProgramId);
     const credixGlobalMarketStateAccountPromise =
@@ -104,6 +113,22 @@ export class CredixLpDepository {
       credixProgram,
       credixPass
     );
+
+    // It will be useful to check the data we have onchain (if it exists)
+    let profitsBeneficiaryKey = new PublicKey('');
+    let profitsBeneficiaryCollateral = new PublicKey('');
+    try {
+      const depositoryAccount = await depositoryAccountPromise;
+      profitsBeneficiaryKey = depositoryAccount.profitsBeneficiaryKey;
+      profitsBeneficiaryCollateral =
+        this.findProfitsBeneficiaryCollateralAddress(
+          profitsBeneficiaryKey,
+          collateralMint
+        );
+    } catch {
+      // If we fail here, its ok, the depository might not exist yet
+      // We just wont be able to collect the profits, everything else will work
+    }
 
     // Wait until we have all the accounts deserialized data before progressing further
     const credixGlobalMarketStateAccount =
@@ -152,6 +177,8 @@ export class CredixLpDepository {
       collateralSymbol,
       depositoryCollateral,
       depositoryShares,
+      profitsBeneficiaryKey,
+      profitsBeneficiaryCollateral,
       credixProgramState,
       credixGlobalMarketState,
       credixSigningAuthority,
@@ -196,6 +223,13 @@ export class CredixLpDepository {
     credixSharesMint: PublicKey
   ): PublicKey {
     return findATAAddrSync(depository, credixSharesMint)[0];
+  }
+
+  private static findProfitsBeneficiaryCollateralAddress(
+    profitsBeneficiaryKey: PublicKey,
+    collateralMint: PublicKey
+  ): PublicKey {
+    return findATAAddrSync(profitsBeneficiaryKey, collateralMint)[0];
   }
 
   private static async findCredixProgramStateAddress(
@@ -353,6 +387,27 @@ export class CredixLpDepository {
       credixProgramId: this.credixProgramId.toBase58(),
     });
     console.groupEnd();
+  }
+
+  public static getUxdProgram(connection: Connection, uxdProgramId: PublicKey) {
+    const provider = new AnchorProvider(
+      connection,
+      {} as Wallet,
+      AnchorProvider.defaultOptions()
+    );
+    return new Program<Uxd>(IDL, uxdProgramId, provider);
+  }
+
+  public static async getUxdCredixLpDepositoryAccount(
+    uxdProgram: Program<Uxd>,
+    depository: PublicKey
+  ) {
+    const uxdCredixLpDepositoryAccount =
+      await uxdProgram.account.credixLpDepository.fetchNullable(depository);
+    if (!uxdCredixLpDepositoryAccount) {
+      throw new Error('Could not read uxd CredixLpDepository account');
+    }
+    return uxdCredixLpDepositoryAccount;
   }
 
   public async getOnchainAccount(
