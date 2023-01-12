@@ -11,6 +11,7 @@ export class ControllerAccount {
   redeemableGlobalSupplyCap!: BN; // u128
   redeemableCirculatingSupply!: BN; // u128
   profitsTotalCollected!: BN; // u128
+  isFrozen!: boolean;
 }
 
 // V1
@@ -49,4 +50,28 @@ export class IdentityDepositoryAccount {
   redeemableAmountUnderManagement!: BN; // u128
   redeemableAmountUnderManagementCap!: BN; // u128
   mintingDisabled!: boolean;
+}
+
+// V1
+export class CredixLpDepositoryAccount {
+  bump!: number; // u8
+  version!: number; // u8
+  controller!: PublicKey;
+  collateralMint!: PublicKey;
+  depositoryCollateral!: PublicKey;
+  depositoryShares!: PublicKey;
+  credixProgramState!: PublicKey;
+  credixGlobalMarketState!: PublicKey;
+  credixSigningAuthority!: PublicKey;
+  credixLiquidityCollateral!: PublicKey;
+  credixSharesMint!: PublicKey;
+  redeemableAmountUnderManagementCap!: BN; // u128
+  mintingFeeInBps!: number; // u8
+  redeemingFeeInBps!: number; // u8
+  mintingDisabled!: boolean;
+  collateralAmountDeposited!: BN; // u128
+  redeemableAmountUnderManagement!: BN; // u128
+  mintingFeeTotalAccrued!: BN; // u128
+  redeemingFeeTotalAccrued!: BN; // u128
+  profitsTotalCollected!: BN; // u128
 }

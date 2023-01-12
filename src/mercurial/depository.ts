@@ -3,6 +3,7 @@ import {
   BN,
   BorshAccountsCoder,
   Program,
+  Wallet,
 } from '@project-serum/anchor';
 import { ConfirmOptions, Connection, PublicKey, Signer } from '@solana/web3.js';
 import { Token, TOKEN_PROGRAM_ID } from '@solana/spl-token';
@@ -44,7 +45,7 @@ export class MercurialVaultDepository {
     public readonly depositoryLpTokenVault: PublicKey,
     public readonly mercurialVaultCollateralTokenSafe: PublicKey,
     public readonly mercurialVaultProgram: Program<MercurialVaultIDL>
-  ) { }
+  ) {}
 
   public static async initialize({
     connection,
@@ -62,7 +63,7 @@ export class MercurialVaultDepository {
   }): Promise<MercurialVaultDepository> {
     const provider = new AnchorProvider(
       connection,
-      {} as any,
+      {} as Wallet,
       AnchorProvider.defaultOptions()
     );
     const mercurialVaultProgram = new Program<MercurialVaultIDL>(
