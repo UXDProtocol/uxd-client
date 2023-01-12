@@ -36,6 +36,7 @@ export class MercurialVaultDepositoryAccount {
   mintingDisabled!: boolean;
   profitsTotalCollected!: BN; // u128
   lastProfitsCollectionUnixTimestamp!: BN; // u64
+  profitsBeneficiaryKey!: PublicKey;
 }
 
 // V1

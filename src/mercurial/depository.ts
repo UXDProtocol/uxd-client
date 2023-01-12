@@ -183,6 +183,14 @@ export class MercurialVaultDepository {
     return interestsAndFees;
   }
 
+  public async getProfitsBeneficiaryKey(
+    connection: Connection,
+    options?: ConfirmOptions
+  ): Promise<PublicKey> {
+    const onChainAccount = await this.getOnchainAccount(connection, options);
+    return onChainAccount.profitsBeneficiaryKey;
+  }
+
   public info() {
     console.groupCollapsed(
       '[Mercurial Vault Depository debug info - Collateral mint:',

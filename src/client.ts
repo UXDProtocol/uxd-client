@@ -214,34 +214,34 @@ export class UXDClient {
 
   public createCollectProfitOfMercurialVaultDepositoryInstruction(
     controller: Controller,
-    authority: PublicKey,
     depository: MercurialVaultDepository,
+    profitsBeneficiaryKey: PublicKey,
     options: ConfirmOptions,
-    payer?: PublicKey
+    payer: PublicKey
   ): TransactionInstruction {
-    const [authorityCollateral] = findATAAddrSync(authority, depository.collateralMint.mint);
-
-    return this.instruction.collectProfitOfMercurialVaultDepository(
-      {
-        accounts: {
-          authority,
-          payer: payer ?? authority,
-          controller: controller.pda,
-          depository: depository.pda,
-          collateralMint: depository.collateralMint.mint,
-          authorityCollateral,
-          depositoryLpTokenVault: depository.depositoryLpTokenVault,
-          mercurialVault: depository.mercurialVault,
-          mercurialVaultLpMint: depository.mercurialVaultLpMint.mint,
-          mercurialVaultCollateralTokenSafe: depository.mercurialVaultCollateralTokenSafe,
-          mercurialVaultProgram:
-            MercurialVaultDepository.mercurialVaultProgramId,
-          systemProgram: SystemProgram.programId,
-          tokenProgram: TOKEN_PROGRAM_ID,
-        },
-        options,
-      }
+    const [profitsBeneficiaryCollateral] = findATAAddrSync(
+      profitsBeneficiaryKey,
+      depository.collateralMint.mint
     );
+
+    return this.instruction.collectProfitOfMercurialVaultDepository({
+      accounts: {
+        payer: payer,
+        controller: controller.pda,
+        depository: depository.pda,
+        collateralMint: depository.collateralMint.mint,
+        profitsBeneficiaryCollateral,
+        depositoryLpTokenVault: depository.depositoryLpTokenVault,
+        mercurialVault: depository.mercurialVault,
+        mercurialVaultLpMint: depository.mercurialVaultLpMint.mint,
+        mercurialVaultCollateralTokenSafe:
+          depository.mercurialVaultCollateralTokenSafe,
+        mercurialVaultProgram: MercurialVaultDepository.mercurialVaultProgramId,
+        systemProgram: SystemProgram.programId,
+        tokenProgram: TOKEN_PROGRAM_ID,
+      },
+      options,
+    });
   }
 
   public createMintWithMercurialVaultDepositoryInstruction(
@@ -343,6 +343,7 @@ export class UXDClient {
       mintingFeeInBps?: number;
       redeemingFeeInBps?: number;
       mintingDisabled?: boolean;
+      profitsBeneficiaryKey?: PublicKey;
     },
     options: ConfirmOptions
   ): TransactionInstruction {
@@ -351,6 +352,7 @@ export class UXDClient {
       mintingFeeInBps,
       redeemingFeeInBps,
       mintingDisabled,
+      profitsBeneficiaryKey,
     } = uiFields;
     const fields = {
       redeemableAmountUnderManagementCap:
@@ -366,6 +368,10 @@ export class UXDClient {
         typeof redeemingFeeInBps !== 'undefined' ? redeemingFeeInBps : null,
       mintingDisabled:
         typeof mintingDisabled !== 'undefined' ? mintingDisabled : null,
+      profitsBeneficiaryKey:
+        typeof profitsBeneficiaryKey !== 'undefined'
+          ? profitsBeneficiaryKey
+          : null,
     };
     return this.instruction.editMercurialVaultDepository(fields, {
       accounts: {
