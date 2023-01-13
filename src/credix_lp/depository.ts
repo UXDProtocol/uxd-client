@@ -26,8 +26,6 @@ export class CredixLpDepository {
     public readonly collateralSymbol: string,
     public readonly depositoryCollateral: PublicKey,
     public readonly depositoryShares: PublicKey,
-    public readonly profitsBeneficiaryKey: PublicKey,
-    public readonly profitsBeneficiaryCollateral: PublicKey,
     public readonly credixProgramState: PublicKey,
     public readonly credixGlobalMarketState: PublicKey,
     public readonly credixSigningAuthority: PublicKey,
@@ -39,7 +37,8 @@ export class CredixLpDepository {
     public readonly credixMultisigCollateral: PublicKey,
     public readonly credixProgramId: PublicKey,
     public readonly credixPoolOutstandingCredit: BN,
-    public readonly credixReleaseTimestamp: BN
+    public readonly credixReleaseTimestamp: BN,
+    public readonly profitsBeneficiaryCollateral: PublicKey
   ) {}
 
   public static async initialize({
@@ -115,16 +114,11 @@ export class CredixLpDepository {
     );
 
     // It will be useful to check the data we have onchain (if it exists)
-    let profitsBeneficiaryKey = new PublicKey('');
-    let profitsBeneficiaryCollateral = new PublicKey('');
+    let profitsBeneficiaryCollateral = new PublicKey(0);
     try {
       const depositoryAccount = await depositoryAccountPromise;
-      profitsBeneficiaryKey = depositoryAccount.profitsBeneficiaryKey;
       profitsBeneficiaryCollateral =
-        this.findProfitsBeneficiaryCollateralAddress(
-          profitsBeneficiaryKey,
-          collateralMint
-        );
+        depositoryAccount.profitsBeneficiaryCollateral;
     } catch {
       // If we fail here, its ok, the depository might not exist yet
       // We just wont be able to collect the profits, everything else will work
@@ -177,8 +171,6 @@ export class CredixLpDepository {
       collateralSymbol,
       depositoryCollateral,
       depositoryShares,
-      profitsBeneficiaryKey,
-      profitsBeneficiaryCollateral,
       credixProgramState,
       credixGlobalMarketState,
       credixSigningAuthority,
@@ -190,7 +182,8 @@ export class CredixLpDepository {
       credixMultisigCollateral,
       credixProgramId,
       credixPoolOutstandingCredit,
-      credixReleaseTimestamp
+      credixReleaseTimestamp,
+      profitsBeneficiaryCollateral
     );
   }
 
@@ -223,13 +216,6 @@ export class CredixLpDepository {
     credixSharesMint: PublicKey
   ): PublicKey {
     return findATAAddrSync(depository, credixSharesMint)[0];
-  }
-
-  private static findProfitsBeneficiaryCollateralAddress(
-    profitsBeneficiaryKey: PublicKey,
-    collateralMint: PublicKey
-  ): PublicKey {
-    return findATAAddrSync(profitsBeneficiaryKey, collateralMint)[0];
   }
 
   private static async findCredixProgramStateAddress(

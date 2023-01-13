@@ -407,7 +407,7 @@ export class UXDClient {
       mintingFeeInBps?: number;
       redeemingFeeInBps?: number;
       mintingDisabled?: boolean;
-      profitsBeneficiaryKey?: PublicKey;
+      profitsBeneficiaryCollateral?: PublicKey;
     },
     options: ConfirmOptions
   ): TransactionInstruction {
@@ -416,7 +416,7 @@ export class UXDClient {
       mintingFeeInBps,
       redeemingFeeInBps,
       mintingDisabled,
-      profitsBeneficiaryKey,
+      profitsBeneficiaryCollateral,
     } = uiFields;
     const fields = {
       redeemableAmountUnderManagementCap:
@@ -430,8 +430,10 @@ export class UXDClient {
       redeemingFeeInBps:
         redeemingFeeInBps !== undefined ? redeemingFeeInBps : null,
       mintingDisabled: mintingDisabled !== undefined ? mintingDisabled : null,
-      profitsBeneficiaryKey:
-        profitsBeneficiaryKey !== undefined ? profitsBeneficiaryKey : null,
+      profitsBeneficiaryCollateral:
+        profitsBeneficiaryCollateral !== undefined
+          ? profitsBeneficiaryCollateral
+          : null,
     };
     return this.instruction.editCredixLpDepository(fields, {
       accounts: {
@@ -608,7 +610,6 @@ export class UXDClient {
         credixTreasuryCollateral: depository.credixTreasuryCollateral,
         credixMultisigKey: depository.credixMultisigKey,
         credixMultisigCollateral: depository.credixMultisigCollateral,
-        profitsBeneficiaryKey: depository.profitsBeneficiaryKey,
         profitsBeneficiaryCollateral: depository.profitsBeneficiaryCollateral,
         systemProgram: SystemProgram.programId,
         associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
