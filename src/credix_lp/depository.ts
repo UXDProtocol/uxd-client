@@ -37,8 +37,7 @@ export class CredixLpDepository {
     public readonly credixMultisigCollateral: PublicKey,
     public readonly credixProgramId: PublicKey,
     public readonly credixPoolOutstandingCredit: BN,
-    public readonly credixReleaseTimestamp: BN,
-    public readonly profitsBeneficiaryCollateral: PublicKey
+    public readonly credixReleaseTimestamp: BN
   ) {}
 
   public static async initialize({
@@ -90,13 +89,6 @@ export class CredixLpDepository {
       credixProgramId
     );
 
-    // Fetch the on chain state of our own depository
-    const uxdProgram = this.getUxdProgram(connection, uxdProgramId);
-    const depositoryAccountPromise = this.getUxdCredixLpDepositoryAccount(
-      uxdProgram,
-      depository
-    );
-
     // Then we can read the content of all credix accounts on chain
     const credixProgram = this.getCredixProgram(connection, credixProgramId);
     const credixGlobalMarketStateAccountPromise =
@@ -112,17 +104,6 @@ export class CredixLpDepository {
       credixProgram,
       credixPass
     );
-
-    // It will be useful to check the data we have onchain (if it exists)
-    let profitsBeneficiaryCollateral = new PublicKey(0);
-    try {
-      const depositoryAccount = await depositoryAccountPromise;
-      profitsBeneficiaryCollateral =
-        depositoryAccount.profitsBeneficiaryCollateral;
-    } catch {
-      // If we fail here, its ok, the depository might not exist yet
-      // We just wont be able to collect the profits, everything else will work
-    }
 
     // Wait until we have all the accounts deserialized data before progressing further
     const credixGlobalMarketStateAccount =
@@ -182,8 +163,7 @@ export class CredixLpDepository {
       credixMultisigCollateral,
       credixProgramId,
       credixPoolOutstandingCredit,
-      credixReleaseTimestamp,
-      profitsBeneficiaryCollateral
+      credixReleaseTimestamp
     );
   }
 
@@ -373,27 +353,6 @@ export class CredixLpDepository {
       credixProgramId: this.credixProgramId.toBase58(),
     });
     console.groupEnd();
-  }
-
-  public static getUxdProgram(connection: Connection, uxdProgramId: PublicKey) {
-    const provider = new AnchorProvider(
-      connection,
-      {} as Wallet,
-      AnchorProvider.defaultOptions()
-    );
-    return new Program<Uxd>(IDL, uxdProgramId, provider);
-  }
-
-  public static async getUxdCredixLpDepositoryAccount(
-    uxdProgram: Program<Uxd>,
-    depository: PublicKey
-  ) {
-    const uxdCredixLpDepositoryAccount =
-      await uxdProgram.account.credixLpDepository.fetchNullable(depository);
-    if (!uxdCredixLpDepositoryAccount) {
-      throw new Error('Could not read uxd CredixLpDepository account');
-    }
-    return uxdCredixLpDepositoryAccount;
   }
 
   public async getOnchainAccount(

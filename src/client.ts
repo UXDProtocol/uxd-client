@@ -591,6 +591,7 @@ export class UXDClient {
     controller: Controller,
     depository: CredixLpDepository,
     payer: PublicKey,
+    profitsBeneficiaryCollateral: PublicKey,
     options: ConfirmOptions
   ): TransactionInstruction {
     return this.instruction.collectProfitOfCredixLpDepository({
@@ -610,7 +611,7 @@ export class UXDClient {
         credixTreasuryCollateral: depository.credixTreasuryCollateral,
         credixMultisigKey: depository.credixMultisigKey,
         credixMultisigCollateral: depository.credixMultisigCollateral,
-        profitsBeneficiaryCollateral: depository.profitsBeneficiaryCollateral,
+        profitsBeneficiaryCollateral: profitsBeneficiaryCollateral,
         systemProgram: SystemProgram.programId,
         associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
         tokenProgram: TOKEN_PROGRAM_ID,
