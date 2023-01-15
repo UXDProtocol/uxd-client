@@ -215,15 +215,10 @@ export class UXDClient {
   public createCollectProfitOfMercurialVaultDepositoryInstruction(
     controller: Controller,
     depository: MercurialVaultDepository,
-    profitsBeneficiaryKey: PublicKey,
+    profitsBeneficiaryCollateral: PublicKey,
     options: ConfirmOptions,
     payer: PublicKey
   ): TransactionInstruction {
-    const [profitsBeneficiaryCollateral] = findATAAddrSync(
-      profitsBeneficiaryKey,
-      depository.collateralMint.mint
-    );
-
     return this.instruction.collectProfitOfMercurialVaultDepository({
       accounts: {
         payer: payer,
@@ -343,7 +338,7 @@ export class UXDClient {
       mintingFeeInBps?: number;
       redeemingFeeInBps?: number;
       mintingDisabled?: boolean;
-      profitsBeneficiaryKey?: PublicKey;
+      profitsBeneficiaryCollateral?: PublicKey;
     },
     options: ConfirmOptions
   ): TransactionInstruction {
@@ -352,7 +347,7 @@ export class UXDClient {
       mintingFeeInBps,
       redeemingFeeInBps,
       mintingDisabled,
-      profitsBeneficiaryKey,
+      profitsBeneficiaryCollateral,
     } = uiFields;
     const fields = {
       redeemableAmountUnderManagementCap:
@@ -368,9 +363,9 @@ export class UXDClient {
         typeof redeemingFeeInBps !== 'undefined' ? redeemingFeeInBps : null,
       mintingDisabled:
         typeof mintingDisabled !== 'undefined' ? mintingDisabled : null,
-      profitsBeneficiaryKey:
-        typeof profitsBeneficiaryKey !== 'undefined'
-          ? profitsBeneficiaryKey
+      profitsBeneficiaryCollateral:
+        typeof profitsBeneficiaryCollateral !== 'undefined'
+          ? profitsBeneficiaryCollateral
           : null,
     };
     return this.instruction.editMercurialVaultDepository(fields, {

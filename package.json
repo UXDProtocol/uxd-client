@@ -1,6 +1,6 @@
 {
   "name": "@uxd-protocol/uxd-client",
-  "version": "6.3.0-profits-mercurial-rc2",
+  "version": "6.3.0-profits-mercurial-rc3",
   "description": "JavaScript Client for the UXD Solana Program",
   "keywords": [
     "solana",
