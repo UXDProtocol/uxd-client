@@ -407,6 +407,7 @@ export class UXDClient {
       mintingFeeInBps?: number;
       redeemingFeeInBps?: number;
       mintingDisabled?: boolean;
+      profitsBeneficiaryCollateral?: PublicKey;
     },
     options: ConfirmOptions
   ): TransactionInstruction {
@@ -415,6 +416,7 @@ export class UXDClient {
       mintingFeeInBps,
       redeemingFeeInBps,
       mintingDisabled,
+      profitsBeneficiaryCollateral,
     } = uiFields;
     const fields = {
       redeemableAmountUnderManagementCap:
@@ -428,6 +430,10 @@ export class UXDClient {
       redeemingFeeInBps:
         redeemingFeeInBps !== undefined ? redeemingFeeInBps : null,
       mintingDisabled: mintingDisabled !== undefined ? mintingDisabled : null,
+      profitsBeneficiaryCollateral:
+        profitsBeneficiaryCollateral !== undefined
+          ? profitsBeneficiaryCollateral
+          : null,
     };
     return this.instruction.editCredixLpDepository(fields, {
       accounts: {
@@ -584,24 +590,18 @@ export class UXDClient {
   public createCollectProfitOfCredixLpDepositoryInstruction(
     controller: Controller,
     depository: CredixLpDepository,
-    authority: PublicKey,
-    options: ConfirmOptions,
-    payer?: PublicKey
+    payer: PublicKey,
+    profitsBeneficiaryCollateral: PublicKey,
+    options: ConfirmOptions
   ): TransactionInstruction {
-    const collateralMint = depository.collateralMint;
-    const authorityCollateral = findATAAddrSync(
-      authority,
-      depository.collateralMint
-    )[0];
     return this.instruction.collectProfitOfCredixLpDepository({
       accounts: {
-        authority: authority,
-        payer: payer ?? authority,
+        payer: payer,
         controller: controller.pda,
         depository: depository.pda,
         depositoryCollateral: depository.depositoryCollateral,
         depositoryShares: depository.depositoryShares,
-        collateralMint,
+        collateralMint: depository.collateralMint,
         credixProgramState: depository.credixProgramState,
         credixGlobalMarketState: depository.credixGlobalMarketState,
         credixSigningAuthority: depository.credixSigningAuthority,
@@ -611,7 +611,7 @@ export class UXDClient {
         credixTreasuryCollateral: depository.credixTreasuryCollateral,
         credixMultisigKey: depository.credixMultisigKey,
         credixMultisigCollateral: depository.credixMultisigCollateral,
-        authorityCollateral: authorityCollateral,
+        profitsBeneficiaryCollateral: profitsBeneficiaryCollateral,
         systemProgram: SystemProgram.programId,
         associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
         tokenProgram: TOKEN_PROGRAM_ID,
