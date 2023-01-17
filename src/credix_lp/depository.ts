@@ -6,7 +6,7 @@ import {
   BN,
 } from '@project-serum/anchor';
 import { ConfirmOptions, Connection, PublicKey, Signer } from '@solana/web3.js';
-import { IDL, Uxd } from '../idl';
+import { IDL } from '../idl';
 import { CredixLpDepositoryAccount } from '../interfaces';
 import { Token, TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import { findATAAddrSync } from '../utils';
