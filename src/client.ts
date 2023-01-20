@@ -65,9 +65,9 @@ export class UXDClient {
       redeemableGlobalSupplyCap:
         typeof redeemableGlobalSupplyCap !== 'undefined'
           ? uiToNative(
-            redeemableGlobalSupplyCap,
-            controller.redeemableMintDecimals
-          )
+              redeemableGlobalSupplyCap,
+              controller.redeemableMintDecimals
+            )
           : null,
     };
     return this.instruction.editController(fields, {
@@ -212,14 +212,14 @@ export class UXDClient {
     );
   }
 
-  public createCollectProfitOfMercurialVaultDepositoryInstruction(
+  public createCollectProfitsOfMercurialVaultDepositoryInstruction(
     controller: Controller,
     depository: MercurialVaultDepository,
     profitsBeneficiaryCollateral: PublicKey,
     options: ConfirmOptions,
     payer: PublicKey
   ): TransactionInstruction {
-    return this.instruction.collectProfitOfMercurialVaultDepository({
+    return this.instruction.collectProfitsOfMercurialVaultDepository({
       accounts: {
         payer: payer,
         controller: controller.pda,
@@ -353,9 +353,9 @@ export class UXDClient {
       redeemableAmountUnderManagementCap:
         typeof redeemableAmountUnderManagementCap !== 'undefined'
           ? uiToNative(
-            redeemableAmountUnderManagementCap,
-            controller.redeemableMintDecimals
-          )
+              redeemableAmountUnderManagementCap,
+              controller.redeemableMintDecimals
+            )
           : null,
       mintingFeeInBps:
         typeof mintingFeeInBps !== 'undefined' ? mintingFeeInBps : null,
@@ -414,9 +414,9 @@ export class UXDClient {
       redeemableAmountUnderManagementCap:
         typeof redeemableAmountUnderManagementCap !== 'undefined'
           ? uiToNative(
-            redeemableAmountUnderManagementCap,
-            controller.redeemableMintDecimals
-          )
+              redeemableAmountUnderManagementCap,
+              controller.redeemableMintDecimals
+            )
           : null,
       mintingDisabled:
         typeof mintingDisabled !== 'undefined' ? mintingDisabled : null,
