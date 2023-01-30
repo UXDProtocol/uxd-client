@@ -587,14 +587,14 @@ export class UXDClient {
     );
   }
 
-  public createCollectProfitOfCredixLpDepositoryInstruction(
+  public createCollectProfitsOfCredixLpDepositoryInstruction(
     controller: Controller,
     depository: CredixLpDepository,
     payer: PublicKey,
     profitsBeneficiaryCollateral: PublicKey,
     options: ConfirmOptions
   ): TransactionInstruction {
-    return this.instruction.collectProfitOfCredixLpDepository({
+    return this.instruction.collectProfitsOfCredixLpDepository({
       accounts: {
         payer: payer,
         controller: controller.pda,
