@@ -5,7 +5,7 @@ import {
   Wallet,
 } from '@project-serum/anchor';
 import { ConfirmOptions, Connection, PublicKey, Signer } from '@solana/web3.js';
-import { Token, TOKEN_PROGRAM_ID } from '@solana/spl-token';
+import { getMint, TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import { IDL } from '../idl';
 import { MercurialVaultDepositoryAccount } from '../interfaces';
 import {
@@ -113,13 +113,7 @@ export class MercurialVaultDepository {
       throw new Error('Cannot get vault state');
     }
 
-    const lpMintToken = new Token(
-      connection,
-      vaultState.lpMint,
-      TOKEN_PROGRAM_ID,
-      null as unknown as Signer
-    );
-    const lpMintInfo = await lpMintToken.getMintInfo();
+    const lpMintInfo = await getMint(connection, vaultState.lpMint);
 
     if (!lpMintInfo) {
       throw new Error('Cannot load vault lp mint info');

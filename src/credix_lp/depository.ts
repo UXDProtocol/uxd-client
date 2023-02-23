@@ -8,7 +8,7 @@ import {
 import { ConfirmOptions, Connection, PublicKey, Signer } from '@solana/web3.js';
 import { IDL } from '../idl';
 import { CredixLpDepositoryAccount } from '../interfaces';
-import { Token, TOKEN_PROGRAM_ID } from '@solana/spl-token';
+import { getMint, TOKEN_PROGRAM_ID } from '@solana/spl-token';
 import { findATAAddrSync } from '../utils';
 import { IDL as credixIDL, Credix as CredixIDL } from './credixIdl';
 
@@ -319,13 +319,7 @@ export class CredixLpDepository {
     connection: Connection,
     collateralMint: PublicKey
   ): Promise<number> {
-    const collateralToken = new Token(
-      connection,
-      collateralMint,
-      TOKEN_PROGRAM_ID,
-      null as unknown as Signer
-    );
-    const collateralInfo = await collateralToken.getMintInfo();
+    const collateralInfo = await getMint(connection, collateralMint);
     if (!collateralInfo) {
       throw new Error('Cannot find the collateral mint');
     }
