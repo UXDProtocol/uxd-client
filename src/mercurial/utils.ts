@@ -13,6 +13,7 @@ export const getOnchainTime = async (connection: Connection) => {
     SYSVAR_CLOCK_PUBKEY
   );
 
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const parsedClockAccount = (parsedClock.value!.data as ParsedAccountData)
     .parsed as ParsedClockState;
 
