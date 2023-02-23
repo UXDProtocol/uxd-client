@@ -10,8 +10,8 @@ export class ControllerAccount {
   redeemableMintDecimals!: number; // u16
   redeemableGlobalSupplyCap!: BN; // u128
   redeemableCirculatingSupply!: BN; // u128
-  isFrozen!: boolean;
   profitsTotalCollected!: BN; // u128
+  isFrozen!: boolean;
 }
 
 // V1
