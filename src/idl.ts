@@ -524,61 +524,79 @@ export type Uxd = {
           name: 'payer';
           isMut: true;
           isSigner: true;
+          docs: ['#1'];
         },
         {
           name: 'controller';
           isMut: true;
           isSigner: false;
+          docs: ['#2'];
         },
         {
           name: 'depository';
           isMut: true;
           isSigner: false;
+          docs: ['#3'];
         },
         {
           name: 'collateralMint';
           isMut: false;
           isSigner: false;
+          docs: ['#4'];
         },
         {
           name: 'profitsBeneficiaryCollateral';
           isMut: true;
           isSigner: false;
+          docs: ['#5'];
         },
         {
           name: 'depositoryLpTokenVault';
           isMut: true;
           isSigner: false;
+          docs: [
+            '#6',
+            'Token account holding the LP tokens minted by depositing collateral on mercurial vault'
+          ];
         },
         {
           name: 'mercurialVault';
           isMut: true;
           isSigner: false;
+          docs: ['#7'];
         },
         {
           name: 'mercurialVaultLpMint';
           isMut: true;
           isSigner: false;
+          docs: ['#8'];
         },
         {
           name: 'mercurialVaultCollateralTokenSafe';
           isMut: true;
           isSigner: false;
+          docs: [
+            '#9',
+            'Token account owned by the mercurial vault program. Hold the collateral deposited in the mercurial vault.'
+          ];
         },
         {
           name: 'mercurialVaultProgram';
           isMut: false;
           isSigner: false;
+          docs: ['#10'];
         },
         {
           name: 'systemProgram';
           isMut: false;
           isSigner: false;
+          docs: ['#11'];
         },
         {
           name: 'tokenProgram';
           isMut: false;
           isSigner: false;
+          docs: ['#12'];
         }
       ];
       args: [];
@@ -1222,138 +1240,130 @@ export type Uxd = {
       name: 'collectProfitsOfCredixLpDepository';
       accounts: [
         {
-          name: 'authority';
-          isMut: false;
-          isSigner: true;
-          docs: [
-            '#1 Authored call accessible only to the signer matching Controller.authority'
-          ];
-        },
-        {
           name: 'payer';
           isMut: true;
           isSigner: true;
-          docs: ['#2'];
+          docs: ['#1'];
         },
         {
           name: 'controller';
           isMut: true;
           isSigner: false;
-          docs: ['#3'];
+          docs: ['#2'];
         },
         {
           name: 'depository';
           isMut: true;
           isSigner: false;
-          docs: ['#4'];
+          docs: ['#3'];
         },
         {
           name: 'collateralMint';
           isMut: false;
           isSigner: false;
-          docs: ['#5'];
+          docs: ['#4'];
         },
         {
           name: 'depositoryCollateral';
           isMut: true;
           isSigner: false;
-          docs: ['#6'];
+          docs: ['#5'];
         },
         {
           name: 'depositoryShares';
           isMut: true;
           isSigner: false;
-          docs: ['#7'];
+          docs: ['#6'];
         },
         {
           name: 'credixProgramState';
           isMut: false;
           isSigner: false;
-          docs: ['#8'];
+          docs: ['#7'];
         },
         {
           name: 'credixGlobalMarketState';
           isMut: true;
           isSigner: false;
-          docs: ['#9'];
+          docs: ['#8'];
         },
         {
           name: 'credixSigningAuthority';
           isMut: false;
           isSigner: false;
-          docs: ['#10'];
+          docs: ['#9'];
         },
         {
           name: 'credixLiquidityCollateral';
           isMut: true;
           isSigner: false;
-          docs: ['#11'];
+          docs: ['#10'];
         },
         {
           name: 'credixSharesMint';
           isMut: true;
           isSigner: false;
-          docs: ['#12'];
+          docs: ['#11'];
         },
         {
           name: 'credixPass';
           isMut: true;
           isSigner: false;
-          docs: ['#13'];
+          docs: ['#12'];
         },
         {
           name: 'credixTreasuryCollateral';
           isMut: true;
           isSigner: false;
-          docs: ['#14'];
+          docs: ['#13'];
         },
         {
           name: 'credixMultisigKey';
           isMut: false;
           isSigner: false;
-          docs: ['#15'];
+          docs: ['#14'];
         },
         {
           name: 'credixMultisigCollateral';
           isMut: true;
           isSigner: false;
-          docs: ['#16'];
+          docs: ['#15'];
         },
         {
           name: 'profitsBeneficiaryCollateral';
           isMut: true;
           isSigner: false;
-          docs: ['#17'];
+          docs: ['#16'];
         },
         {
           name: 'systemProgram';
           isMut: false;
           isSigner: false;
-          docs: ['#18'];
+          docs: ['#17'];
         },
         {
           name: 'tokenProgram';
           isMut: false;
           isSigner: false;
-          docs: ['#19'];
+          docs: ['#18'];
         },
         {
           name: 'associatedTokenProgram';
           isMut: false;
           isSigner: false;
-          docs: ['#20'];
+          docs: ['#19'];
         },
         {
           name: 'credixProgram';
           isMut: false;
           isSigner: false;
-          docs: ['#21'];
+          docs: ['#20'];
         },
         {
           name: 'rent';
           isMut: false;
           isSigner: false;
-          docs: ['#22'];
+          docs: ['#21'];
         }
       ];
       args: [];
@@ -1394,96 +1404,6 @@ export type Uxd = {
           type: 'bool';
         }
       ];
-    },
-    {
-      name: 'collectProfitOfMercurialVaultDepository';
-      accounts: [
-        {
-          name: 'authority';
-          isMut: false;
-          isSigner: true;
-          docs: ['#1'];
-        },
-        {
-          name: 'payer';
-          isMut: true;
-          isSigner: true;
-          docs: ['#2'];
-        },
-        {
-          name: 'controller';
-          isMut: true;
-          isSigner: false;
-          docs: ['#3'];
-        },
-        {
-          name: 'depository';
-          isMut: true;
-          isSigner: false;
-          docs: ['#4'];
-        },
-        {
-          name: 'collateralMint';
-          isMut: false;
-          isSigner: false;
-          docs: ['#5'];
-        },
-        {
-          name: 'authorityCollateral';
-          isMut: true;
-          isSigner: false;
-          docs: ['#6'];
-        },
-        {
-          name: 'depositoryLpTokenVault';
-          isMut: true;
-          isSigner: false;
-          docs: [
-            '#7',
-            'Token account holding the LP tokens minted by depositing collateral on mercurial vault'
-          ];
-        },
-        {
-          name: 'mercurialVault';
-          isMut: true;
-          isSigner: false;
-          docs: ['#8'];
-        },
-        {
-          name: 'mercurialVaultLpMint';
-          isMut: true;
-          isSigner: false;
-          docs: ['#9'];
-        },
-        {
-          name: 'mercurialVaultCollateralTokenSafe';
-          isMut: true;
-          isSigner: false;
-          docs: [
-            '#10',
-            'Token account owned by the mercurial vault program. Hold the collateral deposited in the mercurial vault.'
-          ];
-        },
-        {
-          name: 'mercurialVaultProgram';
-          isMut: false;
-          isSigner: false;
-          docs: ['#11'];
-        },
-        {
-          name: 'systemProgram';
-          isMut: false;
-          isSigner: false;
-          docs: ['#12'];
-        },
-        {
-          name: 'tokenProgram';
-          isMut: false;
-          isSigner: false;
-          docs: ['#13'];
-        }
-      ];
-      args: [];
     }
   ];
   accounts: [
@@ -3216,61 +3136,79 @@ export const IDL: Uxd = {
           name: 'payer',
           isMut: true,
           isSigner: true,
+          docs: ['#1'],
         },
         {
           name: 'controller',
           isMut: true,
           isSigner: false,
+          docs: ['#2'],
         },
         {
           name: 'depository',
           isMut: true,
           isSigner: false,
+          docs: ['#3'],
         },
         {
           name: 'collateralMint',
           isMut: false,
           isSigner: false,
+          docs: ['#4'],
         },
         {
           name: 'profitsBeneficiaryCollateral',
           isMut: true,
           isSigner: false,
+          docs: ['#5'],
         },
         {
           name: 'depositoryLpTokenVault',
           isMut: true,
           isSigner: false,
+          docs: [
+            '#6',
+            'Token account holding the LP tokens minted by depositing collateral on mercurial vault',
+          ],
         },
         {
           name: 'mercurialVault',
           isMut: true,
           isSigner: false,
+          docs: ['#7'],
         },
         {
           name: 'mercurialVaultLpMint',
           isMut: true,
           isSigner: false,
+          docs: ['#8'],
         },
         {
           name: 'mercurialVaultCollateralTokenSafe',
           isMut: true,
           isSigner: false,
+          docs: [
+            '#9',
+            'Token account owned by the mercurial vault program. Hold the collateral deposited in the mercurial vault.',
+          ],
         },
         {
           name: 'mercurialVaultProgram',
           isMut: false,
           isSigner: false,
+          docs: ['#10'],
         },
         {
           name: 'systemProgram',
           isMut: false,
           isSigner: false,
+          docs: ['#11'],
         },
         {
           name: 'tokenProgram',
           isMut: false,
           isSigner: false,
+          docs: ['#12'],
         },
       ],
       args: [],
@@ -3914,138 +3852,130 @@ export const IDL: Uxd = {
       name: 'collectProfitsOfCredixLpDepository',
       accounts: [
         {
-          name: 'authority',
-          isMut: false,
-          isSigner: true,
-          docs: [
-            '#1 Authored call accessible only to the signer matching Controller.authority',
-          ],
-        },
-        {
           name: 'payer',
           isMut: true,
           isSigner: true,
-          docs: ['#2'],
+          docs: ['#1'],
         },
         {
           name: 'controller',
           isMut: true,
           isSigner: false,
-          docs: ['#3'],
+          docs: ['#2'],
         },
         {
           name: 'depository',
           isMut: true,
           isSigner: false,
-          docs: ['#4'],
+          docs: ['#3'],
         },
         {
           name: 'collateralMint',
           isMut: false,
           isSigner: false,
-          docs: ['#5'],
+          docs: ['#4'],
         },
         {
           name: 'depositoryCollateral',
           isMut: true,
           isSigner: false,
-          docs: ['#6'],
+          docs: ['#5'],
         },
         {
           name: 'depositoryShares',
           isMut: true,
           isSigner: false,
-          docs: ['#7'],
+          docs: ['#6'],
         },
         {
           name: 'credixProgramState',
           isMut: false,
           isSigner: false,
-          docs: ['#8'],
+          docs: ['#7'],
         },
         {
           name: 'credixGlobalMarketState',
           isMut: true,
           isSigner: false,
-          docs: ['#9'],
+          docs: ['#8'],
         },
         {
           name: 'credixSigningAuthority',
           isMut: false,
           isSigner: false,
-          docs: ['#10'],
+          docs: ['#9'],
         },
         {
           name: 'credixLiquidityCollateral',
           isMut: true,
           isSigner: false,
-          docs: ['#11'],
+          docs: ['#10'],
         },
         {
           name: 'credixSharesMint',
           isMut: true,
           isSigner: false,
-          docs: ['#12'],
+          docs: ['#11'],
         },
         {
           name: 'credixPass',
           isMut: true,
           isSigner: false,
-          docs: ['#13'],
+          docs: ['#12'],
         },
         {
           name: 'credixTreasuryCollateral',
           isMut: true,
           isSigner: false,
-          docs: ['#14'],
+          docs: ['#13'],
         },
         {
           name: 'credixMultisigKey',
           isMut: false,
           isSigner: false,
-          docs: ['#15'],
+          docs: ['#14'],
         },
         {
           name: 'credixMultisigCollateral',
           isMut: true,
           isSigner: false,
-          docs: ['#16'],
+          docs: ['#15'],
         },
         {
           name: 'profitsBeneficiaryCollateral',
           isMut: true,
           isSigner: false,
-          docs: ['#17'],
+          docs: ['#16'],
         },
         {
           name: 'systemProgram',
           isMut: false,
           isSigner: false,
-          docs: ['#18'],
+          docs: ['#17'],
         },
         {
           name: 'tokenProgram',
           isMut: false,
           isSigner: false,
-          docs: ['#19'],
+          docs: ['#18'],
         },
         {
           name: 'associatedTokenProgram',
           isMut: false,
           isSigner: false,
-          docs: ['#20'],
+          docs: ['#19'],
         },
         {
           name: 'credixProgram',
           isMut: false,
           isSigner: false,
-          docs: ['#21'],
+          docs: ['#20'],
         },
         {
           name: 'rent',
           isMut: false,
           isSigner: false,
-          docs: ['#22'],
+          docs: ['#21'],
         },
       ],
       args: [],
@@ -4086,96 +4016,6 @@ export const IDL: Uxd = {
           type: 'bool',
         },
       ],
-    },
-    {
-      name: 'collectProfitOfMercurialVaultDepository',
-      accounts: [
-        {
-          name: 'authority',
-          isMut: false,
-          isSigner: true,
-          docs: ['#1'],
-        },
-        {
-          name: 'payer',
-          isMut: true,
-          isSigner: true,
-          docs: ['#2'],
-        },
-        {
-          name: 'controller',
-          isMut: true,
-          isSigner: false,
-          docs: ['#3'],
-        },
-        {
-          name: 'depository',
-          isMut: true,
-          isSigner: false,
-          docs: ['#4'],
-        },
-        {
-          name: 'collateralMint',
-          isMut: false,
-          isSigner: false,
-          docs: ['#5'],
-        },
-        {
-          name: 'authorityCollateral',
-          isMut: true,
-          isSigner: false,
-          docs: ['#6'],
-        },
-        {
-          name: 'depositoryLpTokenVault',
-          isMut: true,
-          isSigner: false,
-          docs: [
-            '#7',
-            'Token account holding the LP tokens minted by depositing collateral on mercurial vault',
-          ],
-        },
-        {
-          name: 'mercurialVault',
-          isMut: true,
-          isSigner: false,
-          docs: ['#8'],
-        },
-        {
-          name: 'mercurialVaultLpMint',
-          isMut: true,
-          isSigner: false,
-          docs: ['#9'],
-        },
-        {
-          name: 'mercurialVaultCollateralTokenSafe',
-          isMut: true,
-          isSigner: false,
-          docs: [
-            '#10',
-            'Token account owned by the mercurial vault program. Hold the collateral deposited in the mercurial vault.',
-          ],
-        },
-        {
-          name: 'mercurialVaultProgram',
-          isMut: false,
-          isSigner: false,
-          docs: ['#11'],
-        },
-        {
-          name: 'systemProgram',
-          isMut: false,
-          isSigner: false,
-          docs: ['#12'],
-        },
-        {
-          name: 'tokenProgram',
-          isMut: false,
-          isSigner: false,
-          docs: ['#13'],
-        },
-      ],
-      args: [],
     },
   ],
   accounts: [
