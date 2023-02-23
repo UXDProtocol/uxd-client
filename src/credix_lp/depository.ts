@@ -5,10 +5,10 @@ import {
   Program,
   BN,
 } from '@project-serum/anchor';
-import { ConfirmOptions, Connection, PublicKey, Signer } from '@solana/web3.js';
+import { ConfirmOptions, Connection, PublicKey } from '@solana/web3.js';
 import { IDL } from '../idl';
 import { CredixLpDepositoryAccount } from '../interfaces';
-import { getMint, TOKEN_PROGRAM_ID } from '@solana/spl-token';
+import { getMint } from '@solana/spl-token';
 import { findATAAddrSync } from '../utils';
 import { IDL as credixIDL, Credix as CredixIDL } from './credixIdl';
 

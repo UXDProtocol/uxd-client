@@ -1,12 +1,11 @@
 import {
   AnchorProvider,
-  BN,
   BorshAccountsCoder,
   Program,
   Wallet,
 } from '@project-serum/anchor';
-import { ConfirmOptions, Connection, PublicKey, Signer } from '@solana/web3.js';
-import { getMint, TOKEN_PROGRAM_ID } from '@solana/spl-token';
+import { ConfirmOptions, Connection, PublicKey } from '@solana/web3.js';
+import { getMint } from '@solana/spl-token';
 import { IDL } from '../idl';
 import { MercurialVaultDepositoryAccount } from '../interfaces';
 import {
