@@ -1,5 +1,6 @@
 import {
   AnchorProvider,
+  BN,
   BorshAccountsCoder,
   Program,
   Wallet,
@@ -12,15 +13,7 @@ import {
   IDL as mercurialVaultIDL,
   Vault as MercurialVaultIDL,
 } from './vaultIdl';
-import {
-  IdlTypes,
-  TypeDef,
-} from '@project-serum/anchor/dist/cjs/program/namespace/types';
-
-type VaultState = TypeDef<
-  MercurialVaultIDL['accounts']['0'],
-  IdlTypes<MercurialVaultIDL>
->;
+import { VaultState } from './types';
 
 const VAULT_BASE_KEY = new PublicKey(
   'HWzXGcGHy4tcpYfaRDCyLNzXqBTv3E6BttpCH2vJxArv'
@@ -45,7 +38,8 @@ export class MercurialVaultDepository {
       decimals: number;
     },
     public readonly depositoryLpTokenVault: PublicKey,
-    public readonly mercurialVaultCollateralTokenSafe: PublicKey
+    public readonly mercurialVaultCollateralTokenSafe: PublicKey,
+    public readonly mercurialVaultProgram: Program<MercurialVaultIDL>
   ) {}
 
   public static async initialize({
@@ -114,7 +108,6 @@ export class MercurialVaultDepository {
     }
 
     const lpMintInfo = await getMint(connection, vaultState.lpMint);
-
     if (!lpMintInfo) {
       throw new Error('Cannot load vault lp mint info');
     }
@@ -132,7 +125,8 @@ export class MercurialVaultDepository {
       vaultPda,
       mercurialVaultLpMint,
       depositoryLpTokenVault,
-      mercurialVaultCollateralTokenSafe
+      mercurialVaultCollateralTokenSafe,
+      mercurialVaultProgram
     );
   }
 
@@ -145,26 +139,26 @@ export class MercurialVaultDepository {
       ']'
     );
     console.table({
-      ['pda']: this.pda.toBase58(),
-      ['collateralMint']: this.collateralMint.mint.toBase58(),
-      ['collateralMintSymbol']: this.collateralMint.symbol.toString(),
-      ['collateralMintDecimals']: this.collateralMint.decimals.toString(),
-      ['mercurialVault']: this.mercurialVault.toBase58(),
-      ['mercurialVaultLpMint']: this.mercurialVaultLpMint.mint.toBase58(),
-      ['depositoryLpTokenVault']: this.depositoryLpTokenVault.toBase58(),
+      pda: this.pda.toBase58(),
+      collateralMint: this.collateralMint.mint.toBase58(),
+      collateralMintSymbol: this.collateralMint.symbol.toString(),
+      collateralMintDecimals: this.collateralMint.decimals.toString(),
+      mercurialVault: this.mercurialVault.toBase58(),
+      mercurialVaultLpMint: this.mercurialVaultLpMint.mint.toBase58(),
+      depositoryLpTokenVault: this.depositoryLpTokenVault.toBase58(),
     });
     console.groupEnd();
   }
 
   public async getOnchainAccount(
     connection: Connection,
-    options: ConfirmOptions
+    options?: ConfirmOptions
   ): Promise<MercurialVaultDepositoryAccount> {
     const coder = new BorshAccountsCoder(IDL);
 
     const result = await connection.getAccountInfo(
       this.pda,
-      options.commitment
+      options?.commitment
     );
 
     if (!result) {

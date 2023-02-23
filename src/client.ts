@@ -338,6 +338,7 @@ export class UXDClient {
       mintingFeeInBps?: number;
       redeemingFeeInBps?: number;
       mintingDisabled?: boolean;
+      profitsBeneficiaryCollateral?: PublicKey;
     },
     options: ConfirmOptions
   ): TransactionInstruction {
@@ -346,6 +347,7 @@ export class UXDClient {
       mintingFeeInBps,
       redeemingFeeInBps,
       mintingDisabled,
+      profitsBeneficiaryCollateral,
     } = uiFields;
     const fields = {
       redeemableAmountUnderManagementCap:
@@ -361,7 +363,10 @@ export class UXDClient {
         typeof redeemingFeeInBps !== 'undefined' ? redeemingFeeInBps : null,
       mintingDisabled:
         typeof mintingDisabled !== 'undefined' ? mintingDisabled : null,
-      profitsBeneficiaryCollateral: null, // TODO - merge ken's client branch
+      profitsBeneficiaryCollateral:
+        typeof profitsBeneficiaryCollateral !== 'undefined'
+          ? profitsBeneficiaryCollateral
+          : null,
     };
     return this.instruction.editMercurialVaultDepository(fields, {
       accounts: {
