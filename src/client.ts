@@ -212,6 +212,33 @@ export class UXDClient {
     );
   }
 
+  public createCollectProfitsOfMercurialVaultDepositoryInstruction(
+    controller: Controller,
+    depository: MercurialVaultDepository,
+    profitsBeneficiaryCollateral: PublicKey,
+    options: ConfirmOptions,
+    payer: PublicKey
+  ): TransactionInstruction {
+    return this.instruction.collectProfitsOfMercurialVaultDepository({
+      accounts: {
+        payer: payer,
+        controller: controller.pda,
+        depository: depository.pda,
+        collateralMint: depository.collateralMint.mint,
+        profitsBeneficiaryCollateral,
+        depositoryLpTokenVault: depository.depositoryLpTokenVault,
+        mercurialVault: depository.mercurialVault,
+        mercurialVaultLpMint: depository.mercurialVaultLpMint.mint,
+        mercurialVaultCollateralTokenSafe:
+          depository.mercurialVaultCollateralTokenSafe,
+        mercurialVaultProgram: MercurialVaultDepository.mercurialVaultProgramId,
+        systemProgram: SystemProgram.programId,
+        tokenProgram: TOKEN_PROGRAM_ID,
+      },
+      options,
+    });
+  }
+
   public createMintWithMercurialVaultDepositoryInstruction(
     controller: Controller,
     depository: MercurialVaultDepository,
@@ -311,6 +338,7 @@ export class UXDClient {
       mintingFeeInBps?: number;
       redeemingFeeInBps?: number;
       mintingDisabled?: boolean;
+      profitsBeneficiaryCollateral?: PublicKey;
     },
     options: ConfirmOptions
   ): TransactionInstruction {
@@ -319,6 +347,7 @@ export class UXDClient {
       mintingFeeInBps,
       redeemingFeeInBps,
       mintingDisabled,
+      profitsBeneficiaryCollateral,
     } = uiFields;
     const fields = {
       redeemableAmountUnderManagementCap:
@@ -334,6 +363,10 @@ export class UXDClient {
         typeof redeemingFeeInBps !== 'undefined' ? redeemingFeeInBps : null,
       mintingDisabled:
         typeof mintingDisabled !== 'undefined' ? mintingDisabled : null,
+      profitsBeneficiaryCollateral:
+        typeof profitsBeneficiaryCollateral !== 'undefined'
+          ? profitsBeneficiaryCollateral
+          : null,
     };
     return this.instruction.editMercurialVaultDepository(fields, {
       accounts: {
