@@ -56,12 +56,10 @@ export function createAssocTokenIx(
   mint: PublicKey
 ): TransactionInstruction {
   return createAssociatedTokenAccountInstruction(
-    ASSOCIATED_TOKEN_PROGRAM_ID,
-    TOKEN_PROGRAM_ID,
-    mint,
-    account,
+    wallet, // payer
+    account, // associatedToken
     wallet, // owner
-    wallet // payer
+    mint // mint
   );
 }
 

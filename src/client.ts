@@ -122,7 +122,7 @@ export class UXDClient {
 
     return this.instruction.mintWithIdentityDepository(nativeCollateralAmount, {
       accounts: {
-        user: user,
+        user,
         payer: payer ?? user,
         controller: controller.pda,
         depository: depository.pda,
@@ -158,7 +158,7 @@ export class UXDClient {
       nativeRedeemableAmount,
       {
         accounts: {
-          user: user,
+          user,
           payer: payer ?? user,
           controller: controller.pda,
           depository: depository.pda,
@@ -242,7 +242,7 @@ export class UXDClient {
   public createMintWithMercurialVaultDepositoryInstruction(
     controller: Controller,
     depository: MercurialVaultDepository,
-    authority: PublicKey,
+    user: PublicKey,
     collateralAmount: number,
     options: ConfirmOptions,
     payer?: PublicKey
@@ -253,7 +253,7 @@ export class UXDClient {
     );
 
     const [[userCollateralATA], [userRedeemableATA]] = findMultipleATAAddSync(
-      authority,
+      user,
       [depository.collateralMint.mint, controller.redeemableMintPda]
     );
 
@@ -261,8 +261,8 @@ export class UXDClient {
       nativeCollateralAmount,
       {
         accounts: {
-          user: authority,
-          payer: payer ?? authority,
+          user,
+          payer: payer ?? user,
           controller: controller.pda,
           depository: depository.pda,
           redeemableMint: controller.redeemableMintPda,
@@ -287,7 +287,7 @@ export class UXDClient {
   public createRedeemFromMercurialVaultDepositoryInstruction(
     controller: Controller,
     depository: MercurialVaultDepository,
-    authority: PublicKey,
+    user: PublicKey,
     redeemableAmount: number,
     options: ConfirmOptions,
     payer?: PublicKey
@@ -298,7 +298,7 @@ export class UXDClient {
     );
 
     const [[userCollateralATA], [userRedeemableATA]] = findMultipleATAAddSync(
-      authority,
+      user,
       [depository.collateralMint.mint, controller.redeemableMintPda]
     );
 
@@ -306,8 +306,8 @@ export class UXDClient {
       nativeRedeemableAmount,
       {
         accounts: {
-          user: authority,
-          payer: payer ?? authority,
+          user,
+          payer: payer ?? user,
           controller: controller.pda,
           depository: depository.pda,
           redeemableMint: controller.redeemableMintPda,
@@ -542,7 +542,7 @@ export class UXDClient {
 
     return this.instruction.mintWithCredixLpDepository(nativeCollateralAmount, {
       accounts: {
-        user: user,
+        user,
         payer: payer ?? user,
         controller: controller.pda,
         depository: depository.pda,
