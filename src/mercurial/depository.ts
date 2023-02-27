@@ -1,5 +1,6 @@
 import {
   AnchorProvider,
+  BN,
   BorshAccountsCoder,
   Program,
   Wallet,
@@ -12,6 +13,11 @@ import {
   IDL as mercurialVaultIDL,
   Vault as MercurialVaultIDL,
 } from './vaultIdl';
+import {
+  calculateWithdrawableAmount,
+  getAmountByShare,
+  getOnchainTime,
+} from './utils';
 import { VaultState } from './types';
 
 const VAULT_BASE_KEY = new PublicKey(
@@ -127,6 +133,47 @@ export class MercurialVaultDepository {
       mercurialVaultCollateralTokenSafe,
       mercurialVaultProgram
     );
+  }
+
+  public async calculateProfitsValue(
+    connection: Connection,
+    options?: ConfirmOptions
+  ): Promise<BN> {
+    const [onChainAccount, vaultState, onChainTime] = await Promise.all([
+      this.getOnchainAccount(connection, options),
+
+      (await this.mercurialVaultProgram.account.vault.fetch(
+        this.mercurialVault
+      )) as VaultState,
+
+      getOnchainTime(connection),
+    ]);
+
+    const withdrawableAmount = calculateWithdrawableAmount(
+      onChainTime,
+      vaultState
+    );
+
+    const [lpTokenTotalSupplyWrapped, lpTokenBalanceWrapped] =
+      await Promise.all([
+        connection.getTokenSupply(vaultState.lpMint),
+        connection.getTokenAccountBalance(onChainAccount.lpTokenVault),
+      ]);
+
+    const lpTokenTotalSupply = new BN(lpTokenTotalSupplyWrapped.value.amount);
+    const lpTokenBalance = new BN(lpTokenBalanceWrapped.value.amount);
+
+    const ownedLpTokenValue = getAmountByShare(
+      lpTokenBalance,
+      withdrawableAmount,
+      lpTokenTotalSupply
+    );
+
+    const interestsAndFees = ownedLpTokenValue.sub(
+      onChainAccount.redeemableAmountUnderManagement
+    );
+
+    return interestsAndFees;
   }
 
   public info() {
