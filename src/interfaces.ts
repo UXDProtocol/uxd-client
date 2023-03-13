@@ -37,8 +37,8 @@ export class MercurialVaultDepositoryAccount {
   profitsTotalCollected!: BN; // u128
   lastProfitsCollectionUnixTimestamp!: BN; // u64
   profitsBeneficiaryCollateral!: PublicKey;
-  redeemableAmountUnderManagementWeight!: number; // u32
-  redeemableAmountUnderManagementTarget!: BN; // u64
+  redeemableAmountUnderManagementWeightBps!: number; // u16
+  redeemableAmountUnderManagementTargetAmount!: BN; // u64
 }
 
 // V1
@@ -78,6 +78,6 @@ export class CredixLpDepositoryAccount {
   redeemingFeeTotalAccrued!: BN; // u128
   profitsTotalCollected!: BN; // u128
   profitsBeneficiaryCollateral!: PublicKey;
-  redeemableAmountUnderManagementWeight!: number; // u32
-  redeemableAmountUnderManagementTarget!: BN; // u64
+  redeemableAmountUnderManagementWeightBps!: number; // u16
+  redeemableAmountUnderManagementTargetAmount!: BN; // u64
 }

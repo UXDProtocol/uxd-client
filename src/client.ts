@@ -339,7 +339,7 @@ export class UXDClient {
       redeemingFeeInBps?: number;
       mintingDisabled?: boolean;
       profitsBeneficiaryCollateral?: PublicKey;
-      redeemableAmountUnderManagementWeight?: number;
+      redeemableAmountUnderManagementWeightBps?: number;
     },
     options: ConfirmOptions
   ): TransactionInstruction {
@@ -349,7 +349,7 @@ export class UXDClient {
       redeemingFeeInBps,
       mintingDisabled,
       profitsBeneficiaryCollateral,
-      redeemableAmountUnderManagementWeight,
+      redeemableAmountUnderManagementWeightBps,
     } = uiFields;
     const fields = {
       redeemableAmountUnderManagementCap:
@@ -369,9 +369,9 @@ export class UXDClient {
         typeof profitsBeneficiaryCollateral !== 'undefined'
           ? profitsBeneficiaryCollateral
           : null,
-      redeemableAmountUnderManagementWeight:
-        typeof redeemableAmountUnderManagementWeight !== 'undefined'
-          ? redeemableAmountUnderManagementWeight
+      redeemableAmountUnderManagementWeightBps:
+        typeof redeemableAmountUnderManagementWeightBps !== 'undefined'
+          ? redeemableAmountUnderManagementWeightBps
           : null,
     };
     return this.instruction.editMercurialVaultDepository(fields, {
@@ -447,7 +447,7 @@ export class UXDClient {
       redeemingFeeInBps?: number;
       mintingDisabled?: boolean;
       profitsBeneficiaryCollateral?: PublicKey;
-      redeemableAmountUnderManagementWeight?: number;
+      redeemableAmountUnderManagementWeightBps?: number;
     },
     options: ConfirmOptions
   ): TransactionInstruction {
@@ -457,7 +457,7 @@ export class UXDClient {
       redeemingFeeInBps,
       mintingDisabled,
       profitsBeneficiaryCollateral,
-      redeemableAmountUnderManagementWeight,
+      redeemableAmountUnderManagementWeightBps,
     } = uiFields;
     const fields = {
       redeemableAmountUnderManagementCap:
@@ -475,9 +475,9 @@ export class UXDClient {
         profitsBeneficiaryCollateral !== undefined
           ? profitsBeneficiaryCollateral
           : null,
-      redeemableAmountUnderManagementWeight:
-        redeemableAmountUnderManagementWeight !== undefined
-          ? redeemableAmountUnderManagementWeight
+      redeemableAmountUnderManagementWeightBps:
+        redeemableAmountUnderManagementWeightBps !== undefined
+          ? redeemableAmountUnderManagementWeightBps
           : null,
     };
     return this.instruction.editCredixLpDepository(fields, {
