@@ -339,6 +339,7 @@ export class UXDClient {
       redeemingFeeInBps?: number;
       mintingDisabled?: boolean;
       profitsBeneficiaryCollateral?: PublicKey;
+      redeemableAmountUnderManagementWeight?: number;
     },
     options: ConfirmOptions
   ): TransactionInstruction {
@@ -348,6 +349,7 @@ export class UXDClient {
       redeemingFeeInBps,
       mintingDisabled,
       profitsBeneficiaryCollateral,
+      redeemableAmountUnderManagementWeight,
     } = uiFields;
     const fields = {
       redeemableAmountUnderManagementCap:
@@ -366,6 +368,10 @@ export class UXDClient {
       profitsBeneficiaryCollateral:
         typeof profitsBeneficiaryCollateral !== 'undefined'
           ? profitsBeneficiaryCollateral
+          : null,
+      redeemableAmountUnderManagementWeight:
+        typeof redeemableAmountUnderManagementWeight !== 'undefined'
+          ? redeemableAmountUnderManagementWeight
           : null,
     };
     return this.instruction.editMercurialVaultDepository(fields, {
@@ -441,6 +447,7 @@ export class UXDClient {
       redeemingFeeInBps?: number;
       mintingDisabled?: boolean;
       profitsBeneficiaryCollateral?: PublicKey;
+      redeemableAmountUnderManagementWeight?: number;
     },
     options: ConfirmOptions
   ): TransactionInstruction {
@@ -450,6 +457,7 @@ export class UXDClient {
       redeemingFeeInBps,
       mintingDisabled,
       profitsBeneficiaryCollateral,
+      redeemableAmountUnderManagementWeight,
     } = uiFields;
     const fields = {
       redeemableAmountUnderManagementCap:
@@ -466,6 +474,10 @@ export class UXDClient {
       profitsBeneficiaryCollateral:
         profitsBeneficiaryCollateral !== undefined
           ? profitsBeneficiaryCollateral
+          : null,
+      redeemableAmountUnderManagementWeight:
+        redeemableAmountUnderManagementWeight !== undefined
+          ? redeemableAmountUnderManagementWeight
           : null,
     };
     return this.instruction.editCredixLpDepository(fields, {
