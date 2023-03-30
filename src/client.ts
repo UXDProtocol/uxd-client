@@ -57,10 +57,15 @@ export class UXDClient {
     authority: PublicKey,
     uiFields: {
       redeemableGlobalSupplyCap?: number;
+      depositoriesWeightBps?: {
+        identityDepositoryWeightBps: number;
+        mercurialVaultDepository0WeightBps: number;
+        credixLpDepository0WeightBps: number;
+      };
     },
     options: ConfirmOptions
   ) {
-    const { redeemableGlobalSupplyCap } = uiFields;
+    const { redeemableGlobalSupplyCap, depositoriesWeightBps } = uiFields;
     const fields = {
       redeemableGlobalSupplyCap:
         typeof redeemableGlobalSupplyCap !== 'undefined'
@@ -69,6 +74,8 @@ export class UXDClient {
               controller.redeemableMintDecimals
             )
           : null,
+      depositoriesWeightBps:
+        depositoriesWeightBps !== undefined ? depositoriesWeightBps : null,
     };
     return this.instruction.editController(fields, {
       accounts: {
