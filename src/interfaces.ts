@@ -12,6 +12,9 @@ export class ControllerAccount {
   redeemableCirculatingSupply!: BN; // u128
   profitsTotalCollected!: BN; // u128
   isFrozen!: boolean;
+  identityDepositoryWeightBps!: number; // u16
+  mercurialVaultDepository0WeightBps!: number; // u16
+  credixLpDepository0WeightBps!: number; // u16
 }
 
 // V1
