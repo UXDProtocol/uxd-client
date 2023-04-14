@@ -19,6 +19,10 @@ const CREDIX_LP_INTERNAL_CREDIX_PASS_NAMESPACE = 'credix-pass';
 const CREDIX_LP_INTERNAL_PROGRAM_STATE_NAMESPACE = 'program-state';
 
 export class CredixLpDepository {
+  public static credixProgramId = new PublicKey(
+    'CRDx2YkdtYtGZXGHZ59wNv1EwKHQndnRc1gT4p8i2vPX'
+  );
+
   public constructor(
     public readonly pda: PublicKey,
     public readonly collateralMint: PublicKey,
@@ -45,14 +49,15 @@ export class CredixLpDepository {
     uxdProgramId,
     collateralMint,
     collateralSymbol,
-    credixProgramId,
   }: {
     connection: Connection;
     uxdProgramId: PublicKey;
     collateralMint: PublicKey;
     collateralSymbol: string;
-    credixProgramId: PublicKey;
   }): Promise<CredixLpDepository> {
+    // Default to the standard credix program ID
+    const credixProgramId = CredixLpDepository.credixProgramId;
+
     // Collateral decimals can be resolved asynchronously
     const collateralDecimalsPromise = this.getCollateralDecimals(
       connection,
