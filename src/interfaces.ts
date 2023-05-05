@@ -13,8 +13,11 @@ export class ControllerAccount {
   profitsTotalCollected!: BN; // u128
   isFrozen!: boolean;
   identityDepositoryWeightBps!: number; // u16
-  mercurialVaultDepository0WeightBps!: number; // u16
-  credixLpDepository0WeightBps!: number; // u16
+  mercurialVaultDepositoryWeightBps!: number; // u16
+  credixLpDepositoryWeightBps!: number; // u16
+  identityDepository!: PublicKey;
+  mercurialVaultDepository!: PublicKey;
+  credixLpDepository!: PublicKey;
 }
 
 // V1
