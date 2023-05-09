@@ -57,7 +57,7 @@ export class UXDClient {
     authority: PublicKey,
     uiFields: {
       redeemableGlobalSupplyCap?: number;
-      routerDepositoriesWeightBps?: {
+      depositoriesRoutingWeightBps?: {
         identityDepositoryWeightBps: number;
         mercurialVaultDepositoryWeightBps: number;
         credixLpDepositoryWeightBps: number;
@@ -72,7 +72,7 @@ export class UXDClient {
   ) {
     const {
       redeemableGlobalSupplyCap,
-      routerDepositoriesWeightBps,
+      depositoriesRoutingWeightBps,
       routerDepositories,
     } = uiFields;
     const fields = {
@@ -83,9 +83,9 @@ export class UXDClient {
               controller.redeemableMintDecimals
             )
           : null,
-      routerDepositoriesWeightBps:
-        routerDepositoriesWeightBps !== undefined
-          ? routerDepositoriesWeightBps
+      depositoriesRoutingWeightBps:
+        depositoriesRoutingWeightBps !== undefined
+          ? depositoriesRoutingWeightBps
           : null,
       routerDepositories:
         routerDepositories !== undefined ? routerDepositories : null,

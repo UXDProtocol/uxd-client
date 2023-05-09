@@ -1829,27 +1829,27 @@ export type Uxd = {
             type: 'u128';
           },
           {
-            name: 'routerIdentityDepositoryWeightBps';
+            name: 'identityDepositoryWeightBps';
             type: 'u16';
           },
           {
-            name: 'routerMercurialVaultDepositoryWeightBps';
+            name: 'mercurialVaultDepositoryWeightBps';
             type: 'u16';
           },
           {
-            name: 'routerCredixLpDepositoryWeightBps';
+            name: 'credixLpDepositoryWeightBps';
             type: 'u16';
           },
           {
-            name: 'routerIdentityDepository';
+            name: 'identityDepository';
             type: 'publicKey';
           },
           {
-            name: 'routerMercurialVaultDepository';
+            name: 'mercurialVaultDepository';
             type: 'publicKey';
           },
           {
-            name: 'routerCredixLpDepository';
+            name: 'credixLpDepository';
             type: 'publicKey';
           },
           {
@@ -2164,7 +2164,7 @@ export type Uxd = {
       };
     },
     {
-      name: 'EditControllerRouterDepositoriesWeightBps';
+      name: 'EditDepositoriesRoutingWeightBps';
       type: {
         kind: 'struct';
         fields: [
@@ -2184,7 +2184,7 @@ export type Uxd = {
       };
     },
     {
-      name: 'EditControllerRouterDepositories';
+      name: 'EditRouterDepositories';
       type: {
         kind: 'struct';
         fields: [
@@ -2215,10 +2215,10 @@ export type Uxd = {
             };
           },
           {
-            name: 'routerDepositoriesWeightBps';
+            name: 'depositoriesRoutingWeightBps';
             type: {
               option: {
-                defined: 'EditControllerRouterDepositoriesWeightBps';
+                defined: 'EditDepositoriesRoutingWeightBps';
               };
             };
           },
@@ -2226,7 +2226,7 @@ export type Uxd = {
             name: 'routerDepositories';
             type: {
               option: {
-                defined: 'EditControllerRouterDepositories';
+                defined: 'EditRouterDepositories';
               };
             };
           }
@@ -4954,27 +4954,27 @@ export const IDL: Uxd = {
             type: 'u128',
           },
           {
-            name: 'routerIdentityDepositoryWeightBps',
+            name: 'identityDepositoryWeightBps',
             type: 'u16',
           },
           {
-            name: 'routerMercurialVaultDepositoryWeightBps',
+            name: 'mercurialVaultDepositoryWeightBps',
             type: 'u16',
           },
           {
-            name: 'routerCredixLpDepositoryWeightBps',
+            name: 'credixLpDepositoryWeightBps',
             type: 'u16',
           },
           {
-            name: 'routerIdentityDepository',
+            name: 'identityDepository',
             type: 'publicKey',
           },
           {
-            name: 'routerMercurialVaultDepository',
+            name: 'mercurialVaultDepository',
             type: 'publicKey',
           },
           {
-            name: 'routerCredixLpDepository',
+            name: 'credixLpDepository',
             type: 'publicKey',
           },
           {
@@ -5289,7 +5289,7 @@ export const IDL: Uxd = {
       },
     },
     {
-      name: 'EditControllerRouterDepositoriesWeightBps',
+      name: 'EditDepositoriesRoutingWeightBps',
       type: {
         kind: 'struct',
         fields: [
@@ -5309,7 +5309,7 @@ export const IDL: Uxd = {
       },
     },
     {
-      name: 'EditControllerRouterDepositories',
+      name: 'EditRouterDepositories',
       type: {
         kind: 'struct',
         fields: [
@@ -5340,10 +5340,10 @@ export const IDL: Uxd = {
             },
           },
           {
-            name: 'routerDepositoriesWeightBps',
+            name: 'depositoriesRoutingWeightBps',
             type: {
               option: {
-                defined: 'EditControllerRouterDepositoriesWeightBps',
+                defined: 'EditDepositoriesRoutingWeightBps',
               },
             },
           },
@@ -5351,7 +5351,7 @@ export const IDL: Uxd = {
             name: 'routerDepositories',
             type: {
               option: {
-                defined: 'EditControllerRouterDepositories',
+                defined: 'EditRouterDepositories',
               },
             },
           },
