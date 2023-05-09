@@ -13,6 +13,7 @@ export class Controller {
   public redeemableMintPda: PublicKey;
   public redeemableMintDecimals: number;
   public redeemableMintSymbol: string;
+  public uxdProgramId: PublicKey;
 
   public constructor(
     mintSymbol: string,
@@ -29,6 +30,8 @@ export class Controller {
       [Buffer.from('REDEEMABLE')],
       uxdProgramId
     );
+
+    this.uxdProgramId = uxdProgramId;
   }
 
   public info() {
