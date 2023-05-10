@@ -57,15 +57,24 @@ export class UXDClient {
     authority: PublicKey,
     uiFields: {
       redeemableGlobalSupplyCap?: number;
-      depositoriesWeightBps?: {
+      depositoriesRoutingWeightBps?: {
         identityDepositoryWeightBps: number;
-        mercurialVaultDepository0WeightBps: number;
-        credixLpDepository0WeightBps: number;
+        mercurialVaultDepositoryWeightBps: number;
+        credixLpDepositoryWeightBps: number;
+      };
+      routerDepositories?: {
+        identityDepository: PublicKey;
+        mercurialVaultDepository: PublicKey;
+        credixLpDepository: PublicKey;
       };
     },
     options: ConfirmOptions
   ) {
-    const { redeemableGlobalSupplyCap, depositoriesWeightBps } = uiFields;
+    const {
+      redeemableGlobalSupplyCap,
+      depositoriesRoutingWeightBps,
+      routerDepositories,
+    } = uiFields;
     const fields = {
       redeemableGlobalSupplyCap:
         typeof redeemableGlobalSupplyCap !== 'undefined'
@@ -74,8 +83,12 @@ export class UXDClient {
               controller.redeemableMintDecimals
             )
           : null,
-      depositoriesWeightBps:
-        depositoriesWeightBps !== undefined ? depositoriesWeightBps : null,
+      depositoriesRoutingWeightBps:
+        depositoriesRoutingWeightBps !== undefined
+          ? depositoriesRoutingWeightBps
+          : null,
+      routerDepositories:
+        routerDepositories !== undefined ? routerDepositories : null,
     };
     return this.instruction.editController(fields, {
       accounts: {
