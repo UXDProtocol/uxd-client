@@ -689,4 +689,134 @@ export class UXDClient {
       options: options,
     });
   }
+
+  public createMintInstruction(
+    controller: Controller,
+    identityDepository: IdentityDepository,
+    mercurialVaultDepository: MercurialVaultDepository,
+    credixLpDepository: CredixLpDepository,
+    user: PublicKey,
+    collateralAmount: number,
+    options: ConfirmOptions,
+    payer?: PublicKey
+  ): TransactionInstruction {
+    const collateralMintPda = identityDepository.collateralMint;
+    const collateralMintDecimals = identityDepository.collateralMintDecimals;
+
+    const nativeCollateralAmount = uiToNative(
+      collateralAmount,
+      collateralMintDecimals
+    );
+
+    const [[userCollateralATA], [userRedeemableATA]] = findMultipleATAAddSync(
+      user,
+      [collateralMintPda, controller.redeemableMintPda]
+    );
+
+    return this.instruction.mint(nativeCollateralAmount, {
+      accounts: {
+        user,
+        payer: payer ?? user,
+        controller: controller.pda,
+
+        redeemableMint: controller.redeemableMintPda,
+        collateralMint: collateralMintPda,
+        userRedeemable: userRedeemableATA,
+        userCollateral: userCollateralATA,
+
+        identityDepository: identityDepository.pda,
+        identityDepositoryCollateralVault:
+          identityDepository.collateralVaultPda,
+
+        mercurialVaultDepository: mercurialVaultDepository.pda,
+        mercurialVaultDepositoryLpTokenVault:
+          mercurialVaultDepository.depositoryLpTokenVault,
+        mercurialVaultDepositoryVault: mercurialVaultDepository.mercurialVault,
+        mercurialVaultDepositoryVaultLpMint:
+          mercurialVaultDepository.mercurialVaultLpMint.mint,
+        mercurialVaultDepositoryCollateralTokenSafe:
+          mercurialVaultDepository.mercurialVaultCollateralTokenSafe,
+
+        credixLpDepository: credixLpDepository.pda,
+        credixLpDepositoryCollateral: credixLpDepository.depositoryCollateral,
+        credixLpDepositoryShares: credixLpDepository.depositoryShares,
+        credixLpDepositoryPass: credixLpDepository.credixPass,
+        credixLpDepositoryGlobalMarketState:
+          credixLpDepository.credixGlobalMarketState,
+        credixLpDepositorySigningAuthority:
+          credixLpDepository.credixSigningAuthority,
+        credixLpDepositoryLiquidityCollateral:
+          credixLpDepository.credixLiquidityCollateral,
+        credixLpDepositorySharesMint: credixLpDepository.credixSharesMint,
+
+        systemProgram: SystemProgram.programId,
+        tokenProgram: TOKEN_PROGRAM_ID,
+        associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+        mercurialVaultProgram: MercurialVaultDepository.mercurialVaultProgramId,
+        credixProgram: credixLpDepository.credixProgramId,
+        uxdProgram: controller.uxdProgramId,
+        rent: SYSVAR_RENT_PUBKEY,
+      },
+      options,
+    });
+  }
+
+  public createRedeemInstruction(
+    controller: Controller,
+    identityDepository: IdentityDepository,
+    mercurialVaultDepository: MercurialVaultDepository,
+    credixLpDepository: CredixLpDepository,
+    user: PublicKey,
+    redeemableAmount: number,
+    options: ConfirmOptions,
+    payer?: PublicKey
+  ): TransactionInstruction {
+    const collateralMintPda = identityDepository.collateralMint;
+
+    const nativeRedeemableAmount = uiToNative(
+      redeemableAmount,
+      controller.redeemableMintDecimals
+    );
+
+    const [[userCollateralATA], [userRedeemableATA]] = findMultipleATAAddSync(
+      user,
+      [collateralMintPda, controller.redeemableMintPda]
+    );
+
+    return this.instruction.redeem(nativeRedeemableAmount, {
+      accounts: {
+        user,
+        payer: payer ?? user,
+        controller: controller.pda,
+
+        redeemableMint: controller.redeemableMintPda,
+        collateralMint: collateralMintPda,
+        userRedeemable: userRedeemableATA,
+        userCollateral: userCollateralATA,
+
+        identityDepository: identityDepository.pda,
+        identityDepositoryCollateralVault:
+          identityDepository.collateralVaultPda,
+
+        mercurialVaultDepository: mercurialVaultDepository.pda,
+        mercurialVaultDepositoryLpTokenVault:
+          mercurialVaultDepository.depositoryLpTokenVault,
+        mercurialVaultDepositoryVault: mercurialVaultDepository.mercurialVault,
+        mercurialVaultDepositoryVaultLpMint:
+          mercurialVaultDepository.mercurialVaultLpMint.mint,
+        mercurialVaultDepositoryCollateralTokenSafe:
+          mercurialVaultDepository.mercurialVaultCollateralTokenSafe,
+
+        credixLpDepository: credixLpDepository.pda,
+
+        systemProgram: SystemProgram.programId,
+        tokenProgram: TOKEN_PROGRAM_ID,
+        associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+        mercurialVaultProgram: MercurialVaultDepository.mercurialVaultProgramId,
+        uxdProgram: controller.uxdProgramId,
+        rent: SYSVAR_RENT_PUBKEY,
+      },
+      options,
+    });
+  }
 }
