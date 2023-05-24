@@ -8687,7 +8687,7 @@ export type Credix = {
     }
   ];
 };
-export declare const IDL: Credix = {
+export const IDL: Credix = {
   version: '3.6.0',
   name: 'credix',
   instructions: [
