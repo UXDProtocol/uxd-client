@@ -675,6 +675,45 @@ export class UXDClient {
     });
   }
 
+  public createRebalanceRequestCreateFromCredixLpDepositoryInstruction(
+    controller: Controller,
+    identityDepository: IdentityDepository,
+    mercurialVaultDepository: MercurialVaultDepository,
+    credixLpDepository: CredixLpDepository,
+    payer: PublicKey,
+    profitsBeneficiaryCollateral: PublicKey,
+    options: ConfirmOptions
+  ): TransactionInstruction {
+    return this.instruction.rebalanceRequestCreateFromCredixLpDepository({
+      accounts: {
+        payer: payer,
+        controller: controller.pda,
+        identityDepository: identityDepository.pda,
+        mercurialVaultDepository: mercurialVaultDepository.pda,
+        depository: credixLpDepository.pda,
+        depositoryCollateral: depository.depositoryCollateral,
+        depositoryShares: depository.depositoryShares,
+        collateralMint: depository.collateralMint,
+        credixProgramState: depository.credixProgramState,
+        credixGlobalMarketState: depository.credixGlobalMarketState,
+        credixSigningAuthority: depository.credixSigningAuthority,
+        credixLiquidityCollateral: depository.credixLiquidityCollateral,
+        credixSharesMint: depository.credixSharesMint,
+        credixPass: depository.credixPass,
+        credixTreasuryCollateral: depository.credixTreasuryCollateral,
+        credixMultisigKey: depository.credixMultisigKey,
+        credixMultisigCollateral: depository.credixMultisigCollateral,
+        profitsBeneficiaryCollateral: profitsBeneficiaryCollateral,
+        systemProgram: SystemProgram.programId,
+        associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+        tokenProgram: TOKEN_PROGRAM_ID,
+        credixProgram: depository.credixProgramId,
+        rent: SYSVAR_RENT_PUBKEY,
+      },
+      options,
+    });
+  }
+
   public createFreezeProgramInstruction(
     freeze: boolean,
     controller: Controller,
