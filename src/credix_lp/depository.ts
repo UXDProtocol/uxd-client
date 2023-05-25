@@ -18,6 +18,9 @@ const CREDIX_LP_INTERNAL_CREDIX_MARKETPLACE_NAMESPACE = 'credix-marketplace';
 const CREDIX_LP_INTERNAL_CREDIX_PASS_NAMESPACE = 'credix-pass';
 const CREDIX_LP_INTERNAL_PROGRAM_STATE_NAMESPACE = 'program-state';
 
+const CREDIX_LP_INTERNAL_WITHDRAW_EPOCH_NAMESPACE = 'withdraw-epoch';
+const CREDIX_LP_INTERNAL_WITHDRAW_REQUEST_NAMESPACE = 'withdraw-request';
+
 export class CredixLpDepository {
   public constructor(
     public readonly pda: PublicKey,
@@ -35,6 +38,8 @@ export class CredixLpDepository {
     public readonly credixTreasuryCollateral: PublicKey,
     public readonly credixMultisigKey: PublicKey,
     public readonly credixMultisigCollateral: PublicKey,
+    public readonly credixWithdrawEpoch: PublicKey,
+    public readonly credixWithdrawRequest: PublicKey,
     public readonly credixProgramId: PublicKey,
     public readonly credixPoolOutstandingCredit: BN,
     public readonly credixReleaseTimestamp: BN
@@ -60,30 +65,29 @@ export class CredixLpDepository {
     );
 
     // First we need to resolve the basic credix accounts address
-    const credixGlobalMarketStateAddressPromise =
+    const credixGlobalMarketState =
       this.findCredixGlobalMarketStateAddress(credixProgramId);
-    const credixProgramStateAddressPromise =
+    const credixProgramState =
       this.findCredixProgramStateAddress(credixProgramId);
 
-    // We need to resolve the credix addresses before we progress further
-    const credixGlobalMarketState = await credixGlobalMarketStateAddressPromise;
-    const credixProgramState = await credixProgramStateAddressPromise;
-
-    // Then derive remaining credix internal accounts that depends on the above
-    const credixSigningAuthorityPromise =
-      this.findCredixSigningAuthorityAddress(
-        credixGlobalMarketState,
-        credixProgramId
-      );
+    // Then derive credix internal accounts that depends on the above
+    const credixSigningAuthority = this.findCredixSigningAuthorityAddress(
+      credixGlobalMarketState,
+      credixProgramId
+    );
+    const credixLiquidityCollateral = this.findCredixLiquidityCollateralAddress(
+      credixSigningAuthority,
+      collateralMint
+    );
 
     // Then we can find the depository address
-    const depository = await this.findDepositoryAddress(
+    const depository = this.findDepositoryAddress(
       credixGlobalMarketState,
       collateralMint,
       uxdProgramId
     );
     // Then the credix pass which depends on the depository
-    const credixPass = await this.findCredixPassAddress(
+    const credixPass = this.findCredixPassAddress(
       credixGlobalMarketState,
       depository,
       credixProgramId
@@ -122,6 +126,8 @@ export class CredixLpDepository {
       collateralMint
     );
 
+    const credixLatestWithdrawEpochIdx =
+      credixGlobalMarketStateAccount.latestWithdrawEpochIdx;
     const credixPoolOutstandingCredit =
       credixGlobalMarketStateAccount.poolOutstandingCredit;
     const credixReleaseTimestamp = credixPassAccount.releaseTimestamp;
@@ -136,13 +142,21 @@ export class CredixLpDepository {
       credixSharesMint
     );
 
+    // Resolve withdraw epochs
+    const credixWithdrawEpoch = this.findCredixWithdrawEpochAddress(
+      credixGlobalMarketState,
+      credixLatestWithdrawEpochIdx,
+      credixProgramId
+    );
+    const credixWithdrawRequest = this.findCredixWithdrawRequestAddress(
+      depository,
+      credixGlobalMarketState,
+      credixLatestWithdrawEpochIdx,
+      credixProgramId
+    );
+
     // Resolve final informations when all scheduled work is done
     const collateralDecimals = await collateralDecimalsPromise;
-    const credixSigningAuthority = await credixSigningAuthorityPromise;
-    const credixLiquidityCollateral = this.findCredixLiquidityCollateralAddress(
-      credixSigningAuthority,
-      collateralMint
-    );
 
     // Done
     return new CredixLpDepository(
@@ -161,26 +175,26 @@ export class CredixLpDepository {
       credixTreasuryCollateral,
       credixMultisigKey,
       credixMultisigCollateral,
+      credixWithdrawEpoch,
+      credixWithdrawRequest,
       credixProgramId,
       credixPoolOutstandingCredit,
       credixReleaseTimestamp
     );
   }
 
-  private static async findDepositoryAddress(
+  private static findDepositoryAddress(
     credixGlobalMarketState: PublicKey,
     collateralMint: PublicKey,
     uxdProgramId: PublicKey
-  ): Promise<PublicKey> {
-    return (
-      await PublicKey.findProgramAddress(
-        [
-          Buffer.from(CREDIX_LP_DEPOSITORY_NAMESPACE),
-          credixGlobalMarketState.toBuffer(),
-          collateralMint.toBuffer(),
-        ],
-        uxdProgramId
-      )
+  ): PublicKey {
+    return PublicKey.findProgramAddressSync(
+      [
+        Buffer.from(CREDIX_LP_DEPOSITORY_NAMESPACE),
+        credixGlobalMarketState.toBuffer(),
+        collateralMint.toBuffer(),
+      ],
+      uxdProgramId
     )[0];
   }
 
@@ -198,37 +212,31 @@ export class CredixLpDepository {
     return findATAAddrSync(depository, credixSharesMint)[0];
   }
 
-  private static async findCredixProgramStateAddress(
+  private static findCredixProgramStateAddress(
     credixProgramId: PublicKey
-  ): Promise<PublicKey> {
-    return (
-      await PublicKey.findProgramAddress(
-        [Buffer.from(CREDIX_LP_INTERNAL_PROGRAM_STATE_NAMESPACE)],
-        credixProgramId
-      )
+  ): PublicKey {
+    return PublicKey.findProgramAddressSync(
+      [Buffer.from(CREDIX_LP_INTERNAL_PROGRAM_STATE_NAMESPACE)],
+      credixProgramId
     )[0];
   }
 
-  private static async findCredixGlobalMarketStateAddress(
+  private static findCredixGlobalMarketStateAddress(
     credixProgramId: PublicKey
-  ): Promise<PublicKey> {
-    return (
-      await PublicKey.findProgramAddress(
-        [Buffer.from(CREDIX_LP_INTERNAL_CREDIX_MARKETPLACE_NAMESPACE)],
-        credixProgramId
-      )
+  ): PublicKey {
+    return PublicKey.findProgramAddressSync(
+      [Buffer.from(CREDIX_LP_INTERNAL_CREDIX_MARKETPLACE_NAMESPACE)],
+      credixProgramId
     )[0];
   }
 
-  private static async findCredixSigningAuthorityAddress(
+  private static findCredixSigningAuthorityAddress(
     credixGlobalMarketState: PublicKey,
     credixProgramId: PublicKey
-  ): Promise<PublicKey> {
-    return (
-      await PublicKey.findProgramAddress(
-        [credixGlobalMarketState.toBuffer()],
-        credixProgramId
-      )
+  ): PublicKey {
+    return PublicKey.findProgramAddressSync(
+      [credixGlobalMarketState.toBuffer()],
+      credixProgramId
     )[0];
   }
 
@@ -239,20 +247,18 @@ export class CredixLpDepository {
     return findATAAddrSync(credixSigningAuthority, collateralMint)[0];
   }
 
-  private static async findCredixPassAddress(
+  private static findCredixPassAddress(
     credixGlobalMarketState: PublicKey,
     depository: PublicKey,
     credixProgramId: PublicKey
-  ): Promise<PublicKey> {
-    return (
-      await PublicKey.findProgramAddress(
-        [
-          credixGlobalMarketState.toBuffer(),
-          depository.toBuffer(),
-          Buffer.from(CREDIX_LP_INTERNAL_CREDIX_PASS_NAMESPACE),
-        ],
-        credixProgramId
-      )
+  ): PublicKey {
+    return PublicKey.findProgramAddressSync(
+      [
+        credixGlobalMarketState.toBuffer(),
+        depository.toBuffer(),
+        Buffer.from(CREDIX_LP_INTERNAL_CREDIX_PASS_NAMESPACE),
+      ],
+      credixProgramId
     )[0];
   }
 
@@ -261,6 +267,44 @@ export class CredixLpDepository {
     collateralMint: PublicKey
   ): PublicKey {
     return findATAAddrSync(credixMultisigKey, collateralMint)[0];
+  }
+
+  private static findCredixWithdrawEpochAddress(
+    credixGlobalMarketState: PublicKey,
+    credixLatestWithdrawEpochIdx: number,
+    credixProgramId: PublicKey
+  ): PublicKey {
+    return PublicKey.findProgramAddressSync(
+      [
+        credixGlobalMarketState.toBuffer(),
+        CredixLpDepository.getBufferFromLeNumber(credixLatestWithdrawEpochIdx),
+        Buffer.from(CREDIX_LP_INTERNAL_WITHDRAW_EPOCH_NAMESPACE),
+      ],
+      credixProgramId
+    )[0];
+  }
+
+  private static findCredixWithdrawRequestAddress(
+    depository: PublicKey,
+    credixGlobalMarketState: PublicKey,
+    credixLatestWithdrawEpochIdx: number,
+    credixProgramId: PublicKey
+  ) {
+    return PublicKey.findProgramAddressSync(
+      [
+        credixGlobalMarketState.toBuffer(),
+        depository.toBuffer(),
+        CredixLpDepository.getBufferFromLeNumber(credixLatestWithdrawEpochIdx),
+        Buffer.from(CREDIX_LP_INTERNAL_WITHDRAW_REQUEST_NAMESPACE),
+      ],
+      credixProgramId
+    )[0];
+  }
+
+  private static getBufferFromLeNumber(value: number): Buffer {
+    const buffer = Buffer.alloc(4);
+    buffer.writeInt32LE(value);
+    return buffer;
   }
 
   public static getCredixProgram(

@@ -675,6 +675,83 @@ export class UXDClient {
     });
   }
 
+  public createRebalanceRequestCreateFromCredixLpDepositoryInstruction(
+    controller: Controller,
+    identityDepository: IdentityDepository,
+    mercurialVaultDepository: MercurialVaultDepository,
+    credixLpDepository: CredixLpDepository,
+    payer: PublicKey,
+    options: ConfirmOptions
+  ): TransactionInstruction {
+    const collateralMintPda = identityDepository.collateralMint;
+
+    return this.instruction.rebalanceRequestCreateFromCredixLpDepository({
+      accounts: {
+        payer: payer,
+        controller: controller.pda,
+        identityDepository: identityDepository.pda,
+        mercurialVaultDepository: mercurialVaultDepository.pda,
+        depository: credixLpDepository.pda,
+        collateralMint: collateralMintPda,
+        depositoryShares: credixLpDepository.depositoryShares,
+        credixGlobalMarketState: credixLpDepository.credixGlobalMarketState,
+        credixSigningAuthority: credixLpDepository.credixSigningAuthority,
+        credixLiquidityCollateral: credixLpDepository.credixLiquidityCollateral,
+        credixSharesMint: credixLpDepository.credixSharesMint,
+        credixPass: credixLpDepository.credixPass,
+        credixWithdrawEpoch: credixLpDepository.credixWithdrawEpoch,
+        credixWithdrawRequest: credixLpDepository.credixWithdrawRequest,
+        systemProgram: SystemProgram.programId,
+        credixProgram: credixLpDepository.credixProgramId,
+      },
+      options,
+    });
+  }
+
+  public createRebalanceRequestExecuteFromCredixLpDepositoryInstruction(
+    controller: Controller,
+    identityDepository: IdentityDepository,
+    mercurialVaultDepository: MercurialVaultDepository,
+    credixLpDepository: CredixLpDepository,
+    payer: PublicKey,
+    profitsBeneficiaryCollateral: PublicKey,
+    options: ConfirmOptions
+  ): TransactionInstruction {
+    const collateralMintPda = identityDepository.collateralMint;
+
+    return this.instruction.rebalanceRequestExecuteFromCredixLpDepository({
+      accounts: {
+        payer: payer,
+        controller: controller.pda,
+        identityDepository: identityDepository.pda,
+        identityDepositoryCollateral: identityDepository.collateralVaultPda,
+        mercurialVaultDepository: mercurialVaultDepository.pda,
+        depository: credixLpDepository.pda,
+        collateralMint: collateralMintPda,
+        depositoryCollateral: credixLpDepository.depositoryCollateral,
+        depositoryShares: credixLpDepository.depositoryShares,
+        credixProgramState: credixLpDepository.credixProgramState,
+        credixGlobalMarketState: credixLpDepository.credixGlobalMarketState,
+        credixSigningAuthority: credixLpDepository.credixSigningAuthority,
+        credixLiquidityCollateral: credixLpDepository.credixLiquidityCollateral,
+        credixSharesMint: credixLpDepository.credixSharesMint,
+        credixPass: credixLpDepository.credixPass,
+        credixTreasuryCollateral: credixLpDepository.credixTreasuryCollateral,
+        credixMultisigKey: credixLpDepository.credixMultisigKey,
+        credixMultisigCollateral: credixLpDepository.credixMultisigCollateral,
+        credixWithdrawEpoch: credixLpDepository.credixWithdrawEpoch,
+        credixWithdrawRequest: credixLpDepository.credixWithdrawRequest,
+        profitsBeneficiaryCollateral: profitsBeneficiaryCollateral,
+        systemProgram: SystemProgram.programId,
+        tokenProgram: TOKEN_PROGRAM_ID,
+        associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+        credixProgram: credixLpDepository.credixProgramId,
+        rent: SYSVAR_RENT_PUBKEY,
+      },
+      options,
+    });
+  }
+
   public createFreezeProgramInstruction(
     freeze: boolean,
     controller: Controller,
