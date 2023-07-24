@@ -125,6 +125,7 @@ export class UXDClient {
   public createMintWithIdentityDepositoryInstruction(
     controller: Controller,
     depository: IdentityDepository,
+    authority: PublicKey,
     user: PublicKey,
     collateralAmount: number,
     options: ConfirmOptions,
@@ -142,6 +143,7 @@ export class UXDClient {
 
     return this.instruction.mintWithIdentityDepository(nativeCollateralAmount, {
       accounts: {
+        authority,
         user,
         payer: payer ?? user,
         controller: controller.pda,
@@ -160,6 +162,7 @@ export class UXDClient {
   public createRedeemFromIdentityDepositoryInstruction(
     controller: Controller,
     depository: IdentityDepository,
+    authority: PublicKey,
     user: PublicKey,
     redeemableAmount: number,
     options: ConfirmOptions,
@@ -178,6 +181,7 @@ export class UXDClient {
       nativeRedeemableAmount,
       {
         accounts: {
+          authority,
           user,
           payer: payer ?? user,
           controller: controller.pda,
@@ -262,6 +266,7 @@ export class UXDClient {
   public createMintWithMercurialVaultDepositoryInstruction(
     controller: Controller,
     depository: MercurialVaultDepository,
+    authority: PublicKey,
     user: PublicKey,
     collateralAmount: number,
     options: ConfirmOptions,
@@ -281,6 +286,7 @@ export class UXDClient {
       nativeCollateralAmount,
       {
         accounts: {
+          authority,
           user,
           payer: payer ?? user,
           controller: controller.pda,
@@ -307,6 +313,7 @@ export class UXDClient {
   public createRedeemFromMercurialVaultDepositoryInstruction(
     controller: Controller,
     depository: MercurialVaultDepository,
+    authority: PublicKey,
     user: PublicKey,
     redeemableAmount: number,
     options: ConfirmOptions,
@@ -326,6 +333,7 @@ export class UXDClient {
       nativeRedeemableAmount,
       {
         accounts: {
+          authority,
           user,
           payer: payer ?? user,
           controller: controller.pda,
@@ -544,6 +552,7 @@ export class UXDClient {
   public createMintWithCredixLpDepositoryInstruction(
     controller: Controller,
     depository: CredixLpDepository,
+    authority: PublicKey,
     user: PublicKey,
     collateralAmount: number,
     options: ConfirmOptions,
@@ -562,6 +571,7 @@ export class UXDClient {
 
     return this.instruction.mintWithCredixLpDepository(nativeCollateralAmount, {
       accounts: {
+        authority,
         user,
         payer: payer ?? user,
         controller: controller.pda,
