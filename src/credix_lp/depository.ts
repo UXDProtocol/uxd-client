@@ -359,6 +359,34 @@ export class CredixLpDepository {
     return credixPassAccount;
   }
 
+  public static async getCredixWithdrawEpochAccount(
+    credixProgram: Program<CredixIDL>,
+    credixWithdrawEpoch: PublicKey
+  ) {
+    const credixWithdrawEpochAccount =
+      await credixProgram.account.withdrawEpoch.fetchNullable(
+        credixWithdrawEpoch
+      );
+    if (!credixWithdrawEpochAccount) {
+      throw new Error('Could not read credixWithdrawEpoch account');
+    }
+    return credixWithdrawEpochAccount;
+  }
+
+  public static async getCredixWithdrawRequestAccount(
+    credixProgram: Program<CredixIDL>,
+    credixWithdrawRequest: PublicKey
+  ) {
+    const credixWithdrawRequestAccount =
+      await credixProgram.account.withdrawRequest.fetchNullable(
+        credixWithdrawRequest
+      );
+    if (!credixWithdrawRequestAccount) {
+      throw new Error('Could not read credixWithdrawRequest account');
+    }
+    return credixWithdrawRequestAccount;
+  }
+
   public static async getCollateralDecimals(
     connection: Connection,
     collateralMint: PublicKey
