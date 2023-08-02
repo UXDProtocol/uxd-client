@@ -8,10 +8,12 @@ export class ControllerAccount {
   authority!: PublicKey;
   redeemableMint!: PublicKey;
   redeemableMintDecimals!: number; // u16
+  isFrozen!: boolean;
   redeemableGlobalSupplyCap!: BN; // u128
   redeemableCirculatingSupply!: BN; // u128
+  registeredMercurialVaultDepositoriesCount!: number; // u8
+  registeredCredixLpDepositoriesCount!: number; // u8
   profitsTotalCollected!: BN; // u128
-  isFrozen!: boolean;
   identityDepositoryWeightBps!: number; // u16
   mercurialVaultDepositoryWeightBps!: number; // u16
   credixLpDepositoryWeightBps!: number; // u16
