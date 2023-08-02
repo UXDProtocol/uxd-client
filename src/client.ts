@@ -67,6 +67,7 @@ export class UXDClient {
         mercurialVaultDepository: PublicKey;
         credixLpDepository: PublicKey;
       };
+      limitOutflowAmountPerDay?: number;
     },
     options: ConfirmOptions
   ) {
@@ -74,6 +75,7 @@ export class UXDClient {
       redeemableGlobalSupplyCap,
       depositoriesRoutingWeightBps,
       routerDepositories,
+      limitOutflowAmountPerDay,
     } = uiFields;
     const fields = {
       redeemableGlobalSupplyCap:
@@ -89,6 +91,13 @@ export class UXDClient {
           : null,
       routerDepositories:
         routerDepositories !== undefined ? routerDepositories : null,
+      limitOutflowAmountPerDay:
+        limitOutflowAmountPerDay !== undefined
+          ? uiToNative(
+              limitOutflowAmountPerDay,
+              controller.redeemableMintDecimals
+            )
+          : null,
     };
     return this.instruction.editController(fields, {
       accounts: {
