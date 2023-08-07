@@ -20,9 +20,9 @@ export class ControllerAccount {
   credixLpDepository!: PublicKey;
   outflowLimitPerEpochAmount!: BN; // u64
   outflowLimitPerEpochBps!: number; // u16
-  secondsPerEpoch!: number; // u32
+  slotsPerEpoch!: BN; // u64
   epochOutflowAmount!: BN; // u64
-  lastOutflowTimestamp!: BN; // i64
+  lastOutflowSlot!: BN; // u64
 }
 
 // V1
