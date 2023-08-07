@@ -9,6 +9,7 @@ import {
   ConfirmOptions,
   TransactionInstruction,
   PublicKey,
+  SYSVAR_CLOCK_PUBKEY,
 } from '@solana/web3.js';
 import { Controller } from './controller';
 import { MercurialVaultDepository } from './mercurial/depository';
@@ -69,7 +70,7 @@ export class UXDClient {
       };
       outflowLimitPerEpochAmount?: number;
       outflowLimitPerEpochBps?: number;
-      secondsPerEpoch?: number;
+      slotsPerEpoch?: number;
     },
     options: ConfirmOptions
   ) {
@@ -79,7 +80,7 @@ export class UXDClient {
       routerDepositories,
       outflowLimitPerEpochAmount,
       outflowLimitPerEpochBps,
-      secondsPerEpoch,
+      slotsPerEpoch,
     } = uiFields;
     const fields = {
       redeemableGlobalSupplyCap:
@@ -104,7 +105,8 @@ export class UXDClient {
           : null,
       outflowLimitPerEpochBps:
         outflowLimitPerEpochBps !== undefined ? outflowLimitPerEpochBps : null,
-      secondsPerEpoch: secondsPerEpoch !== undefined ? secondsPerEpoch : null,
+      slotsPerEpoch:
+        slotsPerEpoch !== undefined ? uiToNative(slotsPerEpoch, 0) : null,
     };
     return this.instruction.editController(fields, {
       accounts: {
@@ -924,6 +926,7 @@ export class UXDClient {
         mercurialVaultProgram: MercurialVaultDepository.mercurialVaultProgramId,
         uxdProgram: controller.uxdProgramId,
         rent: SYSVAR_RENT_PUBKEY,
+        clock: SYSVAR_CLOCK_PUBKEY,
       },
       options,
     });
