@@ -18,6 +18,11 @@ export class ControllerAccount {
   identityDepository!: PublicKey;
   mercurialVaultDepository!: PublicKey;
   credixLpDepository!: PublicKey;
+  outflowLimitPerEpochAmount!: BN; // u64
+  outflowLimitPerEpochBps!: number; // u16
+  slotsPerEpoch!: BN; // u64
+  epochOutflowAmount!: BN; // u64
+  lastOutflowSlot!: BN; // u64
 }
 
 // V1
