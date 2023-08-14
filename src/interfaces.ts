@@ -4,6 +4,8 @@ import { PublicKey } from '@solana/web3.js';
 // As in the rust programs, see there for details and explanations
 
 export class ControllerAccount {
+  bump!: number; // u8
+  redeemableMintBump!: number; // u8
   version!: number; // u8
   authority!: PublicKey;
   redeemableMint!: PublicKey;
@@ -11,7 +13,9 @@ export class ControllerAccount {
   isFrozen!: boolean;
   redeemableGlobalSupplyCap!: BN; // u128
   redeemableCirculatingSupply!: BN; // u128
+  registeredMercurialVaultDepositories!: PublicKey[];
   registeredMercurialVaultDepositoriesCount!: number; // u8
+  registeredCredixLpDepositories!: PublicKey[];
   registeredCredixLpDepositoriesCount!: number; // u8
   profitsTotalCollected!: BN; // u128
   identityDepositoryWeightBps!: number; // u16
@@ -20,6 +24,11 @@ export class ControllerAccount {
   identityDepository!: PublicKey;
   mercurialVaultDepository!: PublicKey;
   credixLpDepository!: PublicKey;
+  outflowLimitPerEpochAmount!: BN; // u64
+  outflowLimitPerEpochBps!: number; // u16
+  slotsPerEpoch!: BN; // u64
+  epochOutflowAmount!: BN; // u64
+  lastOutflowSlot!: BN; // u64
 }
 
 // V1

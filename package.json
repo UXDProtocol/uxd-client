@@ -1,6 +1,6 @@
 {
   "name": "@uxd-protocol/uxd-client",
-  "version": "8.1.0-rc2",
+  "version": "8.1.4-rc3",
   "description": "JavaScript Client for the UXD Solana Program",
   "keywords": [
     "solana",
