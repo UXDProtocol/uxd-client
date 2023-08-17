@@ -104,3 +104,94 @@ Each instruction require the DAO's authority to sign the transaction.
 - `mint_with_credix_lp_depository`
 - `redeem_from_credix_lp_depository`
 
+## How to use
+
+### Javascript
+
+Complete example for a UXD mint:
+
+```ts
+import { PublicKey, Connection } from '@solana/web3.js';
+import { UXDClient } from '@uxd-protocol/uxd-client';
+import { Controller } from '@uxd-protocol/uxd-client';
+import { IdentityDepository } from '@uxd-protocol/uxd-client';
+import { MercurialVaultDepository } from '@uxd-protocol/uxd-client';
+import { CredixLpDepository } from '@uxd-protocol/uxd-client';
+import { Controller } from '@uxd-protocol/uxd-client';
+
+const uxdProgramId = new PublicKey('UXD8m9cvwk4RcSxnX2HZ9VudQCEeDH6fRnB4CAP57Dr');
+const usdcMint = new PublicKey('EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v');
+
+/**
+ * Initialize UXD's data sources
+ */
+const client = new UXDClient(uxdProgramId);
+const connection = new Connection('https://api.mainnet-beta.solana.com');
+const controller = new Controller('UXD', 6, uxdProgramId);
+const identityDepository = new IdentityDepository(
+  usdcMint,
+  'USDC',
+  6,
+  uxdProgramId
+);
+const mercurialVaultDepository = await MercurialVaultDepository.initialize({
+  connection: connection,
+  collateralMint: {
+    mint: usdcMint,
+    name: 'USDC',
+    symbol: 'USDC',
+    decimals: 6,
+  },
+  uxdProgramId,
+});
+const credixLpDepository = await CredixLpDepository.initialize({
+  connection: connection,
+  uxdProgramId: uxdProgramId,
+  collateralMint: usdcMint,
+  collateralSymbol: 'USDC',
+  credixProgramId: new PublicKey(
+    'CRDx2YkdtYtGZXGHZ59wNv1EwKHQndnRc1gT4p8i2vPX'
+  ),
+});
+
+/**
+ * Generate and process the mint instruction and transaction
+ */
+const user: Signer = new Keypair(); // Use your keys here
+const TXN_OPTS = {
+  commitment: 'confirmed',
+  preflightCommitment: 'confirmed',
+  skipPreflight: true,
+};
+
+const mintInstruction = client.createMintWithCredixLpDepositoryInstruction(
+  controller,
+  identityDepository,
+  mercurialVaultDepository,
+  credixLpDepository,
+  user,
+  42, // ui amount to mint
+  TXN_OPTS
+);
+const mintTransaction = new Transaction();
+mintTransaction.add(rebalanceRedeemInstruction);
+mintTransaction.add(
+  ComputeBudgetProgram.setComputeUnitLimit({
+    units: 400_000,
+  })
+);
+mintTransaction.feePayer = user.publicKey;
+
+const mintResult = await web3.sendAndConfirmTransaction(
+  connection,
+  mintTransaction,
+  [user],
+  TXN_OPTS
+);
+```
+
+### Rust
+
+For a rust-based CPI call, please checkout the uxd-cpi repository:
+
+https://github.com/UXDProtocol/uxd-cpi
