@@ -174,7 +174,7 @@ const mintInstruction = client.createMintWithCredixLpDepositoryInstruction(
   TXN_OPTS
 );
 const mintTransaction = new Transaction();
-mintTransaction.add(mintTransaction);
+mintTransaction.add(mintInstruction);
 mintTransaction.add(
   ComputeBudgetProgram.setComputeUnitLimit({
     units: 400_000,
