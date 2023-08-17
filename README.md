@@ -111,7 +111,7 @@ Each instruction require the DAO's authority to sign the transaction.
 Complete example for a UXD mint:
 
 ```ts
-import { PublicKey, Connection } from '@solana/web3.js';
+import { PublicKey, Connection, ComputeBudgetProgram } from '@solana/web3.js';
 import { UXDClient } from '@uxd-protocol/uxd-client';
 import { Controller } from '@uxd-protocol/uxd-client';
 import { IdentityDepository } from '@uxd-protocol/uxd-client';
@@ -174,7 +174,7 @@ const mintInstruction = client.createMintWithCredixLpDepositoryInstruction(
   TXN_OPTS
 );
 const mintTransaction = new Transaction();
-mintTransaction.add(rebalanceRedeemInstruction);
+mintTransaction.add(mintTransaction);
 mintTransaction.add(
   ComputeBudgetProgram.setComputeUnitLimit({
     units: 400_000,
