@@ -51,6 +51,7 @@ export class MercurialVaultDepository {
     connection,
     collateralMint,
     uxdProgramId,
+    vaultBaseOverride,
   }: {
     connection: Connection;
     collateralMint: {
@@ -60,6 +61,7 @@ export class MercurialVaultDepository {
       decimals: number;
     };
     uxdProgramId: PublicKey;
+    vaultBaseOverride?: PublicKey;
   }): Promise<MercurialVaultDepository> {
     const provider = new AnchorProvider(
       connection,
@@ -72,11 +74,12 @@ export class MercurialVaultDepository {
       provider
     );
 
+    const vaultBaseKey = vaultBaseOverride ? vaultBaseOverride : VAULT_BASE_KEY;
     const [vaultPda] = PublicKey.findProgramAddressSync(
       [
         Buffer.from('vault'),
         collateralMint.mint.toBuffer(),
-        VAULT_BASE_KEY.toBuffer(),
+        vaultBaseKey.toBuffer(),
       ],
       MercurialVaultDepository.mercurialVaultProgramId
     );
