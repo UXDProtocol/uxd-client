@@ -9901,7 +9901,7 @@ export type Credix = {
     }
   ];
 };
-export const IDL = {
+export const IDL: Credix = {
   version: '3.11.0',
   name: 'credix',
   instructions: [

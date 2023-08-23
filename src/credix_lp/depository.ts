@@ -329,7 +329,7 @@ export class CredixLpDepository {
       );
     if (!credixGlobalMarketStateAccount) {
       throw new Error(
-        'Could not read credixGlobalMarketState account:' +
+        'Could not read credixGlobalMarketState account: ' +
           credixGlobalMarketState.toString()
       );
     }
@@ -346,7 +346,7 @@ export class CredixLpDepository {
       );
     if (!credixProgramStateAccount) {
       throw new Error(
-        'Could not read credixProgramState account:' +
+        'Could not read credixProgramState account: ' +
           credixProgramState.toString()
       );
     }
@@ -361,7 +361,7 @@ export class CredixLpDepository {
       await credixProgram.account.credixPass.fetchNullable(credixPass);
     if (!credixPassAccount) {
       throw new Error(
-        'Could not read credixPass account:' + credixPass.toString()
+        'Could not read credixPass account: ' + credixPass.toString()
       );
     }
     return credixPassAccount;
@@ -377,7 +377,7 @@ export class CredixLpDepository {
       );
     if (!credixWithdrawEpochAccount) {
       throw new Error(
-        'Could not read credixWithdrawEpoch account:' +
+        'Could not read credixWithdrawEpoch account: ' +
           credixWithdrawEpoch.toString()
       );
     }
@@ -394,7 +394,7 @@ export class CredixLpDepository {
       );
     if (!credixWithdrawRequestAccount) {
       throw new Error(
-        'Could not read credixWithdrawRequest account:' +
+        'Could not read credixWithdrawRequest account: ' +
           credixWithdrawRequest.toString()
       );
     }
@@ -408,7 +408,7 @@ export class CredixLpDepository {
     const collateralMintData = await getMint(connection, collateralMint);
     if (!collateralMintData) {
       throw new Error(
-        'Could not read collateralMint account:' + collateralMint.toString()
+        'Could not read collateralMint account: ' + collateralMint.toString()
       );
     }
     return collateralMintData.decimals;
