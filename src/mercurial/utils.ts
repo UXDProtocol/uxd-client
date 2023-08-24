@@ -26,6 +26,9 @@ export function getAmountByShare(
   withdrawableAmount: BN,
   totalSupply: BN
 ): BN {
+  if (totalSupply.isZero()) {
+    return new BN(0);
+  }
   return share.mul(withdrawableAmount).div(totalSupply);
 }
 

@@ -1,5 +1,5 @@
 export type Credix = {
-  version: '3.9.0';
+  version: '3.11.0';
   name: 'credix';
   instructions: [
     {
@@ -1166,9 +1166,34 @@ export type Credix = {
       name: 'repayDeal';
       accounts: [
         {
-          name: 'borrower';
+          name: 'signer';
           isMut: true;
           isSigner: true;
+        },
+        {
+          name: 'borrower';
+          isMut: false;
+          isSigner: false;
+        },
+        {
+          name: 'marketAdmins';
+          isMut: false;
+          isSigner: false;
+          pda: {
+            seeds: [
+              {
+                kind: 'account';
+                type: 'publicKey';
+                account: 'GlobalMarketState';
+                path: 'global_market_state';
+              },
+              {
+                kind: 'const';
+                type: 'string';
+                value: 'admins';
+              }
+            ];
+          };
         },
         {
           name: 'deal';
@@ -1345,11 +1370,6 @@ export type Credix = {
           };
         },
         {
-          name: 'tokenProgram';
-          isMut: false;
-          isSigner: false;
-        },
-        {
           name: 'credixMultisigKey';
           isMut: false;
           isSigner: false;
@@ -1374,12 +1394,18 @@ export type Credix = {
           };
         },
         {
+          name: 'variableInterestRates';
+          isMut: false;
+          isSigner: false;
+          isOptional: true;
+        },
+        {
           name: 'associatedTokenProgram';
           isMut: false;
           isSigner: false;
         },
         {
-          name: 'rent';
+          name: 'tokenProgram';
           isMut: false;
           isSigner: false;
         },
@@ -1485,6 +1511,11 @@ export type Credix = {
           name: 'collectionTokenAccount';
           isMut: true;
           isSigner: false;
+        },
+        {
+          name: 'arrangementFeeCollectionAuthority';
+          isMut: false;
+          isSigner: false;
           pda: {
             seeds: [
               {
@@ -1502,10 +1533,15 @@ export type Credix = {
               {
                 kind: 'const';
                 type: 'string';
-                value: 'collection-token-account';
+                value: 'arrangement-fee-collection';
               }
             ];
           };
+        },
+        {
+          name: 'arrangementFeeCollectionTokenAccount';
+          isMut: true;
+          isSigner: false;
         },
         {
           name: 'systemProgram';
@@ -1529,6 +1565,135 @@ export type Credix = {
           type: 'publicKey';
         }
       ];
+    },
+    {
+      name: 'returnFundsToBorrower';
+      accounts: [
+        {
+          name: 'owner';
+          isMut: false;
+          isSigner: true;
+        },
+        {
+          name: 'globalMarketState';
+          isMut: false;
+          isSigner: false;
+        },
+        {
+          name: 'marketAdmins';
+          isMut: false;
+          isSigner: false;
+          pda: {
+            seeds: [
+              {
+                kind: 'account';
+                type: 'publicKey';
+                account: 'GlobalMarketState';
+                path: 'global_market_state';
+              },
+              {
+                kind: 'const';
+                type: 'string';
+                value: 'admins';
+              }
+            ];
+          };
+        },
+        {
+          name: 'signingAuthority';
+          isMut: false;
+          isSigner: false;
+          pda: {
+            seeds: [
+              {
+                kind: 'account';
+                type: 'publicKey';
+                account: 'GlobalMarketState';
+                path: 'global_market_state';
+              }
+            ];
+          };
+        },
+        {
+          name: 'deal';
+          isMut: false;
+          isSigner: false;
+          pda: {
+            seeds: [
+              {
+                kind: 'account';
+                type: 'publicKey';
+                account: 'GlobalMarketState';
+                path: 'global_market_state';
+              },
+              {
+                kind: 'account';
+                type: 'publicKey';
+                account: 'Deal';
+                path: 'deal.borrower';
+              },
+              {
+                kind: 'account';
+                type: 'u16';
+                account: 'Deal';
+                path: 'deal.deal_number';
+              },
+              {
+                kind: 'const';
+                type: 'string';
+                value: 'deal-info';
+              }
+            ];
+          };
+        },
+        {
+          name: 'collectionTokenAccount';
+          isMut: true;
+          isSigner: false;
+        },
+        {
+          name: 'arrangementFeeCollectionTokenAccount';
+          isMut: true;
+          isSigner: false;
+        },
+        {
+          name: 'arrangementFeeCollectionAuthority';
+          isMut: false;
+          isSigner: false;
+          pda: {
+            seeds: [
+              {
+                kind: 'account';
+                type: 'publicKey';
+                account: 'GlobalMarketState';
+                path: 'global_market_state';
+              },
+              {
+                kind: 'account';
+                type: 'publicKey';
+                account: 'Deal';
+                path: 'deal';
+              },
+              {
+                kind: 'const';
+                type: 'string';
+                value: 'arrangement-fee-collection';
+              }
+            ];
+          };
+        },
+        {
+          name: 'offRampTokenAccount';
+          isMut: true;
+          isSigner: false;
+        },
+        {
+          name: 'tokenProgram';
+          isMut: false;
+          isSigner: false;
+        }
+      ];
+      args: [];
     },
     {
       name: 'withdrawFunds';
@@ -1609,7 +1774,7 @@ export type Credix = {
         },
         {
           name: 'credixPass';
-          isMut: false;
+          isMut: true;
           isSigner: false;
           pda: {
             seeds: [
@@ -1773,6 +1938,12 @@ export type Credix = {
         {
           name: 'bypassWithdrawEpochs';
           type: 'bool';
+        },
+        {
+          name: 'amountCap';
+          type: {
+            option: 'u64';
+          };
         }
       ];
     },
@@ -1878,6 +2049,12 @@ export type Credix = {
         {
           name: 'bypassWithdrawEpochs';
           type: 'bool';
+        },
+        {
+          name: 'amountCap';
+          type: {
+            option: 'u64';
+          };
         }
       ];
     },
@@ -1998,6 +2175,26 @@ export type Credix = {
           name: 'metadataPda';
           isMut: true;
           isSigner: false;
+          pda: {
+            seeds: [
+              {
+                kind: 'const';
+                type: 'string';
+                value: 'metadata';
+              },
+              {
+                kind: 'account';
+                type: 'publicKey';
+                path: 'token_metadata_program';
+              },
+              {
+                kind: 'account';
+                type: 'publicKey';
+                account: 'Mint';
+                path: 'mint';
+              }
+            ];
+          };
         },
         {
           name: 'mint';
@@ -3467,6 +3664,11 @@ export type Credix = {
                 kind: 'arg';
                 type: 'string';
                 path: 'borrower_name';
+              },
+              {
+                kind: 'const';
+                type: 'string';
+                value: 'managed-borrower';
               }
             ];
           };
@@ -4090,13 +4292,53 @@ export type Credix = {
       name: 'repayArrangementFees';
       accounts: [
         {
-          name: 'borrower';
+          name: 'signer';
           isMut: true;
           isSigner: true;
         },
         {
-          name: 'globalMarketState';
+          name: 'borrower';
+          isMut: true;
+          isSigner: false;
+        },
+        {
+          name: 'marketAdmins';
           isMut: false;
+          isSigner: false;
+          pda: {
+            seeds: [
+              {
+                kind: 'account';
+                type: 'publicKey';
+                account: 'GlobalMarketState';
+                path: 'global_market_state';
+              },
+              {
+                kind: 'const';
+                type: 'string';
+                value: 'admins';
+              }
+            ];
+          };
+        },
+        {
+          name: 'signingAuthority';
+          isMut: false;
+          isSigner: false;
+          pda: {
+            seeds: [
+              {
+                kind: 'account';
+                type: 'publicKey';
+                account: 'GlobalMarketState';
+                path: 'global_market_state';
+              }
+            ];
+          };
+        },
+        {
+          name: 'globalMarketState';
+          isMut: true;
           isSigner: false;
         },
         {
@@ -4160,6 +4402,33 @@ export type Credix = {
                 kind: 'const';
                 type: 'string';
                 value: 'program-state';
+              }
+            ];
+          };
+        },
+        {
+          name: 'arrangementFeeCollectionAuthority';
+          isMut: false;
+          isSigner: false;
+          isOptional: true;
+          pda: {
+            seeds: [
+              {
+                kind: 'account';
+                type: 'publicKey';
+                account: 'GlobalMarketState';
+                path: 'global_market_state';
+              },
+              {
+                kind: 'account';
+                type: 'publicKey';
+                account: 'Deal';
+                path: 'deal';
+              },
+              {
+                kind: 'const';
+                type: 'string';
+                value: 'arrangement-fee-collection';
               }
             ];
           };
@@ -4400,7 +4669,7 @@ export type Credix = {
         },
         {
           name: 'credixPass';
-          isMut: false;
+          isMut: true;
           isSigner: false;
           pda: {
             seeds: [
@@ -5885,107 +6154,6 @@ export type Credix = {
       ];
     },
     {
-      name: 'updateInterestRepaidUntilLastUpscale';
-      accounts: [
-        {
-          name: 'owner';
-          isMut: false;
-          isSigner: true;
-        },
-        {
-          name: 'marketAdmins';
-          isMut: false;
-          isSigner: false;
-          pda: {
-            seeds: [
-              {
-                kind: 'account';
-                type: 'publicKey';
-                account: 'GlobalMarketState';
-                path: 'global_market_state';
-              },
-              {
-                kind: 'const';
-                type: 'string';
-                value: 'admins';
-              }
-            ];
-          };
-        },
-        {
-          name: 'globalMarketState';
-          isMut: false;
-          isSigner: false;
-        },
-        {
-          name: 'deal';
-          isMut: true;
-          isSigner: false;
-          pda: {
-            seeds: [
-              {
-                kind: 'account';
-                type: 'publicKey';
-                account: 'GlobalMarketState';
-                path: 'global_market_state';
-              },
-              {
-                kind: 'account';
-                type: 'publicKey';
-                account: 'Deal';
-                path: 'deal.borrower';
-              },
-              {
-                kind: 'account';
-                type: 'u16';
-                account: 'Deal';
-                path: 'deal.deal_number';
-              },
-              {
-                kind: 'const';
-                type: 'string';
-                value: 'deal-info';
-              }
-            ];
-          };
-        },
-        {
-          name: 'dealTranches';
-          isMut: true;
-          isSigner: false;
-          pda: {
-            seeds: [
-              {
-                kind: 'account';
-                type: 'publicKey';
-                account: 'GlobalMarketState';
-                path: 'global_market_state';
-              },
-              {
-                kind: 'account';
-                type: 'publicKey';
-                account: 'Deal';
-                path: 'deal';
-              },
-              {
-                kind: 'const';
-                type: 'string';
-                value: 'tranches';
-              }
-            ];
-          };
-        }
-      ];
-      args: [
-        {
-          name: 'trancheInterestRepaid';
-          type: {
-            vec: 'u64';
-          };
-        }
-      ];
-    },
-    {
       name: 'depositFromRemote';
       docs: [
         'Remaining accounts are required for this instruction check `WormholeAccounts` to know the address.'
@@ -6278,7 +6446,7 @@ export type Credix = {
         },
         {
           name: 'credixPass';
-          isMut: false;
+          isMut: true;
           isSigner: false;
           pda: {
             seeds: [
@@ -6628,202 +6796,12 @@ export type Credix = {
               }
             ];
           };
-        }
-      ];
-      args: [];
-    },
-    {
-      name: 'migrateDealTranches';
-      accounts: [
-        {
-          name: 'owner';
-          isMut: true;
-          isSigner: true;
         },
         {
-          name: 'globalMarketState';
+          name: 'variableInterestRates';
           isMut: false;
           isSigner: false;
-        },
-        {
-          name: 'marketAdmins';
-          isMut: false;
-          isSigner: false;
-          pda: {
-            seeds: [
-              {
-                kind: 'account';
-                type: 'publicKey';
-                account: 'GlobalMarketState';
-                path: 'global_market_state';
-              },
-              {
-                kind: 'const';
-                type: 'string';
-                value: 'admins';
-              }
-            ];
-          };
-        },
-        {
-          name: 'deal';
-          isMut: false;
-          isSigner: false;
-        },
-        {
-          name: 'repaymentSchedule';
-          isMut: false;
-          isSigner: false;
-          pda: {
-            seeds: [
-              {
-                kind: 'account';
-                type: 'publicKey';
-                account: 'GlobalMarketState';
-                path: 'global_market_state';
-              },
-              {
-                kind: 'account';
-                type: 'publicKey';
-                path: 'deal';
-              },
-              {
-                kind: 'const';
-                type: 'string';
-                value: 'repayment-schedule';
-              }
-            ];
-          };
-        },
-        {
-          name: 'dealTranches';
-          isMut: true;
-          isSigner: false;
-          pda: {
-            seeds: [
-              {
-                kind: 'account';
-                type: 'publicKey';
-                account: 'GlobalMarketState';
-                path: 'global_market_state';
-              },
-              {
-                kind: 'account';
-                type: 'publicKey';
-                path: 'deal';
-              },
-              {
-                kind: 'const';
-                type: 'string';
-                value: 'tranches';
-              }
-            ];
-          };
-        }
-      ];
-      args: [
-        {
-          name: 'trancheRates';
-          type: {
-            vec: {
-              defined: 'Fraction';
-            };
-          };
-        }
-      ];
-    },
-    {
-      name: 'migrateRepaymentSchedule';
-      accounts: [
-        {
-          name: 'owner';
-          isMut: true;
-          isSigner: true;
-        },
-        {
-          name: 'globalMarketState';
-          isMut: false;
-          isSigner: false;
-        },
-        {
-          name: 'marketAdmins';
-          isMut: false;
-          isSigner: false;
-          pda: {
-            seeds: [
-              {
-                kind: 'account';
-                type: 'publicKey';
-                account: 'GlobalMarketState';
-                path: 'global_market_state';
-              },
-              {
-                kind: 'const';
-                type: 'string';
-                value: 'admins';
-              }
-            ];
-          };
-        },
-        {
-          name: 'deal';
-          isMut: false;
-          isSigner: false;
-        },
-        {
-          name: 'repaymentSchedule';
-          isMut: true;
-          isSigner: false;
-          pda: {
-            seeds: [
-              {
-                kind: 'account';
-                type: 'publicKey';
-                account: 'GlobalMarketState';
-                path: 'global_market_state';
-              },
-              {
-                kind: 'account';
-                type: 'publicKey';
-                path: 'deal';
-              },
-              {
-                kind: 'const';
-                type: 'string';
-                value: 'repayment-schedule';
-              }
-            ];
-          };
-        },
-        {
-          name: 'dealTranches';
-          isMut: false;
-          isSigner: false;
-          pda: {
-            seeds: [
-              {
-                kind: 'account';
-                type: 'publicKey';
-                account: 'GlobalMarketState';
-                path: 'global_market_state';
-              },
-              {
-                kind: 'account';
-                type: 'publicKey';
-                path: 'deal';
-              },
-              {
-                kind: 'const';
-                type: 'string';
-                value: 'tranches';
-              }
-            ];
-          };
-        },
-        {
-          name: 'systemProgram';
-          isMut: false;
-          isSigner: false;
+          isOptional: true;
         }
       ];
       args: [];
@@ -6837,26 +6815,15 @@ export type Credix = {
           isSigner: true;
         },
         {
-          name: 'globalMarketState';
-          isMut: false;
-          isSigner: false;
-        },
-        {
-          name: 'marketAdmins';
+          name: 'programState';
           isMut: false;
           isSigner: false;
           pda: {
             seeds: [
               {
-                kind: 'account';
-                type: 'publicKey';
-                account: 'GlobalMarketState';
-                path: 'global_market_state';
-              },
-              {
                 kind: 'const';
                 type: 'string';
-                value: 'admins';
+                value: 'program-state';
               }
             ];
           };
@@ -6865,141 +6832,28 @@ export type Credix = {
           name: 'deal';
           isMut: true;
           isSigner: false;
-        },
-        {
-          name: 'repaymentSchedule';
-          isMut: false;
-          isSigner: false;
-          pda: {
-            seeds: [
-              {
-                kind: 'account';
-                type: 'publicKey';
-                account: 'GlobalMarketState';
-                path: 'global_market_state';
-              },
-              {
-                kind: 'account';
-                type: 'publicKey';
-                path: 'deal';
-              },
-              {
-                kind: 'const';
-                type: 'string';
-                value: 'repayment-schedule';
-              }
-            ];
-          };
-        },
-        {
-          name: 'dealTranches';
-          isMut: false;
-          isSigner: false;
-          pda: {
-            seeds: [
-              {
-                kind: 'account';
-                type: 'publicKey';
-                account: 'GlobalMarketState';
-                path: 'global_market_state';
-              },
-              {
-                kind: 'account';
-                type: 'publicKey';
-                path: 'deal';
-              },
-              {
-                kind: 'const';
-                type: 'string';
-                value: 'tranches';
-              }
-            ];
-          };
         }
       ];
       args: [];
     },
     {
-      name: 'migrateProgramAndMarket';
+      name: 'migrateDealTranches';
       accounts: [
         {
           name: 'owner';
           isMut: true;
           isSigner: true;
-        },
-        {
-          name: 'globalMarketState';
-          isMut: true;
-          isSigner: false;
         },
         {
           name: 'programState';
-          isMut: true;
-          isSigner: false;
-        }
-      ];
-      args: [];
-    },
-    {
-      name: 'updateMigratedTranches';
-      accounts: [
-        {
-          name: 'owner';
-          isMut: true;
-          isSigner: true;
-        },
-        {
-          name: 'globalMarketState';
-          isMut: false;
-          isSigner: false;
-        },
-        {
-          name: 'marketAdmins';
           isMut: false;
           isSigner: false;
           pda: {
             seeds: [
               {
-                kind: 'account';
-                type: 'publicKey';
-                account: 'GlobalMarketState';
-                path: 'global_market_state';
-              },
-              {
                 kind: 'const';
                 type: 'string';
-                value: 'admins';
-              }
-            ];
-          };
-        },
-        {
-          name: 'deal';
-          isMut: true;
-          isSigner: false;
-        },
-        {
-          name: 'repaymentSchedule';
-          isMut: false;
-          isSigner: false;
-          pda: {
-            seeds: [
-              {
-                kind: 'account';
-                type: 'publicKey';
-                account: 'GlobalMarketState';
-                path: 'global_market_state';
-              },
-              {
-                kind: 'account';
-                type: 'publicKey';
-                account: 'Deal';
-                path: 'deal';
-              },
-              {
-                kind: 'const';
-                type: 'string';
-                value: 'repayment-schedule';
+                value: 'program-state';
               }
             ];
           };
@@ -7008,180 +6862,11 @@ export type Credix = {
           name: 'dealTranches';
           isMut: true;
           isSigner: false;
-          pda: {
-            seeds: [
-              {
-                kind: 'account';
-                type: 'publicKey';
-                account: 'GlobalMarketState';
-                path: 'global_market_state';
-              },
-              {
-                kind: 'account';
-                type: 'publicKey';
-                account: 'Deal';
-                path: 'deal';
-              },
-              {
-                kind: 'const';
-                type: 'string';
-                value: 'tranches';
-              }
-            ];
-          };
-        }
-      ];
-      args: [
-        {
-          name: 'adjustments';
-          type: {
-            vec: {
-              defined: 'Adjustments';
-            };
-          };
-        }
-      ];
-    },
-    {
-      name: 'migrateInvestorTranche';
-      accounts: [
-        {
-          name: 'owner';
-          isMut: true;
-          isSigner: true;
         },
         {
-          name: 'globalMarketState';
+          name: 'systemProgram';
           isMut: false;
           isSigner: false;
-        },
-        {
-          name: 'marketAdmins';
-          isMut: false;
-          isSigner: false;
-          pda: {
-            seeds: [
-              {
-                kind: 'account';
-                type: 'publicKey';
-                account: 'GlobalMarketState';
-                path: 'global_market_state';
-              },
-              {
-                kind: 'const';
-                type: 'string';
-                value: 'admins';
-              }
-            ];
-          };
-        },
-        {
-          name: 'deal';
-          isMut: false;
-          isSigner: false;
-          pda: {
-            seeds: [
-              {
-                kind: 'account';
-                type: 'publicKey';
-                account: 'GlobalMarketState';
-                path: 'global_market_state';
-              },
-              {
-                kind: 'account';
-                type: 'publicKey';
-                account: 'Deal';
-                path: 'deal.borrower';
-              },
-              {
-                kind: 'account';
-                type: 'u16';
-                account: 'Deal';
-                path: 'deal.deal_number';
-              },
-              {
-                kind: 'const';
-                type: 'string';
-                value: 'deal-info';
-              }
-            ];
-          };
-        },
-        {
-          name: 'tranchePass';
-          isMut: true;
-          isSigner: false;
-          pda: {
-            seeds: [
-              {
-                kind: 'account';
-                type: 'publicKey';
-                account: 'GlobalMarketState';
-                path: 'global_market_state';
-              },
-              {
-                kind: 'account';
-                type: 'publicKey';
-                account: 'TranchePass';
-                path: 'tranche_pass.investor';
-              },
-              {
-                kind: 'account';
-                type: 'publicKey';
-                account: 'TranchePass';
-                path: 'tranche_pass.deal';
-              },
-              {
-                kind: 'account';
-                type: 'u8';
-                account: 'TranchePass';
-                path: 'tranche_pass.tranche_index';
-              },
-              {
-                kind: 'const';
-                type: 'string';
-                value: 'tranche-pass';
-              }
-            ];
-          };
-        },
-        {
-          name: 'investorTranche';
-          isMut: true;
-          isSigner: false;
-          pda: {
-            seeds: [
-              {
-                kind: 'account';
-                type: 'publicKey';
-                account: 'GlobalMarketState';
-                path: 'global_market_state';
-              },
-              {
-                kind: 'account';
-                type: 'publicKey';
-                account: 'TranchePass';
-                path: 'tranche_pass.investor';
-              },
-              {
-                kind: 'account';
-                type: 'publicKey';
-                account: 'TranchePass';
-                path: 'tranche_pass.deal';
-              },
-              {
-                kind: 'account';
-                type: 'u8';
-                account: 'TranchePass';
-                path: 'tranche_pass.tranche_index';
-              },
-              {
-                kind: 'const';
-                type: 'string';
-                value: 'tranche';
-              }
-            ];
-          };
         }
       ];
       args: [];
@@ -7189,7 +6874,95 @@ export type Credix = {
   ];
   accounts: [
     {
-      name: 'investorTranche';
+      name: 'deserializableDeal';
+      type: {
+        kind: 'struct';
+        fields: [
+          {
+            name: 'name';
+            type: 'string';
+          },
+          {
+            name: 'borrower';
+            type: 'publicKey';
+          },
+          {
+            name: 'amountWithdrawn';
+            type: 'u64';
+          },
+          {
+            name: 'goLiveAt';
+            type: 'i64';
+          },
+          {
+            name: 'createdAt';
+            type: 'i64';
+          },
+          {
+            name: 'maxFundingDuration';
+            type: 'u8';
+          },
+          {
+            name: 'dealNumber';
+            type: 'u16';
+          },
+          {
+            name: 'bump';
+            type: 'u8';
+          },
+          {
+            name: 'openedAt';
+            type: 'i64';
+          },
+          {
+            name: 'arrangementFees';
+            type: 'u64';
+          },
+          {
+            name: 'arrangementFeesRepaid';
+            type: 'u64';
+          },
+          {
+            name: 'timeLatestArrangementFeesCharged';
+            type: 'i64';
+          },
+          {
+            name: 'migrated';
+            type: 'bool';
+          },
+          {
+            name: 'originalGoLiveAt';
+            type: 'i64';
+          },
+          {
+            name: 'prevUpdateTs';
+            type: {
+              option: 'i64';
+            };
+          },
+          {
+            name: 'arrangementFee';
+            type: {
+              defined: 'Fraction';
+            };
+          },
+          {
+            name: 'collectionTokenAccount';
+            type: {
+              option: 'publicKey';
+            };
+          },
+          {
+            name: 'offRampTokenAccount';
+            type: {
+              option: 'publicKey';
+            };
+          }
+        ];
+      };
+    },
+    {
+      name: 'mainnetDealTranches';
       type: {
         kind: 'struct';
         fields: [
@@ -7198,16 +6971,16 @@ export type Credix = {
             type: 'u8';
           },
           {
-            name: 'trancheIndex';
+            name: 'totalTranches';
             type: 'u8';
           },
           {
-            name: 'investor';
-            type: 'publicKey';
-          },
-          {
-            name: 'amountWithdrawn';
-            type: 'u64';
+            name: 'tranches';
+            type: {
+              vec: {
+                defined: 'MainnetDealTranche';
+              };
+            };
           }
         ];
       };
@@ -7264,6 +7037,14 @@ export type Credix = {
           {
             name: 'bypassWithdrawEpochs';
             type: 'bool';
+          },
+          {
+            name: 'withdrawCap';
+            type: {
+              option: {
+                defined: 'WithdrawCap';
+              };
+            };
           }
         ];
       };
@@ -7429,12 +7210,20 @@ export type Credix = {
           },
           {
             name: 'collectionTokenAccount';
+            docs: ['It is the associated token account for the deals.'];
             type: {
               option: 'publicKey';
             };
           },
           {
             name: 'offRampTokenAccount';
+            type: {
+              option: 'publicKey';
+            };
+          },
+          {
+            name: 'arrangementFeeCollectionAuthority';
+            docs: ['This is the authority of the associated token account.'];
             type: {
               option: 'publicKey';
             };
@@ -7749,6 +7538,62 @@ export type Credix = {
   ];
   types: [
     {
+      name: 'MainnetDealTranche';
+      type: {
+        kind: 'struct';
+        fields: [
+          {
+            name: 'index';
+            type: 'u8';
+          },
+          {
+            name: 'amountDeposited';
+            type: 'u64';
+          },
+          {
+            name: 'tokenMint';
+            type: 'publicKey';
+          },
+          {
+            name: 'maxDepositPercentage';
+            type: {
+              defined: 'Fraction';
+            };
+          },
+          {
+            name: 'earlyWithdrawalPrincipal';
+            type: 'bool';
+          },
+          {
+            name: 'optionalAccount';
+            type: 'bool';
+          },
+          {
+            name: 'upscaleSize';
+            type: 'u64';
+          },
+          {
+            name: 'interestRepaidUntilLastUpscale';
+            type: 'u64';
+          },
+          {
+            name: 'fundedByLiquidityPool';
+            type: 'bool';
+          },
+          {
+            name: 'name';
+            type: 'string';
+          },
+          {
+            name: 'tranche';
+            type: {
+              defined: 'Tranche';
+            };
+          }
+        ];
+      };
+    },
+    {
       name: 'TrancheConfig';
       type: {
         kind: 'struct';
@@ -7820,202 +7665,76 @@ export type Credix = {
             type: {
               defined: 'Fraction';
             };
-          }
-        ];
-      };
-    },
-    {
-      name: 'Adjustments';
-      type: {
-        kind: 'struct';
-        fields: [
-          {
-            name: 'trancheIndex';
-            type: 'u8';
           },
           {
-            name: 'interestAdjustment';
-            type: 'i64';
-          },
-          {
-            name: 'interestPrincipalAdjustment';
-            type: 'i64';
-          }
-        ];
-      };
-    },
-    {
-      name: 'OldDealTranches';
-      type: {
-        kind: 'struct';
-        fields: [
-          {
-            name: 'bump';
-            type: 'u8';
-          },
-          {
-            name: 'totalTranches';
-            type: 'u8';
-          },
-          {
-            name: 'tranches';
+            name: 'variableRate';
             type: {
-              array: [
-                {
-                  defined: 'OldDealTranche';
-                },
-                10
-              ];
+              defined: 'VariableRate';
             };
           }
         ];
       };
     },
     {
-      name: 'OldDealTranche';
+      name: 'Collection';
       type: {
         kind: 'struct';
         fields: [
           {
-            name: 'index';
-            type: 'u8';
+            name: 'verified';
+            type: 'bool';
           },
           {
-            name: 'size';
-            type: 'u64';
-          },
+            name: 'key';
+            type: 'publicKey';
+          }
+        ];
+      };
+    },
+    {
+      name: 'Creator';
+      type: {
+        kind: 'struct';
+        fields: [
           {
-            name: 'expectedReturn';
-            type: {
-              defined: 'Fraction';
-            };
-          },
-          {
-            name: 'amountDeposited';
-            type: 'u64';
-          },
-          {
-            name: 'interestRepaid';
-            type: 'u64';
-          },
-          {
-            name: 'principalRepaid';
-            type: 'u64';
-          },
-          {
-            name: 'tokenMint';
+            name: 'address';
             type: 'publicKey';
           },
           {
-            name: 'maxDepositPercentage';
-            type: {
-              defined: 'Fraction';
-            };
-          },
-          {
-            name: 'earlyWithdrawalInterest';
+            name: 'verified';
             type: 'bool';
           },
           {
-            name: 'earlyWithdrawalPrincipal';
-            type: 'bool';
-          },
-          {
-            name: 'withdrawableInterest';
-            type: {
-              defined: 'Fraction';
-            };
-          },
-          {
-            name: 'withdrawablePrincipal';
-            type: {
-              defined: 'Fraction';
-            };
-          },
-          {
-            name: 'optionalAccount';
-            type: 'bool';
-          },
-          {
-            name: 'upscaleSize';
-            type: 'u64';
-          },
-          {
-            name: 'interestRepaidUntilLastUpscale';
-            type: 'u64';
-          },
-          {
-            name: 'padding';
-            docs: ['Reserved size for extra fields'];
-            type: {
-              array: ['u8', 11];
-            };
-          }
-        ];
-      };
-    },
-    {
-      name: 'OldRepaymentSchedule';
-      type: {
-        kind: 'struct';
-        fields: [
-          {
-            name: 'periodDuration';
+            name: 'share';
             type: 'u8';
-          },
-          {
-            name: 'daysInYear';
-            type: 'u16';
-          },
-          {
-            name: 'totalPeriods';
-            type: 'u16';
-          },
-          {
-            name: 'periods';
-            type: {
-              vec: {
-                defined: 'OldRepaymentPeriod';
-              };
-            };
           }
         ];
       };
     },
     {
-      name: 'OldRepaymentPeriod';
+      name: 'Uses';
       type: {
         kind: 'struct';
         fields: [
           {
-            name: 'principal';
+            name: 'useMethod';
+            type: {
+              defined: 'UseMethod';
+            };
+          },
+          {
+            name: 'remaining';
             type: 'u64';
           },
           {
-            name: 'interest';
-            type: 'u64';
-          },
-          {
-            name: 'totalInterestExpected';
-            type: 'u64';
-          },
-          {
-            name: 'totalPrincipalExpected';
-            type: 'u64';
-          },
-          {
-            name: 'principalRepaid';
-            type: 'u64';
-          },
-          {
-            name: 'interestRepaid';
+            name: 'total';
             type: 'u64';
           }
         ];
       };
     },
     {
-      name: 'OldDeal';
+      name: 'DataV2';
       type: {
         kind: 'struct';
         fields: [
@@ -8024,357 +7743,58 @@ export type Credix = {
             type: 'string';
           },
           {
-            name: 'borrower';
-            type: 'publicKey';
-          },
-          {
-            name: 'amountWithdrawn';
-            docs: [
-              'The principal amount withdrawn from deal token account by borrower'
-            ];
-            type: 'u64';
-          },
-          {
-            name: 'fixedLateFeePercentage';
-            type: {
-              defined: 'Fraction';
-            };
-          },
-          {
-            name: 'earlyRedemptionFees';
-            type: 'u64';
-          },
-          {
-            name: 'earlyRedemptionFeesRepaid';
-            type: 'u64';
-          },
-          {
-            name: 'unusedField1';
-            type: 'u16';
-          },
-          {
-            name: 'goLiveAt';
-            type: 'i64';
-          },
-          {
-            name: 'createdAt';
-            type: 'i64';
-          },
-          {
-            name: 'maxFundingDuration';
-            docs: [
-              'The number of days after tranche investors can call burn tranches if the deal does not goes live.'
-            ];
-            type: 'u8';
-          },
-          {
-            name: 'slashInterestToPrincipal';
-            type: 'bool';
-          },
-          {
-            name: 'slashPrincipalToInterest';
-            type: 'bool';
-          },
-          {
-            name: 'unusedField2';
-            type: {
-              array: ['u8', 6];
-            };
-          },
-          {
-            name: 'dealNumber';
-            type: 'u16';
-          },
-          {
-            name: 'bump';
-            type: 'u8';
-          },
-          {
-            name: 'fixedLateFees';
-            type: 'u64';
-          },
-          {
-            name: 'lateFeesRepaid';
-            type: 'u64';
-          },
-          {
-            name: 'defaulted';
-            type: 'bool';
-          },
-          {
-            name: 'trueWaterfall';
-            type: 'bool';
-          },
-          {
-            name: 'openedAt';
-            type: 'i64';
-          },
-          {
-            name: 'performanceFeePercentage';
-            docs: [
-              'Percentage of the interest share taken as the fees [asset manager fees + credix fees]'
-            ];
-            type: {
-              defined: 'Fraction';
-            };
-          },
-          {
-            name: 'gracePeriod';
-            docs: [
-              'The number of days after the due date that no late fees are applied'
-            ];
-            type: 'u8';
-          },
-          {
-            name: 'variableLateFees';
-            type: 'u64';
-          },
-          {
-            name: 'variableLateFeePercentage';
-            type: {
-              defined: 'Fraction';
-            };
-          },
-          {
-            name: 'serviceFeePercentage';
-            docs: [
-              'The percentage of the outstanding principal that is charged as an annual fee, going to the asset manager’s treasury (+ credix’ treasury)'
-            ];
-            type: {
-              defined: 'Fraction';
-            };
-          },
-          {
-            name: 'serviceFees';
-            type: 'u64';
-          },
-          {
-            name: 'serviceFeesRepaid';
-            type: 'u64';
-          },
-          {
-            name: 'yearLatestServiceFeesCharged';
-            docs: [
-              'Used to keep track of the year service fee is charged for.'
-            ];
-            type: 'u8';
-          },
-          {
-            name: 'migrated';
-            docs: ['true when we bring off chain deal onchain.'];
-            type: 'bool';
-          },
-          {
-            name: 'originalGoLiveAt';
-            docs: [
-              'When upscaling we store the `go_live_at` timestamp here and reset `go_live_at`.',
-              'We do this so the deal is no longer regarded as in progress, requiring a new activation.',
-              'Across all upscales, the initial point of activation should always be regarded as the `go_live_at` so we need to be able to restore it.'
-            ];
-            type: 'i64';
-          }
-        ];
-      };
-    },
-    {
-      name: 'ExpectedAmounts';
-      type: {
-        kind: 'struct';
-        fields: [
-          {
-            name: 'principal';
-            type: 'u64';
-          },
-          {
-            name: 'interest';
-            type: 'u64';
-          }
-        ];
-      };
-    },
-    {
-      name: 'OldProgramState';
-      type: {
-        kind: 'struct';
-        fields: [
-          {
-            name: 'credixMultisigKey';
-            type: 'publicKey';
-          },
-          {
-            name: 'credixManagers';
-            type: {
-              array: ['publicKey', 10];
-            };
-          },
-          {
-            name: 'credixPerformanceFeePercentage';
-            docs: [
-              'Percentage of the interest share taken as the fees [asset manager fees + credix fees]'
-            ];
-            type: {
-              defined: 'Fraction';
-            };
-          },
-          {
-            name: 'credixServiceFeePercentage';
-            docs: ['Percentage of credix share in the performance fees'];
-            type: {
-              defined: 'Fraction';
-            };
-          }
-        ];
-      };
-    },
-    {
-      name: 'OldGlobalMarketState';
-      type: {
-        kind: 'struct';
-        fields: [
-          {
-            name: 'unusedPubkey';
-            type: 'publicKey';
-          },
-          {
-            name: 'baseTokenMint';
-            type: 'publicKey';
-          },
-          {
-            name: 'lpTokenMint';
-            type: 'publicKey';
-          },
-          {
-            name: 'poolOutstandingCredit';
-            docs: ['The amount from senior tranche lent'];
-            type: 'u64';
-          },
-          {
-            name: 'treasuryPoolTokenAccount';
-            type: 'publicKey';
-          },
-          {
-            name: 'signingAuthorityBump';
-            type: 'u8';
-          },
-          {
-            name: 'bump';
-            type: 'u8';
-          },
-          {
-            name: 'performanceFee';
-            docs: [
-              'The percentage of interest share collected as fees[asset manager fees + credix share]'
-            ];
-            type: {
-              defined: 'Fraction';
-            };
-          },
-          {
-            name: 'withdrawalFee';
-            docs: ['The fee charged for withdrawals'];
-            type: {
-              defined: 'Fraction';
-            };
-          },
-          {
-            name: 'frozen';
-            type: 'bool';
-          },
-          {
-            name: 'seed';
+            name: 'symbol';
             type: 'string';
           },
           {
-            name: 'gracePeriod';
-            docs: [
-              'The number of days after the due date that no late fees are applied'
-            ];
-            type: 'u8';
+            name: 'uri';
+            type: 'string';
           },
           {
-            name: 'fixedLateFeePercentage';
+            name: 'sellerFeeBasisPoints';
+            type: 'u16';
+          },
+          {
+            name: 'creators';
             type: {
-              defined: 'Fraction';
+              option: {
+                vec: {
+                  defined: 'Creator';
+                };
+              };
             };
           },
           {
-            name: 'variableLateFeePercentage';
+            name: 'collection';
             type: {
-              defined: 'Fraction';
+              option: {
+                defined: 'Collection';
+              };
             };
           },
           {
-            name: 'serviceFeePercentage';
+            name: 'uses';
             type: {
-              defined: 'Fraction';
+              option: {
+                defined: 'Uses';
+              };
             };
-          },
+          }
+        ];
+      };
+    },
+    {
+      name: 'WithdrawCap';
+      type: {
+        kind: 'struct';
+        fields: [
           {
-            name: 'credixPerformanceFeePercentage';
-            docs: [
-              'The percentage of the credix_performance_fee_percentage going to the Credix treasury'
-            ];
-            type: {
-              defined: 'Fraction';
-            };
-          },
-          {
-            name: 'credixServiceFeePercentage';
-            docs: [
-              'The percentage of the service_fee going to the Credix treasury'
-            ];
-            type: {
-              defined: 'Fraction';
-            };
-          },
-          {
-            name: 'poolSizeLimitPercentage';
-            docs: [
-              'Maximum possible deposit limit in addition the pool outstanding credit',
-              'pool_size_limit = pool_outstanding_credit + pool_size_limit_percentage * pool_outstanding_credit'
-            ];
-            type: {
-              defined: 'Fraction';
-            };
-          },
-          {
-            name: 'withdrawEpochRequestSeconds';
-            type: 'u32';
-          },
-          {
-            name: 'withdrawEpochRedeemSeconds';
-            type: 'u32';
-          },
-          {
-            name: 'withdrawEpochAvailableLiquiditySeconds';
-            type: 'u32';
-          },
-          {
-            name: 'latestWithdrawEpochIdx';
-            type: 'u32';
-          },
-          {
-            name: 'latestWithdrawEpochEnd';
-            type: 'i64';
-          },
-          {
-            name: 'lockedLiquidity';
+            name: 'amountCap';
             type: 'u64';
           },
           {
-            name: 'totalRedeemedBaseAmount';
+            name: 'amountWithdrawn';
             type: 'u64';
-          },
-          {
-            name: 'hasWithdrawEpochs';
-            type: 'bool';
-          },
-          {
-            name: 'redeemAuthorityBump';
-            docs: [
-              'This is only used for wormhole related token transfer occurs.'
-            ];
-            type: 'u8';
           }
         ];
       };
@@ -8515,6 +7935,18 @@ export type Credix = {
             name: 'tranche';
             type: {
               defined: 'Tranche';
+            };
+          },
+          {
+            name: 'variableRate';
+            type: {
+              defined: 'VariableRate';
+            };
+          },
+          {
+            name: 'dataPadding';
+            type: {
+              array: ['u32', 20];
             };
           }
         ];
@@ -8979,6 +8411,37 @@ export type Credix = {
           {
             name: 'targetChain';
             type: 'u16';
+          }
+        ];
+      };
+    },
+    {
+      name: 'UseMethod';
+      type: {
+        kind: 'enum';
+        variants: [
+          {
+            name: 'Burn';
+          },
+          {
+            name: 'Multiple';
+          },
+          {
+            name: 'Single';
+          }
+        ];
+      };
+    },
+    {
+      name: 'VariableRate';
+      type: {
+        kind: 'enum';
+        variants: [
+          {
+            name: 'None';
+          },
+          {
+            name: 'SOFR';
           }
         ];
       };
@@ -9500,56 +8963,6 @@ export type Credix = {
         {
           name: 'globalMarketStateSeed';
           type: 'string';
-          index: false;
-        }
-      ];
-    },
-    {
-      name: 'DepositTrancheEvent';
-      fields: [
-        {
-          name: 'major';
-          type: 'u8';
-          index: true;
-        },
-        {
-          name: 'minor';
-          type: 'u8';
-          index: false;
-        },
-        {
-          name: 'patch';
-          type: 'u8';
-          index: false;
-        },
-        {
-          name: 'timestamp';
-          type: 'i64';
-          index: false;
-        },
-        {
-          name: 'market';
-          type: 'publicKey';
-          index: false;
-        },
-        {
-          name: 'deal';
-          type: 'publicKey';
-          index: false;
-        },
-        {
-          name: 'trancheIndex';
-          type: 'u8';
-          index: false;
-        },
-        {
-          name: 'investor';
-          type: 'publicKey';
-          index: false;
-        },
-        {
-          name: 'amount';
-          type: 'u64';
           index: false;
         }
       ];
@@ -10104,7 +9517,7 @@ export type Credix = {
     {
       code: 6020;
       name: 'DealNotOpenForActivation';
-      msg: 'A deal can only be activated once all tranches(except for the senior tranche at index 1) have been filled.';
+      msg: 'A deal can only be activated once all tranches(except for tranches funded by pool) have been filled.';
     },
     {
       code: 6021;
@@ -10460,11 +9873,36 @@ export type Credix = {
       code: 6091;
       name: 'BorrowerTokenAccountMissing';
       msg: 'Borrower Token Account is required to withdraw from the deal';
+    },
+    {
+      code: 6092;
+      name: 'InvalidCollectionTokenAccount';
+      msg: 'Collection Token Account has to be same as set in the deal account';
+    },
+    {
+      code: 6093;
+      name: 'CredixPassAmountWithdrawnMissing';
+      msg: 'Amount withdrawn is expected to be present in credix pass';
+    },
+    {
+      code: 6094;
+      name: 'InvalidArrangementFeeCollectionTokenAccount';
+      msg: 'Arrangement Fee Collection Token Account has to same as set in the deal account';
+    },
+    {
+      code: 6095;
+      name: 'VariableInterestRateAccountMissing';
+      msg: 'Tranches use variable rates but VariableInterestRate account not provided';
+    },
+    {
+      code: 6096;
+      name: 'MissingArrangementFeeCollectionAuthority';
+      msg: 'Arrangement Fee Collection authority Missing';
     }
   ];
 };
 export const IDL: Credix = {
-  version: '3.9.0',
+  version: '3.11.0',
   name: 'credix',
   instructions: [
     {
@@ -11631,9 +11069,34 @@ export const IDL: Credix = {
       name: 'repayDeal',
       accounts: [
         {
-          name: 'borrower',
+          name: 'signer',
           isMut: true,
           isSigner: true,
+        },
+        {
+          name: 'borrower',
+          isMut: false,
+          isSigner: false,
+        },
+        {
+          name: 'marketAdmins',
+          isMut: false,
+          isSigner: false,
+          pda: {
+            seeds: [
+              {
+                kind: 'account',
+                type: 'publicKey',
+                account: 'GlobalMarketState',
+                path: 'global_market_state',
+              },
+              {
+                kind: 'const',
+                type: 'string',
+                value: 'admins',
+              },
+            ],
+          },
         },
         {
           name: 'deal',
@@ -11810,11 +11273,6 @@ export const IDL: Credix = {
           },
         },
         {
-          name: 'tokenProgram',
-          isMut: false,
-          isSigner: false,
-        },
-        {
           name: 'credixMultisigKey',
           isMut: false,
           isSigner: false,
@@ -11839,12 +11297,18 @@ export const IDL: Credix = {
           },
         },
         {
+          name: 'variableInterestRates',
+          isMut: false,
+          isSigner: false,
+          isOptional: true,
+        },
+        {
           name: 'associatedTokenProgram',
           isMut: false,
           isSigner: false,
         },
         {
-          name: 'rent',
+          name: 'tokenProgram',
           isMut: false,
           isSigner: false,
         },
@@ -11950,6 +11414,11 @@ export const IDL: Credix = {
           name: 'collectionTokenAccount',
           isMut: true,
           isSigner: false,
+        },
+        {
+          name: 'arrangementFeeCollectionAuthority',
+          isMut: false,
+          isSigner: false,
           pda: {
             seeds: [
               {
@@ -11967,10 +11436,15 @@ export const IDL: Credix = {
               {
                 kind: 'const',
                 type: 'string',
-                value: 'collection-token-account',
+                value: 'arrangement-fee-collection',
               },
             ],
           },
+        },
+        {
+          name: 'arrangementFeeCollectionTokenAccount',
+          isMut: true,
+          isSigner: false,
         },
         {
           name: 'systemProgram',
@@ -11994,6 +11468,135 @@ export const IDL: Credix = {
           type: 'publicKey',
         },
       ],
+    },
+    {
+      name: 'returnFundsToBorrower',
+      accounts: [
+        {
+          name: 'owner',
+          isMut: false,
+          isSigner: true,
+        },
+        {
+          name: 'globalMarketState',
+          isMut: false,
+          isSigner: false,
+        },
+        {
+          name: 'marketAdmins',
+          isMut: false,
+          isSigner: false,
+          pda: {
+            seeds: [
+              {
+                kind: 'account',
+                type: 'publicKey',
+                account: 'GlobalMarketState',
+                path: 'global_market_state',
+              },
+              {
+                kind: 'const',
+                type: 'string',
+                value: 'admins',
+              },
+            ],
+          },
+        },
+        {
+          name: 'signingAuthority',
+          isMut: false,
+          isSigner: false,
+          pda: {
+            seeds: [
+              {
+                kind: 'account',
+                type: 'publicKey',
+                account: 'GlobalMarketState',
+                path: 'global_market_state',
+              },
+            ],
+          },
+        },
+        {
+          name: 'deal',
+          isMut: false,
+          isSigner: false,
+          pda: {
+            seeds: [
+              {
+                kind: 'account',
+                type: 'publicKey',
+                account: 'GlobalMarketState',
+                path: 'global_market_state',
+              },
+              {
+                kind: 'account',
+                type: 'publicKey',
+                account: 'Deal',
+                path: 'deal.borrower',
+              },
+              {
+                kind: 'account',
+                type: 'u16',
+                account: 'Deal',
+                path: 'deal.deal_number',
+              },
+              {
+                kind: 'const',
+                type: 'string',
+                value: 'deal-info',
+              },
+            ],
+          },
+        },
+        {
+          name: 'collectionTokenAccount',
+          isMut: true,
+          isSigner: false,
+        },
+        {
+          name: 'arrangementFeeCollectionTokenAccount',
+          isMut: true,
+          isSigner: false,
+        },
+        {
+          name: 'arrangementFeeCollectionAuthority',
+          isMut: false,
+          isSigner: false,
+          pda: {
+            seeds: [
+              {
+                kind: 'account',
+                type: 'publicKey',
+                account: 'GlobalMarketState',
+                path: 'global_market_state',
+              },
+              {
+                kind: 'account',
+                type: 'publicKey',
+                account: 'Deal',
+                path: 'deal',
+              },
+              {
+                kind: 'const',
+                type: 'string',
+                value: 'arrangement-fee-collection',
+              },
+            ],
+          },
+        },
+        {
+          name: 'offRampTokenAccount',
+          isMut: true,
+          isSigner: false,
+        },
+        {
+          name: 'tokenProgram',
+          isMut: false,
+          isSigner: false,
+        },
+      ],
+      args: [],
     },
     {
       name: 'withdrawFunds',
@@ -12074,7 +11677,7 @@ export const IDL: Credix = {
         },
         {
           name: 'credixPass',
-          isMut: false,
+          isMut: true,
           isSigner: false,
           pda: {
             seeds: [
@@ -12239,6 +11842,12 @@ export const IDL: Credix = {
           name: 'bypassWithdrawEpochs',
           type: 'bool',
         },
+        {
+          name: 'amountCap',
+          type: {
+            option: 'u64',
+          },
+        },
       ],
     },
     {
@@ -12343,6 +11952,12 @@ export const IDL: Credix = {
         {
           name: 'bypassWithdrawEpochs',
           type: 'bool',
+        },
+        {
+          name: 'amountCap',
+          type: {
+            option: 'u64',
+          },
         },
       ],
     },
@@ -12463,6 +12078,26 @@ export const IDL: Credix = {
           name: 'metadataPda',
           isMut: true,
           isSigner: false,
+          pda: {
+            seeds: [
+              {
+                kind: 'const',
+                type: 'string',
+                value: 'metadata',
+              },
+              {
+                kind: 'account',
+                type: 'publicKey',
+                path: 'token_metadata_program',
+              },
+              {
+                kind: 'account',
+                type: 'publicKey',
+                account: 'Mint',
+                path: 'mint',
+              },
+            ],
+          },
         },
         {
           name: 'mint',
@@ -13933,6 +13568,11 @@ export const IDL: Credix = {
                 type: 'string',
                 path: 'borrower_name',
               },
+              {
+                kind: 'const',
+                type: 'string',
+                value: 'managed-borrower',
+              },
             ],
           },
         },
@@ -14555,13 +14195,53 @@ export const IDL: Credix = {
       name: 'repayArrangementFees',
       accounts: [
         {
-          name: 'borrower',
+          name: 'signer',
           isMut: true,
           isSigner: true,
         },
         {
-          name: 'globalMarketState',
+          name: 'borrower',
+          isMut: true,
+          isSigner: false,
+        },
+        {
+          name: 'marketAdmins',
           isMut: false,
+          isSigner: false,
+          pda: {
+            seeds: [
+              {
+                kind: 'account',
+                type: 'publicKey',
+                account: 'GlobalMarketState',
+                path: 'global_market_state',
+              },
+              {
+                kind: 'const',
+                type: 'string',
+                value: 'admins',
+              },
+            ],
+          },
+        },
+        {
+          name: 'signingAuthority',
+          isMut: false,
+          isSigner: false,
+          pda: {
+            seeds: [
+              {
+                kind: 'account',
+                type: 'publicKey',
+                account: 'GlobalMarketState',
+                path: 'global_market_state',
+              },
+            ],
+          },
+        },
+        {
+          name: 'globalMarketState',
+          isMut: true,
           isSigner: false,
         },
         {
@@ -14625,6 +14305,33 @@ export const IDL: Credix = {
                 kind: 'const',
                 type: 'string',
                 value: 'program-state',
+              },
+            ],
+          },
+        },
+        {
+          name: 'arrangementFeeCollectionAuthority',
+          isMut: false,
+          isSigner: false,
+          isOptional: true,
+          pda: {
+            seeds: [
+              {
+                kind: 'account',
+                type: 'publicKey',
+                account: 'GlobalMarketState',
+                path: 'global_market_state',
+              },
+              {
+                kind: 'account',
+                type: 'publicKey',
+                account: 'Deal',
+                path: 'deal',
+              },
+              {
+                kind: 'const',
+                type: 'string',
+                value: 'arrangement-fee-collection',
               },
             ],
           },
@@ -14865,7 +14572,7 @@ export const IDL: Credix = {
         },
         {
           name: 'credixPass',
-          isMut: false,
+          isMut: true,
           isSigner: false,
           pda: {
             seeds: [
@@ -16350,107 +16057,6 @@ export const IDL: Credix = {
       ],
     },
     {
-      name: 'updateInterestRepaidUntilLastUpscale',
-      accounts: [
-        {
-          name: 'owner',
-          isMut: false,
-          isSigner: true,
-        },
-        {
-          name: 'marketAdmins',
-          isMut: false,
-          isSigner: false,
-          pda: {
-            seeds: [
-              {
-                kind: 'account',
-                type: 'publicKey',
-                account: 'GlobalMarketState',
-                path: 'global_market_state',
-              },
-              {
-                kind: 'const',
-                type: 'string',
-                value: 'admins',
-              },
-            ],
-          },
-        },
-        {
-          name: 'globalMarketState',
-          isMut: false,
-          isSigner: false,
-        },
-        {
-          name: 'deal',
-          isMut: true,
-          isSigner: false,
-          pda: {
-            seeds: [
-              {
-                kind: 'account',
-                type: 'publicKey',
-                account: 'GlobalMarketState',
-                path: 'global_market_state',
-              },
-              {
-                kind: 'account',
-                type: 'publicKey',
-                account: 'Deal',
-                path: 'deal.borrower',
-              },
-              {
-                kind: 'account',
-                type: 'u16',
-                account: 'Deal',
-                path: 'deal.deal_number',
-              },
-              {
-                kind: 'const',
-                type: 'string',
-                value: 'deal-info',
-              },
-            ],
-          },
-        },
-        {
-          name: 'dealTranches',
-          isMut: true,
-          isSigner: false,
-          pda: {
-            seeds: [
-              {
-                kind: 'account',
-                type: 'publicKey',
-                account: 'GlobalMarketState',
-                path: 'global_market_state',
-              },
-              {
-                kind: 'account',
-                type: 'publicKey',
-                account: 'Deal',
-                path: 'deal',
-              },
-              {
-                kind: 'const',
-                type: 'string',
-                value: 'tranches',
-              },
-            ],
-          },
-        },
-      ],
-      args: [
-        {
-          name: 'trancheInterestRepaid',
-          type: {
-            vec: 'u64',
-          },
-        },
-      ],
-    },
-    {
       name: 'depositFromRemote',
       docs: [
         'Remaining accounts are required for this instruction check `WormholeAccounts` to know the address.',
@@ -16743,7 +16349,7 @@ export const IDL: Credix = {
         },
         {
           name: 'credixPass',
-          isMut: false,
+          isMut: true,
           isSigner: false,
           pda: {
             seeds: [
@@ -17094,201 +16700,11 @@ export const IDL: Credix = {
             ],
           },
         },
-      ],
-      args: [],
-    },
-    {
-      name: 'migrateDealTranches',
-      accounts: [
         {
-          name: 'owner',
-          isMut: true,
-          isSigner: true,
-        },
-        {
-          name: 'globalMarketState',
+          name: 'variableInterestRates',
           isMut: false,
           isSigner: false,
-        },
-        {
-          name: 'marketAdmins',
-          isMut: false,
-          isSigner: false,
-          pda: {
-            seeds: [
-              {
-                kind: 'account',
-                type: 'publicKey',
-                account: 'GlobalMarketState',
-                path: 'global_market_state',
-              },
-              {
-                kind: 'const',
-                type: 'string',
-                value: 'admins',
-              },
-            ],
-          },
-        },
-        {
-          name: 'deal',
-          isMut: false,
-          isSigner: false,
-        },
-        {
-          name: 'repaymentSchedule',
-          isMut: false,
-          isSigner: false,
-          pda: {
-            seeds: [
-              {
-                kind: 'account',
-                type: 'publicKey',
-                account: 'GlobalMarketState',
-                path: 'global_market_state',
-              },
-              {
-                kind: 'account',
-                type: 'publicKey',
-                path: 'deal',
-              },
-              {
-                kind: 'const',
-                type: 'string',
-                value: 'repayment-schedule',
-              },
-            ],
-          },
-        },
-        {
-          name: 'dealTranches',
-          isMut: true,
-          isSigner: false,
-          pda: {
-            seeds: [
-              {
-                kind: 'account',
-                type: 'publicKey',
-                account: 'GlobalMarketState',
-                path: 'global_market_state',
-              },
-              {
-                kind: 'account',
-                type: 'publicKey',
-                path: 'deal',
-              },
-              {
-                kind: 'const',
-                type: 'string',
-                value: 'tranches',
-              },
-            ],
-          },
-        },
-      ],
-      args: [
-        {
-          name: 'trancheRates',
-          type: {
-            vec: {
-              defined: 'Fraction',
-            },
-          },
-        },
-      ],
-    },
-    {
-      name: 'migrateRepaymentSchedule',
-      accounts: [
-        {
-          name: 'owner',
-          isMut: true,
-          isSigner: true,
-        },
-        {
-          name: 'globalMarketState',
-          isMut: false,
-          isSigner: false,
-        },
-        {
-          name: 'marketAdmins',
-          isMut: false,
-          isSigner: false,
-          pda: {
-            seeds: [
-              {
-                kind: 'account',
-                type: 'publicKey',
-                account: 'GlobalMarketState',
-                path: 'global_market_state',
-              },
-              {
-                kind: 'const',
-                type: 'string',
-                value: 'admins',
-              },
-            ],
-          },
-        },
-        {
-          name: 'deal',
-          isMut: false,
-          isSigner: false,
-        },
-        {
-          name: 'repaymentSchedule',
-          isMut: true,
-          isSigner: false,
-          pda: {
-            seeds: [
-              {
-                kind: 'account',
-                type: 'publicKey',
-                account: 'GlobalMarketState',
-                path: 'global_market_state',
-              },
-              {
-                kind: 'account',
-                type: 'publicKey',
-                path: 'deal',
-              },
-              {
-                kind: 'const',
-                type: 'string',
-                value: 'repayment-schedule',
-              },
-            ],
-          },
-        },
-        {
-          name: 'dealTranches',
-          isMut: false,
-          isSigner: false,
-          pda: {
-            seeds: [
-              {
-                kind: 'account',
-                type: 'publicKey',
-                account: 'GlobalMarketState',
-                path: 'global_market_state',
-              },
-              {
-                kind: 'account',
-                type: 'publicKey',
-                path: 'deal',
-              },
-              {
-                kind: 'const',
-                type: 'string',
-                value: 'tranches',
-              },
-            ],
-          },
-        },
-        {
-          name: 'systemProgram',
-          isMut: false,
-          isSigner: false,
+          isOptional: true,
         },
       ],
       args: [],
@@ -17302,26 +16718,15 @@ export const IDL: Credix = {
           isSigner: true,
         },
         {
-          name: 'globalMarketState',
-          isMut: false,
-          isSigner: false,
-        },
-        {
-          name: 'marketAdmins',
+          name: 'programState',
           isMut: false,
           isSigner: false,
           pda: {
             seeds: [
               {
-                kind: 'account',
-                type: 'publicKey',
-                account: 'GlobalMarketState',
-                path: 'global_market_state',
-              },
-              {
                 kind: 'const',
                 type: 'string',
-                value: 'admins',
+                value: 'program-state',
               },
             ],
           },
@@ -17331,140 +16736,27 @@ export const IDL: Credix = {
           isMut: true,
           isSigner: false,
         },
-        {
-          name: 'repaymentSchedule',
-          isMut: false,
-          isSigner: false,
-          pda: {
-            seeds: [
-              {
-                kind: 'account',
-                type: 'publicKey',
-                account: 'GlobalMarketState',
-                path: 'global_market_state',
-              },
-              {
-                kind: 'account',
-                type: 'publicKey',
-                path: 'deal',
-              },
-              {
-                kind: 'const',
-                type: 'string',
-                value: 'repayment-schedule',
-              },
-            ],
-          },
-        },
-        {
-          name: 'dealTranches',
-          isMut: false,
-          isSigner: false,
-          pda: {
-            seeds: [
-              {
-                kind: 'account',
-                type: 'publicKey',
-                account: 'GlobalMarketState',
-                path: 'global_market_state',
-              },
-              {
-                kind: 'account',
-                type: 'publicKey',
-                path: 'deal',
-              },
-              {
-                kind: 'const',
-                type: 'string',
-                value: 'tranches',
-              },
-            ],
-          },
-        },
       ],
       args: [],
     },
     {
-      name: 'migrateProgramAndMarket',
+      name: 'migrateDealTranches',
       accounts: [
         {
           name: 'owner',
           isMut: true,
           isSigner: true,
-        },
-        {
-          name: 'globalMarketState',
-          isMut: true,
-          isSigner: false,
         },
         {
           name: 'programState',
-          isMut: true,
-          isSigner: false,
-        },
-      ],
-      args: [],
-    },
-    {
-      name: 'updateMigratedTranches',
-      accounts: [
-        {
-          name: 'owner',
-          isMut: true,
-          isSigner: true,
-        },
-        {
-          name: 'globalMarketState',
-          isMut: false,
-          isSigner: false,
-        },
-        {
-          name: 'marketAdmins',
           isMut: false,
           isSigner: false,
           pda: {
             seeds: [
               {
-                kind: 'account',
-                type: 'publicKey',
-                account: 'GlobalMarketState',
-                path: 'global_market_state',
-              },
-              {
                 kind: 'const',
                 type: 'string',
-                value: 'admins',
-              },
-            ],
-          },
-        },
-        {
-          name: 'deal',
-          isMut: true,
-          isSigner: false,
-        },
-        {
-          name: 'repaymentSchedule',
-          isMut: false,
-          isSigner: false,
-          pda: {
-            seeds: [
-              {
-                kind: 'account',
-                type: 'publicKey',
-                account: 'GlobalMarketState',
-                path: 'global_market_state',
-              },
-              {
-                kind: 'account',
-                type: 'publicKey',
-                account: 'Deal',
-                path: 'deal',
-              },
-              {
-                kind: 'const',
-                type: 'string',
-                value: 'repayment-schedule',
+                value: 'program-state',
               },
             ],
           },
@@ -17473,180 +16765,11 @@ export const IDL: Credix = {
           name: 'dealTranches',
           isMut: true,
           isSigner: false,
-          pda: {
-            seeds: [
-              {
-                kind: 'account',
-                type: 'publicKey',
-                account: 'GlobalMarketState',
-                path: 'global_market_state',
-              },
-              {
-                kind: 'account',
-                type: 'publicKey',
-                account: 'Deal',
-                path: 'deal',
-              },
-              {
-                kind: 'const',
-                type: 'string',
-                value: 'tranches',
-              },
-            ],
-          },
-        },
-      ],
-      args: [
-        {
-          name: 'adjustments',
-          type: {
-            vec: {
-              defined: 'Adjustments',
-            },
-          },
-        },
-      ],
-    },
-    {
-      name: 'migrateInvestorTranche',
-      accounts: [
-        {
-          name: 'owner',
-          isMut: true,
-          isSigner: true,
         },
         {
-          name: 'globalMarketState',
+          name: 'systemProgram',
           isMut: false,
           isSigner: false,
-        },
-        {
-          name: 'marketAdmins',
-          isMut: false,
-          isSigner: false,
-          pda: {
-            seeds: [
-              {
-                kind: 'account',
-                type: 'publicKey',
-                account: 'GlobalMarketState',
-                path: 'global_market_state',
-              },
-              {
-                kind: 'const',
-                type: 'string',
-                value: 'admins',
-              },
-            ],
-          },
-        },
-        {
-          name: 'deal',
-          isMut: false,
-          isSigner: false,
-          pda: {
-            seeds: [
-              {
-                kind: 'account',
-                type: 'publicKey',
-                account: 'GlobalMarketState',
-                path: 'global_market_state',
-              },
-              {
-                kind: 'account',
-                type: 'publicKey',
-                account: 'Deal',
-                path: 'deal.borrower',
-              },
-              {
-                kind: 'account',
-                type: 'u16',
-                account: 'Deal',
-                path: 'deal.deal_number',
-              },
-              {
-                kind: 'const',
-                type: 'string',
-                value: 'deal-info',
-              },
-            ],
-          },
-        },
-        {
-          name: 'tranchePass',
-          isMut: true,
-          isSigner: false,
-          pda: {
-            seeds: [
-              {
-                kind: 'account',
-                type: 'publicKey',
-                account: 'GlobalMarketState',
-                path: 'global_market_state',
-              },
-              {
-                kind: 'account',
-                type: 'publicKey',
-                account: 'TranchePass',
-                path: 'tranche_pass.investor',
-              },
-              {
-                kind: 'account',
-                type: 'publicKey',
-                account: 'TranchePass',
-                path: 'tranche_pass.deal',
-              },
-              {
-                kind: 'account',
-                type: 'u8',
-                account: 'TranchePass',
-                path: 'tranche_pass.tranche_index',
-              },
-              {
-                kind: 'const',
-                type: 'string',
-                value: 'tranche-pass',
-              },
-            ],
-          },
-        },
-        {
-          name: 'investorTranche',
-          isMut: true,
-          isSigner: false,
-          pda: {
-            seeds: [
-              {
-                kind: 'account',
-                type: 'publicKey',
-                account: 'GlobalMarketState',
-                path: 'global_market_state',
-              },
-              {
-                kind: 'account',
-                type: 'publicKey',
-                account: 'TranchePass',
-                path: 'tranche_pass.investor',
-              },
-              {
-                kind: 'account',
-                type: 'publicKey',
-                account: 'TranchePass',
-                path: 'tranche_pass.deal',
-              },
-              {
-                kind: 'account',
-                type: 'u8',
-                account: 'TranchePass',
-                path: 'tranche_pass.tranche_index',
-              },
-              {
-                kind: 'const',
-                type: 'string',
-                value: 'tranche',
-              },
-            ],
-          },
         },
       ],
       args: [],
@@ -17654,7 +16777,95 @@ export const IDL: Credix = {
   ],
   accounts: [
     {
-      name: 'investorTranche',
+      name: 'deserializableDeal',
+      type: {
+        kind: 'struct',
+        fields: [
+          {
+            name: 'name',
+            type: 'string',
+          },
+          {
+            name: 'borrower',
+            type: 'publicKey',
+          },
+          {
+            name: 'amountWithdrawn',
+            type: 'u64',
+          },
+          {
+            name: 'goLiveAt',
+            type: 'i64',
+          },
+          {
+            name: 'createdAt',
+            type: 'i64',
+          },
+          {
+            name: 'maxFundingDuration',
+            type: 'u8',
+          },
+          {
+            name: 'dealNumber',
+            type: 'u16',
+          },
+          {
+            name: 'bump',
+            type: 'u8',
+          },
+          {
+            name: 'openedAt',
+            type: 'i64',
+          },
+          {
+            name: 'arrangementFees',
+            type: 'u64',
+          },
+          {
+            name: 'arrangementFeesRepaid',
+            type: 'u64',
+          },
+          {
+            name: 'timeLatestArrangementFeesCharged',
+            type: 'i64',
+          },
+          {
+            name: 'migrated',
+            type: 'bool',
+          },
+          {
+            name: 'originalGoLiveAt',
+            type: 'i64',
+          },
+          {
+            name: 'prevUpdateTs',
+            type: {
+              option: 'i64',
+            },
+          },
+          {
+            name: 'arrangementFee',
+            type: {
+              defined: 'Fraction',
+            },
+          },
+          {
+            name: 'collectionTokenAccount',
+            type: {
+              option: 'publicKey',
+            },
+          },
+          {
+            name: 'offRampTokenAccount',
+            type: {
+              option: 'publicKey',
+            },
+          },
+        ],
+      },
+    },
+    {
+      name: 'mainnetDealTranches',
       type: {
         kind: 'struct',
         fields: [
@@ -17663,16 +16874,16 @@ export const IDL: Credix = {
             type: 'u8',
           },
           {
-            name: 'trancheIndex',
+            name: 'totalTranches',
             type: 'u8',
           },
           {
-            name: 'investor',
-            type: 'publicKey',
-          },
-          {
-            name: 'amountWithdrawn',
-            type: 'u64',
+            name: 'tranches',
+            type: {
+              vec: {
+                defined: 'MainnetDealTranche',
+              },
+            },
           },
         ],
       },
@@ -17729,6 +16940,14 @@ export const IDL: Credix = {
           {
             name: 'bypassWithdrawEpochs',
             type: 'bool',
+          },
+          {
+            name: 'withdrawCap',
+            type: {
+              option: {
+                defined: 'WithdrawCap',
+              },
+            },
           },
         ],
       },
@@ -17894,12 +17113,20 @@ export const IDL: Credix = {
           },
           {
             name: 'collectionTokenAccount',
+            docs: ['It is the associated token account for the deals.'],
             type: {
               option: 'publicKey',
             },
           },
           {
             name: 'offRampTokenAccount',
+            type: {
+              option: 'publicKey',
+            },
+          },
+          {
+            name: 'arrangementFeeCollectionAuthority',
+            docs: ['This is the authority of the associated token account.'],
             type: {
               option: 'publicKey',
             },
@@ -18214,6 +17441,62 @@ export const IDL: Credix = {
   ],
   types: [
     {
+      name: 'MainnetDealTranche',
+      type: {
+        kind: 'struct',
+        fields: [
+          {
+            name: 'index',
+            type: 'u8',
+          },
+          {
+            name: 'amountDeposited',
+            type: 'u64',
+          },
+          {
+            name: 'tokenMint',
+            type: 'publicKey',
+          },
+          {
+            name: 'maxDepositPercentage',
+            type: {
+              defined: 'Fraction',
+            },
+          },
+          {
+            name: 'earlyWithdrawalPrincipal',
+            type: 'bool',
+          },
+          {
+            name: 'optionalAccount',
+            type: 'bool',
+          },
+          {
+            name: 'upscaleSize',
+            type: 'u64',
+          },
+          {
+            name: 'interestRepaidUntilLastUpscale',
+            type: 'u64',
+          },
+          {
+            name: 'fundedByLiquidityPool',
+            type: 'bool',
+          },
+          {
+            name: 'name',
+            type: 'string',
+          },
+          {
+            name: 'tranche',
+            type: {
+              defined: 'Tranche',
+            },
+          },
+        ],
+      },
+    },
+    {
       name: 'TrancheConfig',
       type: {
         kind: 'struct',
@@ -18286,201 +17569,75 @@ export const IDL: Credix = {
               defined: 'Fraction',
             },
           },
-        ],
-      },
-    },
-    {
-      name: 'Adjustments',
-      type: {
-        kind: 'struct',
-        fields: [
           {
-            name: 'trancheIndex',
-            type: 'u8',
-          },
-          {
-            name: 'interestAdjustment',
-            type: 'i64',
-          },
-          {
-            name: 'interestPrincipalAdjustment',
-            type: 'i64',
-          },
-        ],
-      },
-    },
-    {
-      name: 'OldDealTranches',
-      type: {
-        kind: 'struct',
-        fields: [
-          {
-            name: 'bump',
-            type: 'u8',
-          },
-          {
-            name: 'totalTranches',
-            type: 'u8',
-          },
-          {
-            name: 'tranches',
+            name: 'variableRate',
             type: {
-              array: [
-                {
-                  defined: 'OldDealTranche',
-                },
-                10,
-              ],
+              defined: 'VariableRate',
             },
           },
         ],
       },
     },
     {
-      name: 'OldDealTranche',
+      name: 'Collection',
       type: {
         kind: 'struct',
         fields: [
           {
-            name: 'index',
-            type: 'u8',
+            name: 'verified',
+            type: 'bool',
           },
           {
-            name: 'size',
-            type: 'u64',
+            name: 'key',
+            type: 'publicKey',
           },
+        ],
+      },
+    },
+    {
+      name: 'Creator',
+      type: {
+        kind: 'struct',
+        fields: [
           {
-            name: 'expectedReturn',
-            type: {
-              defined: 'Fraction',
-            },
-          },
-          {
-            name: 'amountDeposited',
-            type: 'u64',
-          },
-          {
-            name: 'interestRepaid',
-            type: 'u64',
-          },
-          {
-            name: 'principalRepaid',
-            type: 'u64',
-          },
-          {
-            name: 'tokenMint',
+            name: 'address',
             type: 'publicKey',
           },
           {
-            name: 'maxDepositPercentage',
-            type: {
-              defined: 'Fraction',
-            },
-          },
-          {
-            name: 'earlyWithdrawalInterest',
+            name: 'verified',
             type: 'bool',
           },
           {
-            name: 'earlyWithdrawalPrincipal',
-            type: 'bool',
-          },
-          {
-            name: 'withdrawableInterest',
-            type: {
-              defined: 'Fraction',
-            },
-          },
-          {
-            name: 'withdrawablePrincipal',
-            type: {
-              defined: 'Fraction',
-            },
-          },
-          {
-            name: 'optionalAccount',
-            type: 'bool',
-          },
-          {
-            name: 'upscaleSize',
-            type: 'u64',
-          },
-          {
-            name: 'interestRepaidUntilLastUpscale',
-            type: 'u64',
-          },
-          {
-            name: 'padding',
-            docs: ['Reserved size for extra fields'],
-            type: {
-              array: ['u8', 11],
-            },
-          },
-        ],
-      },
-    },
-    {
-      name: 'OldRepaymentSchedule',
-      type: {
-        kind: 'struct',
-        fields: [
-          {
-            name: 'periodDuration',
+            name: 'share',
             type: 'u8',
           },
-          {
-            name: 'daysInYear',
-            type: 'u16',
-          },
-          {
-            name: 'totalPeriods',
-            type: 'u16',
-          },
-          {
-            name: 'periods',
-            type: {
-              vec: {
-                defined: 'OldRepaymentPeriod',
-              },
-            },
-          },
         ],
       },
     },
     {
-      name: 'OldRepaymentPeriod',
+      name: 'Uses',
       type: {
         kind: 'struct',
         fields: [
           {
-            name: 'principal',
+            name: 'useMethod',
+            type: {
+              defined: 'UseMethod',
+            },
+          },
+          {
+            name: 'remaining',
             type: 'u64',
           },
           {
-            name: 'interest',
-            type: 'u64',
-          },
-          {
-            name: 'totalInterestExpected',
-            type: 'u64',
-          },
-          {
-            name: 'totalPrincipalExpected',
-            type: 'u64',
-          },
-          {
-            name: 'principalRepaid',
-            type: 'u64',
-          },
-          {
-            name: 'interestRepaid',
+            name: 'total',
             type: 'u64',
           },
         ],
       },
     },
     {
-      name: 'OldDeal',
+      name: 'DataV2',
       type: {
         kind: 'struct',
         fields: [
@@ -18489,357 +17646,58 @@ export const IDL: Credix = {
             type: 'string',
           },
           {
-            name: 'borrower',
-            type: 'publicKey',
-          },
-          {
-            name: 'amountWithdrawn',
-            docs: [
-              'The principal amount withdrawn from deal token account by borrower',
-            ],
-            type: 'u64',
-          },
-          {
-            name: 'fixedLateFeePercentage',
-            type: {
-              defined: 'Fraction',
-            },
-          },
-          {
-            name: 'earlyRedemptionFees',
-            type: 'u64',
-          },
-          {
-            name: 'earlyRedemptionFeesRepaid',
-            type: 'u64',
-          },
-          {
-            name: 'unusedField1',
-            type: 'u16',
-          },
-          {
-            name: 'goLiveAt',
-            type: 'i64',
-          },
-          {
-            name: 'createdAt',
-            type: 'i64',
-          },
-          {
-            name: 'maxFundingDuration',
-            docs: [
-              'The number of days after tranche investors can call burn tranches if the deal does not goes live.',
-            ],
-            type: 'u8',
-          },
-          {
-            name: 'slashInterestToPrincipal',
-            type: 'bool',
-          },
-          {
-            name: 'slashPrincipalToInterest',
-            type: 'bool',
-          },
-          {
-            name: 'unusedField2',
-            type: {
-              array: ['u8', 6],
-            },
-          },
-          {
-            name: 'dealNumber',
-            type: 'u16',
-          },
-          {
-            name: 'bump',
-            type: 'u8',
-          },
-          {
-            name: 'fixedLateFees',
-            type: 'u64',
-          },
-          {
-            name: 'lateFeesRepaid',
-            type: 'u64',
-          },
-          {
-            name: 'defaulted',
-            type: 'bool',
-          },
-          {
-            name: 'trueWaterfall',
-            type: 'bool',
-          },
-          {
-            name: 'openedAt',
-            type: 'i64',
-          },
-          {
-            name: 'performanceFeePercentage',
-            docs: [
-              'Percentage of the interest share taken as the fees [asset manager fees + credix fees]',
-            ],
-            type: {
-              defined: 'Fraction',
-            },
-          },
-          {
-            name: 'gracePeriod',
-            docs: [
-              'The number of days after the due date that no late fees are applied',
-            ],
-            type: 'u8',
-          },
-          {
-            name: 'variableLateFees',
-            type: 'u64',
-          },
-          {
-            name: 'variableLateFeePercentage',
-            type: {
-              defined: 'Fraction',
-            },
-          },
-          {
-            name: 'serviceFeePercentage',
-            docs: [
-              'The percentage of the outstanding principal that is charged as an annual fee, going to the asset manager’s treasury (+ credix’ treasury)',
-            ],
-            type: {
-              defined: 'Fraction',
-            },
-          },
-          {
-            name: 'serviceFees',
-            type: 'u64',
-          },
-          {
-            name: 'serviceFeesRepaid',
-            type: 'u64',
-          },
-          {
-            name: 'yearLatestServiceFeesCharged',
-            docs: [
-              'Used to keep track of the year service fee is charged for.',
-            ],
-            type: 'u8',
-          },
-          {
-            name: 'migrated',
-            docs: ['true when we bring off chain deal onchain.'],
-            type: 'bool',
-          },
-          {
-            name: 'originalGoLiveAt',
-            docs: [
-              'When upscaling we store the `go_live_at` timestamp here and reset `go_live_at`.',
-              'We do this so the deal is no longer regarded as in progress, requiring a new activation.',
-              'Across all upscales, the initial point of activation should always be regarded as the `go_live_at` so we need to be able to restore it.',
-            ],
-            type: 'i64',
-          },
-        ],
-      },
-    },
-    {
-      name: 'ExpectedAmounts',
-      type: {
-        kind: 'struct',
-        fields: [
-          {
-            name: 'principal',
-            type: 'u64',
-          },
-          {
-            name: 'interest',
-            type: 'u64',
-          },
-        ],
-      },
-    },
-    {
-      name: 'OldProgramState',
-      type: {
-        kind: 'struct',
-        fields: [
-          {
-            name: 'credixMultisigKey',
-            type: 'publicKey',
-          },
-          {
-            name: 'credixManagers',
-            type: {
-              array: ['publicKey', 10],
-            },
-          },
-          {
-            name: 'credixPerformanceFeePercentage',
-            docs: [
-              'Percentage of the interest share taken as the fees [asset manager fees + credix fees]',
-            ],
-            type: {
-              defined: 'Fraction',
-            },
-          },
-          {
-            name: 'credixServiceFeePercentage',
-            docs: ['Percentage of credix share in the performance fees'],
-            type: {
-              defined: 'Fraction',
-            },
-          },
-        ],
-      },
-    },
-    {
-      name: 'OldGlobalMarketState',
-      type: {
-        kind: 'struct',
-        fields: [
-          {
-            name: 'unusedPubkey',
-            type: 'publicKey',
-          },
-          {
-            name: 'baseTokenMint',
-            type: 'publicKey',
-          },
-          {
-            name: 'lpTokenMint',
-            type: 'publicKey',
-          },
-          {
-            name: 'poolOutstandingCredit',
-            docs: ['The amount from senior tranche lent'],
-            type: 'u64',
-          },
-          {
-            name: 'treasuryPoolTokenAccount',
-            type: 'publicKey',
-          },
-          {
-            name: 'signingAuthorityBump',
-            type: 'u8',
-          },
-          {
-            name: 'bump',
-            type: 'u8',
-          },
-          {
-            name: 'performanceFee',
-            docs: [
-              'The percentage of interest share collected as fees[asset manager fees + credix share]',
-            ],
-            type: {
-              defined: 'Fraction',
-            },
-          },
-          {
-            name: 'withdrawalFee',
-            docs: ['The fee charged for withdrawals'],
-            type: {
-              defined: 'Fraction',
-            },
-          },
-          {
-            name: 'frozen',
-            type: 'bool',
-          },
-          {
-            name: 'seed',
+            name: 'symbol',
             type: 'string',
           },
           {
-            name: 'gracePeriod',
-            docs: [
-              'The number of days after the due date that no late fees are applied',
-            ],
-            type: 'u8',
+            name: 'uri',
+            type: 'string',
           },
           {
-            name: 'fixedLateFeePercentage',
+            name: 'sellerFeeBasisPoints',
+            type: 'u16',
+          },
+          {
+            name: 'creators',
             type: {
-              defined: 'Fraction',
+              option: {
+                vec: {
+                  defined: 'Creator',
+                },
+              },
             },
           },
           {
-            name: 'variableLateFeePercentage',
+            name: 'collection',
             type: {
-              defined: 'Fraction',
+              option: {
+                defined: 'Collection',
+              },
             },
           },
           {
-            name: 'serviceFeePercentage',
+            name: 'uses',
             type: {
-              defined: 'Fraction',
+              option: {
+                defined: 'Uses',
+              },
             },
           },
+        ],
+      },
+    },
+    {
+      name: 'WithdrawCap',
+      type: {
+        kind: 'struct',
+        fields: [
           {
-            name: 'credixPerformanceFeePercentage',
-            docs: [
-              'The percentage of the credix_performance_fee_percentage going to the Credix treasury',
-            ],
-            type: {
-              defined: 'Fraction',
-            },
-          },
-          {
-            name: 'credixServiceFeePercentage',
-            docs: [
-              'The percentage of the service_fee going to the Credix treasury',
-            ],
-            type: {
-              defined: 'Fraction',
-            },
-          },
-          {
-            name: 'poolSizeLimitPercentage',
-            docs: [
-              'Maximum possible deposit limit in addition the pool outstanding credit',
-              'pool_size_limit = pool_outstanding_credit + pool_size_limit_percentage * pool_outstanding_credit',
-            ],
-            type: {
-              defined: 'Fraction',
-            },
-          },
-          {
-            name: 'withdrawEpochRequestSeconds',
-            type: 'u32',
-          },
-          {
-            name: 'withdrawEpochRedeemSeconds',
-            type: 'u32',
-          },
-          {
-            name: 'withdrawEpochAvailableLiquiditySeconds',
-            type: 'u32',
-          },
-          {
-            name: 'latestWithdrawEpochIdx',
-            type: 'u32',
-          },
-          {
-            name: 'latestWithdrawEpochEnd',
-            type: 'i64',
-          },
-          {
-            name: 'lockedLiquidity',
+            name: 'amountCap',
             type: 'u64',
           },
           {
-            name: 'totalRedeemedBaseAmount',
+            name: 'amountWithdrawn',
             type: 'u64',
-          },
-          {
-            name: 'hasWithdrawEpochs',
-            type: 'bool',
-          },
-          {
-            name: 'redeemAuthorityBump',
-            docs: [
-              'This is only used for wormhole related token transfer occurs.',
-            ],
-            type: 'u8',
           },
         ],
       },
@@ -18980,6 +17838,18 @@ export const IDL: Credix = {
             name: 'tranche',
             type: {
               defined: 'Tranche',
+            },
+          },
+          {
+            name: 'variableRate',
+            type: {
+              defined: 'VariableRate',
+            },
+          },
+          {
+            name: 'dataPadding',
+            type: {
+              array: ['u32', 20],
             },
           },
         ],
@@ -19444,6 +18314,37 @@ export const IDL: Credix = {
           {
             name: 'targetChain',
             type: 'u16',
+          },
+        ],
+      },
+    },
+    {
+      name: 'UseMethod',
+      type: {
+        kind: 'enum',
+        variants: [
+          {
+            name: 'Burn',
+          },
+          {
+            name: 'Multiple',
+          },
+          {
+            name: 'Single',
+          },
+        ],
+      },
+    },
+    {
+      name: 'VariableRate',
+      type: {
+        kind: 'enum',
+        variants: [
+          {
+            name: 'None',
+          },
+          {
+            name: 'SOFR',
           },
         ],
       },
@@ -19965,56 +18866,6 @@ export const IDL: Credix = {
         {
           name: 'globalMarketStateSeed',
           type: 'string',
-          index: false,
-        },
-      ],
-    },
-    {
-      name: 'DepositTrancheEvent',
-      fields: [
-        {
-          name: 'major',
-          type: 'u8',
-          index: true,
-        },
-        {
-          name: 'minor',
-          type: 'u8',
-          index: false,
-        },
-        {
-          name: 'patch',
-          type: 'u8',
-          index: false,
-        },
-        {
-          name: 'timestamp',
-          type: 'i64',
-          index: false,
-        },
-        {
-          name: 'market',
-          type: 'publicKey',
-          index: false,
-        },
-        {
-          name: 'deal',
-          type: 'publicKey',
-          index: false,
-        },
-        {
-          name: 'trancheIndex',
-          type: 'u8',
-          index: false,
-        },
-        {
-          name: 'investor',
-          type: 'publicKey',
-          index: false,
-        },
-        {
-          name: 'amount',
-          type: 'u64',
           index: false,
         },
       ],
@@ -20569,7 +19420,7 @@ export const IDL: Credix = {
     {
       code: 6020,
       name: 'DealNotOpenForActivation',
-      msg: 'A deal can only be activated once all tranches(except for the senior tranche at index 1) have been filled.',
+      msg: 'A deal can only be activated once all tranches(except for tranches funded by pool) have been filled.',
     },
     {
       code: 6021,
@@ -20925,6 +19776,31 @@ export const IDL: Credix = {
       code: 6091,
       name: 'BorrowerTokenAccountMissing',
       msg: 'Borrower Token Account is required to withdraw from the deal',
+    },
+    {
+      code: 6092,
+      name: 'InvalidCollectionTokenAccount',
+      msg: 'Collection Token Account has to be same as set in the deal account',
+    },
+    {
+      code: 6093,
+      name: 'CredixPassAmountWithdrawnMissing',
+      msg: 'Amount withdrawn is expected to be present in credix pass',
+    },
+    {
+      code: 6094,
+      name: 'InvalidArrangementFeeCollectionTokenAccount',
+      msg: 'Arrangement Fee Collection Token Account has to same as set in the deal account',
+    },
+    {
+      code: 6095,
+      name: 'VariableInterestRateAccountMissing',
+      msg: 'Tranches use variable rates but VariableInterestRate account not provided',
+    },
+    {
+      code: 6096,
+      name: 'MissingArrangementFeeCollectionAuthority',
+      msg: 'Arrangement Fee Collection authority Missing',
     },
   ],
 };

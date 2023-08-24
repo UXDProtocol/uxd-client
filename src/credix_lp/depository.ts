@@ -328,7 +328,10 @@ export class CredixLpDepository {
         credixGlobalMarketState
       );
     if (!credixGlobalMarketStateAccount) {
-      throw new Error('Could not read credixGlobalMarketState account');
+      throw new Error(
+        'Could not read credixGlobalMarketState account: ' +
+          credixGlobalMarketState.toString()
+      );
     }
     return credixGlobalMarketStateAccount;
   }
@@ -342,7 +345,10 @@ export class CredixLpDepository {
         credixProgramState
       );
     if (!credixProgramStateAccount) {
-      throw new Error('Could not read credixProgramState account');
+      throw new Error(
+        'Could not read credixProgramState account: ' +
+          credixProgramState.toString()
+      );
     }
     return credixProgramStateAccount;
   }
@@ -354,7 +360,9 @@ export class CredixLpDepository {
     const credixPassAccount =
       await credixProgram.account.credixPass.fetchNullable(credixPass);
     if (!credixPassAccount) {
-      throw new Error('Could not read credixPass account');
+      throw new Error(
+        'Could not read credixPass account: ' + credixPass.toString()
+      );
     }
     return credixPassAccount;
   }
@@ -368,7 +376,10 @@ export class CredixLpDepository {
         credixWithdrawEpoch
       );
     if (!credixWithdrawEpochAccount) {
-      throw new Error('Could not read credixWithdrawEpoch account');
+      throw new Error(
+        'Could not read credixWithdrawEpoch account: ' +
+          credixWithdrawEpoch.toString()
+      );
     }
     return credixWithdrawEpochAccount;
   }
@@ -382,7 +393,10 @@ export class CredixLpDepository {
         credixWithdrawRequest
       );
     if (!credixWithdrawRequestAccount) {
-      throw new Error('Could not read credixWithdrawRequest account');
+      throw new Error(
+        'Could not read credixWithdrawRequest account: ' +
+          credixWithdrawRequest.toString()
+      );
     }
     return credixWithdrawRequestAccount;
   }
@@ -391,11 +405,13 @@ export class CredixLpDepository {
     connection: Connection,
     collateralMint: PublicKey
   ): Promise<number> {
-    const collateralInfo = await getMint(connection, collateralMint);
-    if (!collateralInfo) {
-      throw new Error('Cannot find the collateral mint');
+    const collateralMintData = await getMint(connection, collateralMint);
+    if (!collateralMintData) {
+      throw new Error(
+        'Could not read collateralMint account: ' + collateralMint.toString()
+      );
     }
-    return collateralInfo.decimals;
+    return collateralMintData.decimals;
   }
 
   public info() {
