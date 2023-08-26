@@ -41,8 +41,7 @@ export class CredixLpDepository {
     public readonly credixWithdrawEpoch: PublicKey,
     public readonly credixWithdrawRequest: PublicKey,
     public readonly credixProgramId: PublicKey,
-    public readonly credixPoolOutstandingCredit: BN,
-    public readonly credixReleaseTimestamp: BN
+    public readonly credixPoolOutstandingCredit: BN
   ) {}
 
   public static async initialize({
@@ -104,16 +103,11 @@ export class CredixLpDepository {
       credixProgram,
       credixProgramState
     );
-    const credixPassAccountPromise = this.getCredixPassAccount(
-      credixProgram,
-      credixPass
-    );
 
     // Wait until we have all the accounts deserialized data before progressing further
     const credixGlobalMarketStateAccount =
       await credixGlobalMarketStateAccountPromise;
     const credixProgramStateAccount = await credixProgramStateAccountPromise;
-    const credixPassAccount = await credixPassAccountPromise;
 
     // Then we can read all the informations needed from the onchain accounts
     const credixSharesMint = credixGlobalMarketStateAccount.lpTokenMint;
@@ -130,7 +124,6 @@ export class CredixLpDepository {
       credixGlobalMarketStateAccount.latestWithdrawEpochIdx;
     const credixPoolOutstandingCredit =
       credixGlobalMarketStateAccount.poolOutstandingCredit;
-    const credixReleaseTimestamp = credixPassAccount.releaseTimestamp;
 
     // Then generate the depository token accounts
     const depositoryCollateral = this.findDepositoryCollateralAddress(
@@ -178,8 +171,7 @@ export class CredixLpDepository {
       credixWithdrawEpoch,
       credixWithdrawRequest,
       credixProgramId,
-      credixPoolOutstandingCredit,
-      credixReleaseTimestamp
+      credixPoolOutstandingCredit
     );
   }
 
