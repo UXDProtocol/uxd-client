@@ -61,13 +61,16 @@ export class IdentityDepositoryAccount {
   bump!: number; // u8
   version!: number; // u8
   collateralMint!: PublicKey;
-  collateralMintDecimal!: number; // u8
+  collateralMintDecimals!: number; // u8
   collateralVault!: PublicKey;
   collateralVaultBump!: number; // u8
   collateralAmountDeposited!: BN; // u128
   redeemableAmountUnderManagement!: BN; // u128
   redeemableAmountUnderManagementCap!: BN; // u128
   mintingDisabled!: boolean;
+  mangoCollateralReinjectedBtc!: boolean;
+  mangoCollateralReinjectedEth!: boolean;
+  mangoCollateralReinjectedWsol!: boolean;
 }
 
 // V1
