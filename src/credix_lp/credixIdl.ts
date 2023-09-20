@@ -1,9 +1,17 @@
 export type Credix = {
-  version: '3.11.0';
+  version: '3.12.0-alpha.1';
   name: 'credix';
   instructions: [
     {
       name: 'initializeMarket';
+      docs: [
+        'Using `initialize_market` instruction, we create a new market with the provided config.',
+        'The instruction can be called only by credix multisig.',
+        'This initializes the LP pool token account and lp token mint. The market base token is set equal',
+        'to the base token account passed.',
+        '',
+        'This does not involve any SPL CPI calls.'
+      ];
       accounts: [
         {
           name: 'owner';
@@ -192,6 +200,33 @@ export type Credix = {
     },
     {
       name: 'depositFunds';
+      docs: [
+        'Using `deposit_funds` instruction investors can fund the pool of the market.',
+        'Investor will need an active credix pass with the flag investor true for calling this instruction.',
+        "It is possible to cap the max `unallocated` amount of deposit by updating market's  pool_size_limit_percentage.",
+        'We would want to do so to maximum the effect of interest repayments on the lp token price.',
+        'if `pool_size_limit_percentage.numerator == u32::Max` market is not capped.',
+        'if market is capped, the max unallocated amount is calculated as `pool_size_limit_percentage * pool_outstanding_credit`.',
+        '',
+        'So max deposit will:',
+        '```rust',
+        'min(amount, liquidity_pool_token_account.amount - pool_size_limit_percentage * pool_outstanding_credit);',
+        '````',
+        'This instruction also mints frozen lp tokens to the investor against there deposit, according to the lp token price.',
+        '',
+        'This involves 2 SPL CPI calls.',
+        '1. TokenTransfer:',
+        '- amount: amount_deposit,',
+        '- authority: investor,',
+        '- src: investor_token_account,',
+        '- destination: liquidity_pool_token_account,',
+        '- mint: base_token_mint,',
+        '2. MintToken:',
+        '- amount: `base_to_lp(amount_deposit)`,',
+        '- authority: signing_authority,',
+        '- destination: investor_lp_token_account,',
+        '- mint: lp_token_mint,'
+      ];
       accounts: [
         {
           name: 'investor';
@@ -687,10 +722,10 @@ export type Credix = {
           type: 'u32';
         },
         {
-          name: 'repaymentPeriodInputs';
+          name: 'repaymentPeriods';
           type: {
             vec: {
-              defined: 'RepaymentPeriodInput';
+              defined: 'RepaymentPeriod';
             };
           };
         },
@@ -944,6 +979,22 @@ export type Credix = {
     },
     {
       name: 'activateDeal';
+      docs: [
+        'Using `activate_deal` instruction the deal is ready for principal withdrawal and repayment by the borrower',
+        'All the tranches not funded by the liquidity pool should be completely filled before calling this instruction',
+        'The liquidity pool should have enough liquidity to fund remaining part of all tranches funded by the liquidity pool',
+        'The tranches funded by the lp are funded in this instruction',
+        '',
+        'This instruction can be called only by the multisig of the market',
+        '',
+        'This involves 1 SPL CPI call.',
+        '1. TokenTransfer:',
+        '- amount: missing funds of tranches funded by liquidity pool',
+        '- authority: signing_authority,',
+        '- src: liquidity_pool_token_account,',
+        '- destination: deal_token_account,',
+        '- mint: base_token_mint,'
+      ];
       accounts: [
         {
           name: 'owner';
@@ -1164,6 +1215,43 @@ export type Credix = {
     },
     {
       name: 'repayDeal';
+      docs: [
+        'Using `repay_deal` instruction borrower can repay a deal',
+        'Deal status should be in progress in order to call this instruction',
+        'Borrower will need an active credix pass with the flag borrower true for calling this instruction.',
+        '',
+        '',
+        'The budget passed is first distributed over the tranches due, If there is leftover budget and we are in not in revolving phase(i.e periods expect principal repayment) early principal repayment happens.',
+        'For the budget allocations, It is recommended to compare amounts repaid on tranches account.',
+        '',
+        'This involves 4 SPL CPI calls.',
+        '(In all the above cases, if deal is a SCOW deal, the borrower_token_account is the collection token account,',
+        'and the authority will be the deal in these cases)',
+        '1. TokenTransfer:',
+        '- amount: liquidity pool share,',
+        '- authority: borrower,',
+        '- src: borrower_token_account',
+        '- destination: liquidity_pool_token_account,',
+        '- mint: base_token_mint,',
+        '2. TokenTransfer:',
+        '- amount: non lp funded tranches share,',
+        '- authority: borrower,',
+        '- src: borrower_token_account',
+        '- destination: deal_token_account,',
+        '- mint: base_token_mint,',
+        '3. TokenTransfer:',
+        '- amount: credix share,',
+        '- authority: borrower,',
+        '- src: borrower_token_account',
+        '- destination: credix_multisig_token_account,',
+        '- mint: base_token_mint,',
+        '4. TokenTransfer:',
+        '- amount: asset manager share,',
+        '- authority: borrower,',
+        '- src: borrower_token_account',
+        '- destination: treasury_token_account,',
+        '- mint: base_token_mint,'
+      ];
       accounts: [
         {
           name: 'signer';
@@ -1370,12 +1458,12 @@ export type Credix = {
           };
         },
         {
-          name: 'credixMultisigKey';
+          name: 'credixTreasury';
           isMut: false;
           isSigner: false;
         },
         {
-          name: 'credixMultisigTokenAccount';
+          name: 'credixTreasuryTokenAccount';
           isMut: true;
           isSigner: false;
         },
@@ -1697,6 +1785,39 @@ export type Credix = {
     },
     {
       name: 'withdrawFunds';
+      docs: [
+        'Using `withdraw_funds` instruction investors can withdraw funds from pool of the market.',
+        'Investor will need an active credix pass with the flag investor true for calling this instruction.',
+        'The instruction restricted:',
+        "- If the timestamp now has not passed investor's release timestamp on credix pass.",
+        "- If the credix pass is inactivate, or market has withdraw epochs and credix pass of investor can't bypass them.",
+        '- If the investor has withdrawn already according to his withdraw cap.',
+        '',
+        'This involves 4 SPL CPI calls.',
+        '1. BurnLpTokens:',
+        '- amount: baseToLp(amountWithdrawn),',
+        '- authority: investor,',
+        '- src: investor_token_account,',
+        '- mint: lp_token_mint,',
+        '2. TokenTransfer:',
+        '- amount: amount_withdraw - asset_manager_fees- credix_fees,',
+        '- authority: signing_authority,',
+        '- src: liquidity_pool_token_account',
+        '- destination: investor_base_token_account,',
+        '- mint: base_token_mint,',
+        '3. TokenTransfer:',
+        '- amount: asset_manager_fees,',
+        '- authority: signing_authority,',
+        '- src: liquidity_pool_token_account',
+        '- destination: treasury_pool_token_account,',
+        '- mint: base_token_mint,',
+        '4. TokenTransfer:',
+        '- amount: credix_fees,',
+        '- authority: signing_authority,',
+        '- src: liquidity_pool_token_account',
+        '- destination: credix_multisig_token_account,',
+        '- mint: base_token_mint,'
+      ];
       accounts: [
         {
           name: 'investor';
@@ -1753,12 +1874,12 @@ export type Credix = {
           isSigner: false;
         },
         {
-          name: 'credixMultisigKey';
+          name: 'credixTreasury';
           isMut: false;
           isSigner: false;
         },
         {
-          name: 'credixMultisigTokenAccount';
+          name: 'credixTreasuryTokenAccount';
           isMut: true;
           isSigner: false;
         },
@@ -2552,6 +2673,26 @@ export type Credix = {
     },
     {
       name: 'depositTranche';
+      docs: [
+        'Using `deposit_tranche` instruction the Tranches of deal which are not funded by the pool of the market are',
+        'funded by investors/underwriters.',
+        'Investor will need an active tranche pass for calling this instruction. The Instruction is only for a',
+        'deal which is open for funding. The investor can deposit multiple times given deal is open for funding.',
+        'The max amount is capped to `size_of_tranche * max_deposit_percentage`. The tranche index is passed',
+        'in arguments.',
+        'This involves 2 SPL CPI calls.',
+        '1. TokenTransfer:',
+        '- amount: amount_invested,',
+        '- authority: investor,',
+        '- src: investor_token_account,',
+        '- destination: deal_token_account,',
+        '- mint: base_token_mint,',
+        '2. MintToken:',
+        '- amount: amount_invested,',
+        '- authority: signing_authority,',
+        '- destination: investor_tranche_token_account,',
+        '- mint: tranche_mint,'
+      ];
       accounts: [
         {
           name: 'payer';
@@ -3298,6 +3439,28 @@ export type Credix = {
     },
     {
       name: 'withdrawTranche';
+      docs: [
+        'Using `withdraw_tranche` instruction tranche investors can withdraw funds from the tranche',
+        'Investor will need an active tranche pass for calling this instruction.',
+        'The deal should be open for withdrawal to call this instruction.',
+        'This instruction withdraws maximum possible withdrawal amount which is calculated by:',
+        'For non upscaled deals',
+        '- investor_ratio = investor tranche token amount / size of the tranche',
+        '- max_withdrawal_amount_possible = (interest_repaid + principal_repaid) * investor_ratio',
+        '- withdrawal_amount = max_withdrawal_amount_possible - amount_withdrawn',
+        'For upscaled deals, the investor ratios are calculated with the help of tranche deposits snapshots',
+        'which are stored in the tranche passes.',
+        '',
+        'This instruction does not burn any tranche tokens',
+        '',
+        'This involves 1 SPL CPI calls.',
+        '1. TokenTransfer:',
+        '- amount: investor_base_amount_withdrawn,',
+        '- authority: signing_authority,',
+        '- src: deal_token_account,',
+        '- destination: investor_base_account,',
+        '- mint: base_token_mint,'
+      ];
       accounts: [
         {
           name: 'payer';
@@ -3767,6 +3930,12 @@ export type Credix = {
               array: ['publicKey', 10];
             };
           };
+        },
+        {
+          name: 'credixTreasury';
+          type: {
+            option: 'publicKey';
+          };
         }
       ];
     },
@@ -4165,37 +4334,6 @@ export type Credix = {
           };
         },
         {
-          name: 'withdrawRequest';
-          isMut: true;
-          isSigner: false;
-          pda: {
-            seeds: [
-              {
-                kind: 'account';
-                type: 'publicKey';
-                account: 'GlobalMarketState';
-                path: 'global_market_state';
-              },
-              {
-                kind: 'account';
-                type: 'publicKey';
-                path: 'investor';
-              },
-              {
-                kind: 'account';
-                type: 'u32';
-                account: 'GlobalMarketState';
-                path: 'global_market_state.latest_withdraw_epoch_idx';
-              },
-              {
-                kind: 'const';
-                type: 'string';
-                value: 'withdraw-request';
-              }
-            ];
-          };
-        },
-        {
           name: 'investorLpTokenAccount';
           isMut: false;
           isSigner: false;
@@ -4383,12 +4521,12 @@ export type Credix = {
           isSigner: false;
         },
         {
-          name: 'credixMultisigKey';
+          name: 'credixTreasury';
           isMut: false;
           isSigner: false;
         },
         {
-          name: 'credixMultisigTokenAccount';
+          name: 'credixTreasuryTokenAccount';
           isMut: true;
           isSigner: false;
         },
@@ -4471,7 +4609,7 @@ export type Credix = {
       accounts: [
         {
           name: 'owner';
-          isMut: true;
+          isMut: false;
           isSigner: true;
         },
         {
@@ -4481,7 +4619,7 @@ export type Credix = {
         },
         {
           name: 'withdrawEpoch';
-          isMut: false;
+          isMut: true;
           isSigner: false;
           pda: {
             seeds: [
@@ -4573,37 +4711,6 @@ export type Credix = {
           };
         },
         {
-          name: 'withdrawRequest';
-          isMut: true;
-          isSigner: false;
-          pda: {
-            seeds: [
-              {
-                kind: 'account';
-                type: 'publicKey';
-                account: 'GlobalMarketState';
-                path: 'global_market_state';
-              },
-              {
-                kind: 'account';
-                type: 'publicKey';
-                path: 'investor';
-              },
-              {
-                kind: 'account';
-                type: 'u32';
-                account: 'GlobalMarketState';
-                path: 'global_market_state.latest_withdraw_epoch_idx';
-              },
-              {
-                kind: 'const';
-                type: 'string';
-                value: 'withdraw-request';
-              }
-            ];
-          };
-        },
-        {
           name: 'programState';
           isMut: false;
           isSigner: false;
@@ -4648,12 +4755,12 @@ export type Credix = {
           isSigner: false;
         },
         {
-          name: 'credixMultisigKey';
+          name: 'credixTreasury';
           isMut: false;
           isSigner: false;
         },
         {
-          name: 'credixMultisigTokenAccount';
+          name: 'credixTreasuryTokenAccount';
           isMut: true;
           isSigner: false;
         },
@@ -5620,10 +5727,10 @@ export type Credix = {
           type: 'u32';
         },
         {
-          name: 'repaymentPeriodInputs';
+          name: 'repaymentPeriods';
           type: {
             vec: {
-              defined: 'RepaymentPeriodInput';
+              defined: 'RepaymentPeriod';
             };
           };
         }
@@ -6365,12 +6472,12 @@ export type Credix = {
           };
         },
         {
-          name: 'credixMultisigKey';
+          name: 'credixTreasury';
           isMut: false;
           isSigner: false;
         },
         {
-          name: 'credixMultisigTokenAccount';
+          name: 'credixTreasuryTokenAccount';
           isMut: true;
           isSigner: false;
         },
@@ -6807,36 +6914,6 @@ export type Credix = {
       args: [];
     },
     {
-      name: 'migrateDeal';
-      accounts: [
-        {
-          name: 'owner';
-          isMut: true;
-          isSigner: true;
-        },
-        {
-          name: 'programState';
-          isMut: false;
-          isSigner: false;
-          pda: {
-            seeds: [
-              {
-                kind: 'const';
-                type: 'string';
-                value: 'program-state';
-              }
-            ];
-          };
-        },
-        {
-          name: 'deal';
-          isMut: true;
-          isSigner: false;
-        }
-      ];
-      args: [];
-    },
-    {
       name: 'migrateDealTranches';
       accounts: [
         {
@@ -6859,7 +6936,207 @@ export type Credix = {
           };
         },
         {
+          name: 'globalMarketState';
+          isMut: false;
+          isSigner: false;
+        },
+        {
+          name: 'deal';
+          isMut: false;
+          isSigner: false;
+          pda: {
+            seeds: [
+              {
+                kind: 'account';
+                type: 'publicKey';
+                account: 'GlobalMarketState';
+                path: 'global_market_state';
+              },
+              {
+                kind: 'account';
+                type: 'publicKey';
+                account: 'Deal';
+                path: 'deal.borrower';
+              },
+              {
+                kind: 'account';
+                type: 'u16';
+                account: 'Deal';
+                path: 'deal.deal_number';
+              },
+              {
+                kind: 'const';
+                type: 'string';
+                value: 'deal-info';
+              }
+            ];
+          };
+        },
+        {
           name: 'dealTranches';
+          isMut: true;
+          isSigner: false;
+        },
+        {
+          name: 'systemProgram';
+          isMut: false;
+          isSigner: false;
+        }
+      ];
+      args: [];
+    },
+    {
+      name: 'migrateRepaymentSchedule';
+      accounts: [
+        {
+          name: 'owner';
+          isMut: true;
+          isSigner: true;
+        },
+        {
+          name: 'programState';
+          isMut: false;
+          isSigner: false;
+          pda: {
+            seeds: [
+              {
+                kind: 'const';
+                type: 'string';
+                value: 'program-state';
+              }
+            ];
+          };
+        },
+        {
+          name: 'globalMarketState';
+          isMut: false;
+          isSigner: false;
+        },
+        {
+          name: 'deal';
+          isMut: false;
+          isSigner: false;
+          pda: {
+            seeds: [
+              {
+                kind: 'account';
+                type: 'publicKey';
+                account: 'GlobalMarketState';
+                path: 'global_market_state';
+              },
+              {
+                kind: 'account';
+                type: 'publicKey';
+                account: 'Deal';
+                path: 'deal.borrower';
+              },
+              {
+                kind: 'account';
+                type: 'u16';
+                account: 'Deal';
+                path: 'deal.deal_number';
+              },
+              {
+                kind: 'const';
+                type: 'string';
+                value: 'deal-info';
+              }
+            ];
+          };
+        },
+        {
+          name: 'repaymentSchedule';
+          isMut: true;
+          isSigner: false;
+        },
+        {
+          name: 'systemProgram';
+          isMut: false;
+          isSigner: false;
+        }
+      ];
+      args: [];
+    },
+    {
+      name: 'migrateProgramState';
+      accounts: [
+        {
+          name: 'owner';
+          isMut: true;
+          isSigner: true;
+        },
+        {
+          name: 'programState';
+          isMut: true;
+          isSigner: false;
+        },
+        {
+          name: 'systemProgram';
+          isMut: false;
+          isSigner: false;
+        }
+      ];
+      args: [];
+    },
+    {
+      name: 'migrateWithdrawEpoch';
+      accounts: [
+        {
+          name: 'owner';
+          isMut: true;
+          isSigner: true;
+        },
+        {
+          name: 'programState';
+          isMut: false;
+          isSigner: false;
+          pda: {
+            seeds: [
+              {
+                kind: 'const';
+                type: 'string';
+                value: 'program-state';
+              }
+            ];
+          };
+        },
+        {
+          name: 'withdrawEpoch';
+          isMut: true;
+          isSigner: false;
+        },
+        {
+          name: 'systemProgram';
+          isMut: false;
+          isSigner: false;
+        }
+      ];
+      args: [];
+    },
+    {
+      name: 'migrateCredixPass';
+      accounts: [
+        {
+          name: 'owner';
+          isMut: true;
+          isSigner: true;
+        },
+        {
+          name: 'programState';
+          isMut: false;
+          isSigner: false;
+          pda: {
+            seeds: [
+              {
+                kind: 'const';
+                type: 'string';
+                value: 'program-state';
+              }
+            ];
+          };
+        },
+        {
+          name: 'credixPass';
           isMut: true;
           isSigner: false;
         },
@@ -6873,94 +7150,6 @@ export type Credix = {
     }
   ];
   accounts: [
-    {
-      name: 'deserializableDeal';
-      type: {
-        kind: 'struct';
-        fields: [
-          {
-            name: 'name';
-            type: 'string';
-          },
-          {
-            name: 'borrower';
-            type: 'publicKey';
-          },
-          {
-            name: 'amountWithdrawn';
-            type: 'u64';
-          },
-          {
-            name: 'goLiveAt';
-            type: 'i64';
-          },
-          {
-            name: 'createdAt';
-            type: 'i64';
-          },
-          {
-            name: 'maxFundingDuration';
-            type: 'u8';
-          },
-          {
-            name: 'dealNumber';
-            type: 'u16';
-          },
-          {
-            name: 'bump';
-            type: 'u8';
-          },
-          {
-            name: 'openedAt';
-            type: 'i64';
-          },
-          {
-            name: 'arrangementFees';
-            type: 'u64';
-          },
-          {
-            name: 'arrangementFeesRepaid';
-            type: 'u64';
-          },
-          {
-            name: 'timeLatestArrangementFeesCharged';
-            type: 'i64';
-          },
-          {
-            name: 'migrated';
-            type: 'bool';
-          },
-          {
-            name: 'originalGoLiveAt';
-            type: 'i64';
-          },
-          {
-            name: 'prevUpdateTs';
-            type: {
-              option: 'i64';
-            };
-          },
-          {
-            name: 'arrangementFee';
-            type: {
-              defined: 'Fraction';
-            };
-          },
-          {
-            name: 'collectionTokenAccount';
-            type: {
-              option: 'publicKey';
-            };
-          },
-          {
-            name: 'offRampTokenAccount';
-            type: {
-              option: 'publicKey';
-            };
-          }
-        ];
-      };
-    },
     {
       name: 'mainnetDealTranches';
       type: {
@@ -6979,6 +7168,44 @@ export type Credix = {
             type: {
               vec: {
                 defined: 'MainnetDealTranche';
+              };
+            };
+          }
+        ];
+      };
+    },
+    {
+      name: 'mainnetRepaymentSchedule';
+      type: {
+        kind: 'struct';
+        fields: [
+          {
+            name: 'totalPeriods';
+            type: 'u16';
+          },
+          {
+            name: 'startTs';
+            type: 'i64';
+          },
+          {
+            name: 'daycountConvention';
+            type: {
+              defined: 'DaycountConvention';
+            };
+          },
+          {
+            name: 'periods';
+            type: {
+              vec: {
+                defined: 'MainnetRepaymentPeriod';
+              };
+            };
+          },
+          {
+            name: 'waterfallDefinitions';
+            type: {
+              vec: {
+                defined: 'DistributionWaterfall';
               };
             };
           }
@@ -7011,18 +7238,6 @@ export type Credix = {
             type: 'u8';
           },
           {
-            name: 'isBorrower';
-            type: 'bool';
-          },
-          {
-            name: 'isInvestor';
-            type: 'bool';
-          },
-          {
-            name: 'active';
-            type: 'bool';
-          },
-          {
             name: 'releaseTimestamp';
             type: 'i64';
           },
@@ -7031,19 +7246,17 @@ export type Credix = {
             type: 'publicKey';
           },
           {
-            name: 'disableWithdrawalFee';
-            type: 'bool';
-          },
-          {
-            name: 'bypassWithdrawEpochs';
-            type: 'bool';
-          },
-          {
             name: 'withdrawCap';
             type: {
               option: {
                 defined: 'WithdrawCap';
               };
+            };
+          },
+          {
+            name: 'flags';
+            type: {
+              defined: 'Flags';
             };
           }
         ];
@@ -7384,6 +7597,28 @@ export type Credix = {
             type: {
               array: ['publicKey', 10];
             };
+          },
+          {
+            name: 'credixTreasury';
+            type: 'publicKey';
+          }
+        ];
+      };
+    },
+    {
+      name: 'oldProgramState';
+      type: {
+        kind: 'struct';
+        fields: [
+          {
+            name: 'credixMultisigKey';
+            type: 'publicKey';
+          },
+          {
+            name: 'credixManagers';
+            type: {
+              array: ['publicKey', 10];
+            };
           }
         ];
       };
@@ -7505,38 +7740,74 @@ export type Credix = {
             type: 'u32';
           },
           {
-            name: 'totalRequestedBaseAmount';
-            type: 'u64';
+            name: 'requests';
+            type: {
+              vec: {
+                defined: 'WithdrawRequest';
+              };
+            };
           },
           {
-            name: 'participatingInvestorsTotalLpAmount';
-            type: 'u64';
-          }
-        ];
-      };
-    },
-    {
-      name: 'withdrawRequest';
-      type: {
-        kind: 'struct';
-        fields: [
-          {
-            name: 'baseAmount';
-            type: 'u64';
+            name: 'market';
+            type: 'publicKey';
           },
           {
-            name: 'baseAmountWithdrawn';
-            type: 'u64';
-          },
-          {
-            name: 'investorTotalLpAmount';
-            type: 'u64';
+            name: 'epochId';
+            type: 'u32';
           }
         ];
       };
     }
   ];
   types: [
+    {
+      name: 'OldCredixPass';
+      type: {
+        kind: 'struct';
+        fields: [
+          {
+            name: 'bump';
+            type: 'u8';
+          },
+          {
+            name: 'isBorrower';
+            type: 'bool';
+          },
+          {
+            name: 'isInvestor';
+            type: 'bool';
+          },
+          {
+            name: 'active';
+            type: 'bool';
+          },
+          {
+            name: 'releaseTimestamp';
+            type: 'i64';
+          },
+          {
+            name: 'user';
+            type: 'publicKey';
+          },
+          {
+            name: 'disableWithdrawalFee';
+            type: 'bool';
+          },
+          {
+            name: 'bypassWithdrawEpochs';
+            type: 'bool';
+          },
+          {
+            name: 'withdrawCap';
+            type: {
+              option: {
+                defined: 'WithdrawCap';
+              };
+            };
+          }
+        ];
+      };
+    },
     {
       name: 'MainnetDealTranche';
       type: {
@@ -7587,8 +7858,122 @@ export type Credix = {
           {
             name: 'tranche';
             type: {
-              defined: 'Tranche';
+              defined: 'MainnetTranche';
             };
+          },
+          {
+            name: 'variableRate';
+            type: {
+              defined: 'VariableRate';
+            };
+          },
+          {
+            name: 'interestRateUpdatedAt';
+            type: 'i64';
+          },
+          {
+            name: 'dataPadding';
+            type: {
+              array: ['u32', 18];
+            };
+          }
+        ];
+      };
+    },
+    {
+      name: 'MainnetTranche';
+      type: {
+        kind: 'struct';
+        fields: [
+          {
+            name: 'size';
+            type: 'u64';
+          },
+          {
+            name: 'outstandingPrincipal';
+            type: 'u64';
+          },
+          {
+            name: 'rates';
+            type: {
+              defined: 'TrancheRates';
+            };
+          },
+          {
+            name: 'amountsDue';
+            type: {
+              defined: 'TrancheAmountsDue';
+            };
+          },
+          {
+            name: 'amountsRepaid';
+            type: {
+              defined: 'TrancheAmountsRepaid';
+            };
+          }
+        ];
+      };
+    },
+    {
+      name: 'MainnetRepaymentPeriod';
+      type: {
+        kind: 'struct';
+        fields: [
+          {
+            name: 'waterfallIndex';
+            type: 'u64';
+          },
+          {
+            name: 'accrualInDays';
+            type: 'u32';
+          },
+          {
+            name: 'principalExpected';
+            type: {
+              option: 'u64';
+            };
+          },
+          {
+            name: 'timeFrame';
+            type: {
+              defined: 'TimeFrame';
+            };
+          },
+          {
+            name: 'calculationWaterfallIndex';
+            type: 'u64';
+          }
+        ];
+      };
+    },
+    {
+      name: 'MainnetWithdrawEpoch';
+      type: {
+        kind: 'struct';
+        fields: [
+          {
+            name: 'goLive';
+            type: 'i64';
+          },
+          {
+            name: 'requestSeconds';
+            type: 'u32';
+          },
+          {
+            name: 'redeemSeconds';
+            type: 'u32';
+          },
+          {
+            name: 'availableLiquiditySeconds';
+            type: 'u32';
+          },
+          {
+            name: 'totalRequestedBaseAmount';
+            type: 'u64';
+          },
+          {
+            name: 'participatingInvestorsTotalLpAmount';
+            type: 'u64';
           }
         ];
       };
@@ -7800,6 +8185,18 @@ export type Credix = {
       };
     },
     {
+      name: 'Flags';
+      type: {
+        kind: 'struct';
+        fields: [
+          {
+            name: 'innerFlags';
+            type: 'u64';
+          }
+        ];
+      };
+    },
+    {
       name: 'TrancheClaim';
       type: {
         kind: 'struct';
@@ -7944,9 +8341,13 @@ export type Credix = {
             };
           },
           {
+            name: 'interestRateUpdatedAt';
+            type: 'i64';
+          },
+          {
             name: 'dataPadding';
             type: {
-              array: ['u32', 20];
+              array: ['u32', 18];
             };
           }
         ];
@@ -7982,6 +8383,10 @@ export type Credix = {
             type: {
               defined: 'TrancheAmountsRepaid';
             };
+          },
+          {
+            name: 'yearlyOutstandingPrincipalForMembershipFees';
+            type: 'u64';
           }
         ];
       };
@@ -8179,6 +8584,10 @@ export type Credix = {
           {
             name: 'calculationWaterfallIndex';
             type: 'u64';
+          },
+          {
+            name: 'calculationDate';
+            type: 'i64';
           }
         ];
       };
@@ -8284,38 +8693,6 @@ export type Credix = {
       };
     },
     {
-      name: 'RepaymentPeriodInput';
-      type: {
-        kind: 'struct';
-        fields: [
-          {
-            name: 'calculationWaterfallIndex';
-            type: 'u64';
-          },
-          {
-            name: 'waterfallIndex';
-            type: 'u64';
-          },
-          {
-            name: 'accrualInDays';
-            type: 'u32';
-          },
-          {
-            name: 'principalExpected';
-            type: {
-              option: 'u64';
-            };
-          },
-          {
-            name: 'timeFrame';
-            type: {
-              defined: 'TimeFrame';
-            };
-          }
-        ];
-      };
-    },
-    {
       name: 'TrancheSnapshot';
       type: {
         kind: 'struct';
@@ -8350,6 +8727,34 @@ export type Credix = {
           },
           {
             name: 'amount';
+            type: 'u64';
+          }
+        ];
+      };
+    },
+    {
+      name: 'WithdrawRequest';
+      type: {
+        kind: 'struct';
+        fields: [
+          {
+            name: 'investor';
+            type: 'publicKey';
+          },
+          {
+            name: 'baseRequested';
+            type: 'u64';
+          },
+          {
+            name: 'baseLocked';
+            type: 'u64';
+          },
+          {
+            name: 'baseAmountWithdrawn';
+            type: 'u64';
+          },
+          {
+            name: 'currentLpTokensOwned';
             type: 'u64';
           }
         ];
@@ -9896,17 +10301,66 @@ export type Credix = {
     },
     {
       code: 6096;
+      name: 'CollectionTokenAccountNotSet';
+      msg: 'Instruction expected collection token account to be set for the deal';
+    },
+    {
+      code: 6097;
+      name: 'ArrangementFeeCollectionTokenAccountNotSet';
+      msg: 'Instruction expected arrangement fee Collection token account to be set for the deal';
+    },
+    {
+      code: 6098;
+      name: 'LockedLiquidityCalculationIncorrect';
+      msg: 'The sum of total liquidity on investor requests is more than locked liquidity on global market state.';
+    },
+    {
+      code: 6099;
       name: 'MissingArrangementFeeCollectionAuthority';
       msg: 'Arrangement Fee Collection authority Missing';
+    },
+    {
+      code: 6100;
+      name: 'VariableRateInTrancheNotUpdated';
+      msg: 'Variable rate is not updated in last 24 hours.';
+    },
+    {
+      code: 6101;
+      name: 'VariableRepaymentNotOnLastDay';
+      msg: 'Variable rate is only possible on last day of the period.';
+    },
+    {
+      code: 6102;
+      name: 'InvalidDealTranches';
+      msg: 'Deal tranches do not belong to the deal passed';
+    },
+    {
+      code: 6103;
+      name: 'WithdrawRequestNotFound';
+      msg: 'Withdraw Request not found for investor in epoch.';
+    },
+    {
+      code: 6104;
+      name: 'WithdrawRequestAlreadyExists';
+      msg: 'Investors can only create one withdraw request per epoch.';
     }
   ];
 };
+
 export const IDL: Credix = {
-  version: '3.11.0',
+  version: '3.12.0-alpha.1',
   name: 'credix',
   instructions: [
     {
       name: 'initializeMarket',
+      docs: [
+        'Using `initialize_market` instruction, we create a new market with the provided config.',
+        'The instruction can be called only by credix multisig.',
+        'This initializes the LP pool token account and lp token mint. The market base token is set equal',
+        'to the base token account passed.',
+        '',
+        'This does not involve any SPL CPI calls.',
+      ],
       accounts: [
         {
           name: 'owner',
@@ -10095,6 +10549,33 @@ export const IDL: Credix = {
     },
     {
       name: 'depositFunds',
+      docs: [
+        'Using `deposit_funds` instruction investors can fund the pool of the market.',
+        'Investor will need an active credix pass with the flag investor true for calling this instruction.',
+        "It is possible to cap the max `unallocated` amount of deposit by updating market's  pool_size_limit_percentage.",
+        'We would want to do so to maximum the effect of interest repayments on the lp token price.',
+        'if `pool_size_limit_percentage.numerator == u32::Max` market is not capped.',
+        'if market is capped, the max unallocated amount is calculated as `pool_size_limit_percentage * pool_outstanding_credit`.',
+        '',
+        'So max deposit will:',
+        '```rust',
+        'min(amount, liquidity_pool_token_account.amount - pool_size_limit_percentage * pool_outstanding_credit);',
+        '````',
+        'This instruction also mints frozen lp tokens to the investor against there deposit, according to the lp token price.',
+        '',
+        'This involves 2 SPL CPI calls.',
+        '1. TokenTransfer:',
+        '- amount: amount_deposit,',
+        '- authority: investor,',
+        '- src: investor_token_account,',
+        '- destination: liquidity_pool_token_account,',
+        '- mint: base_token_mint,',
+        '2. MintToken:',
+        '- amount: `base_to_lp(amount_deposit)`,',
+        '- authority: signing_authority,',
+        '- destination: investor_lp_token_account,',
+        '- mint: lp_token_mint,',
+      ],
       accounts: [
         {
           name: 'investor',
@@ -10590,10 +11071,10 @@ export const IDL: Credix = {
           type: 'u32',
         },
         {
-          name: 'repaymentPeriodInputs',
+          name: 'repaymentPeriods',
           type: {
             vec: {
-              defined: 'RepaymentPeriodInput',
+              defined: 'RepaymentPeriod',
             },
           },
         },
@@ -10847,6 +11328,22 @@ export const IDL: Credix = {
     },
     {
       name: 'activateDeal',
+      docs: [
+        'Using `activate_deal` instruction the deal is ready for principal withdrawal and repayment by the borrower',
+        'All the tranches not funded by the liquidity pool should be completely filled before calling this instruction',
+        'The liquidity pool should have enough liquidity to fund remaining part of all tranches funded by the liquidity pool',
+        'The tranches funded by the lp are funded in this instruction',
+        '',
+        'This instruction can be called only by the multisig of the market',
+        '',
+        'This involves 1 SPL CPI call.',
+        '1. TokenTransfer:',
+        '- amount: missing funds of tranches funded by liquidity pool',
+        '- authority: signing_authority,',
+        '- src: liquidity_pool_token_account,',
+        '- destination: deal_token_account,',
+        '- mint: base_token_mint,',
+      ],
       accounts: [
         {
           name: 'owner',
@@ -11067,6 +11564,43 @@ export const IDL: Credix = {
     },
     {
       name: 'repayDeal',
+      docs: [
+        'Using `repay_deal` instruction borrower can repay a deal',
+        'Deal status should be in progress in order to call this instruction',
+        'Borrower will need an active credix pass with the flag borrower true for calling this instruction.',
+        '',
+        '',
+        'The budget passed is first distributed over the tranches due, If there is leftover budget and we are in not in revolving phase(i.e periods expect principal repayment) early principal repayment happens.',
+        'For the budget allocations, It is recommended to compare amounts repaid on tranches account.',
+        '',
+        'This involves 4 SPL CPI calls.',
+        '(In all the above cases, if deal is a SCOW deal, the borrower_token_account is the collection token account,',
+        'and the authority will be the deal in these cases)',
+        '1. TokenTransfer:',
+        '- amount: liquidity pool share,',
+        '- authority: borrower,',
+        '- src: borrower_token_account',
+        '- destination: liquidity_pool_token_account,',
+        '- mint: base_token_mint,',
+        '2. TokenTransfer:',
+        '- amount: non lp funded tranches share,',
+        '- authority: borrower,',
+        '- src: borrower_token_account',
+        '- destination: deal_token_account,',
+        '- mint: base_token_mint,',
+        '3. TokenTransfer:',
+        '- amount: credix share,',
+        '- authority: borrower,',
+        '- src: borrower_token_account',
+        '- destination: credix_multisig_token_account,',
+        '- mint: base_token_mint,',
+        '4. TokenTransfer:',
+        '- amount: asset manager share,',
+        '- authority: borrower,',
+        '- src: borrower_token_account',
+        '- destination: treasury_token_account,',
+        '- mint: base_token_mint,',
+      ],
       accounts: [
         {
           name: 'signer',
@@ -11273,12 +11807,12 @@ export const IDL: Credix = {
           },
         },
         {
-          name: 'credixMultisigKey',
+          name: 'credixTreasury',
           isMut: false,
           isSigner: false,
         },
         {
-          name: 'credixMultisigTokenAccount',
+          name: 'credixTreasuryTokenAccount',
           isMut: true,
           isSigner: false,
         },
@@ -11600,6 +12134,39 @@ export const IDL: Credix = {
     },
     {
       name: 'withdrawFunds',
+      docs: [
+        'Using `withdraw_funds` instruction investors can withdraw funds from pool of the market.',
+        'Investor will need an active credix pass with the flag investor true for calling this instruction.',
+        'The instruction restricted:',
+        "- If the timestamp now has not passed investor's release timestamp on credix pass.",
+        "- If the credix pass is inactivate, or market has withdraw epochs and credix pass of investor can't bypass them.",
+        '- If the investor has withdrawn already according to his withdraw cap.',
+        '',
+        'This involves 4 SPL CPI calls.',
+        '1. BurnLpTokens:',
+        '- amount: baseToLp(amountWithdrawn),',
+        '- authority: investor,',
+        '- src: investor_token_account,',
+        '- mint: lp_token_mint,',
+        '2. TokenTransfer:',
+        '- amount: amount_withdraw - asset_manager_fees- credix_fees,',
+        '- authority: signing_authority,',
+        '- src: liquidity_pool_token_account',
+        '- destination: investor_base_token_account,',
+        '- mint: base_token_mint,',
+        '3. TokenTransfer:',
+        '- amount: asset_manager_fees,',
+        '- authority: signing_authority,',
+        '- src: liquidity_pool_token_account',
+        '- destination: treasury_pool_token_account,',
+        '- mint: base_token_mint,',
+        '4. TokenTransfer:',
+        '- amount: credix_fees,',
+        '- authority: signing_authority,',
+        '- src: liquidity_pool_token_account',
+        '- destination: credix_multisig_token_account,',
+        '- mint: base_token_mint,',
+      ],
       accounts: [
         {
           name: 'investor',
@@ -11656,12 +12223,12 @@ export const IDL: Credix = {
           isSigner: false,
         },
         {
-          name: 'credixMultisigKey',
+          name: 'credixTreasury',
           isMut: false,
           isSigner: false,
         },
         {
-          name: 'credixMultisigTokenAccount',
+          name: 'credixTreasuryTokenAccount',
           isMut: true,
           isSigner: false,
         },
@@ -12455,6 +13022,26 @@ export const IDL: Credix = {
     },
     {
       name: 'depositTranche',
+      docs: [
+        'Using `deposit_tranche` instruction the Tranches of deal which are not funded by the pool of the market are',
+        'funded by investors/underwriters.',
+        'Investor will need an active tranche pass for calling this instruction. The Instruction is only for a',
+        'deal which is open for funding. The investor can deposit multiple times given deal is open for funding.',
+        'The max amount is capped to `size_of_tranche * max_deposit_percentage`. The tranche index is passed',
+        'in arguments.',
+        'This involves 2 SPL CPI calls.',
+        '1. TokenTransfer:',
+        '- amount: amount_invested,',
+        '- authority: investor,',
+        '- src: investor_token_account,',
+        '- destination: deal_token_account,',
+        '- mint: base_token_mint,',
+        '2. MintToken:',
+        '- amount: amount_invested,',
+        '- authority: signing_authority,',
+        '- destination: investor_tranche_token_account,',
+        '- mint: tranche_mint,',
+      ],
       accounts: [
         {
           name: 'payer',
@@ -13201,6 +13788,28 @@ export const IDL: Credix = {
     },
     {
       name: 'withdrawTranche',
+      docs: [
+        'Using `withdraw_tranche` instruction tranche investors can withdraw funds from the tranche',
+        'Investor will need an active tranche pass for calling this instruction.',
+        'The deal should be open for withdrawal to call this instruction.',
+        'This instruction withdraws maximum possible withdrawal amount which is calculated by:',
+        'For non upscaled deals',
+        '- investor_ratio = investor tranche token amount / size of the tranche',
+        '- max_withdrawal_amount_possible = (interest_repaid + principal_repaid) * investor_ratio',
+        '- withdrawal_amount = max_withdrawal_amount_possible - amount_withdrawn',
+        'For upscaled deals, the investor ratios are calculated with the help of tranche deposits snapshots',
+        'which are stored in the tranche passes.',
+        '',
+        'This instruction does not burn any tranche tokens',
+        '',
+        'This involves 1 SPL CPI calls.',
+        '1. TokenTransfer:',
+        '- amount: investor_base_amount_withdrawn,',
+        '- authority: signing_authority,',
+        '- src: deal_token_account,',
+        '- destination: investor_base_account,',
+        '- mint: base_token_mint,',
+      ],
       accounts: [
         {
           name: 'payer',
@@ -13671,6 +14280,12 @@ export const IDL: Credix = {
             },
           },
         },
+        {
+          name: 'credixTreasury',
+          type: {
+            option: 'publicKey',
+          },
+        },
       ],
     },
     {
@@ -14068,37 +14683,6 @@ export const IDL: Credix = {
           },
         },
         {
-          name: 'withdrawRequest',
-          isMut: true,
-          isSigner: false,
-          pda: {
-            seeds: [
-              {
-                kind: 'account',
-                type: 'publicKey',
-                account: 'GlobalMarketState',
-                path: 'global_market_state',
-              },
-              {
-                kind: 'account',
-                type: 'publicKey',
-                path: 'investor',
-              },
-              {
-                kind: 'account',
-                type: 'u32',
-                account: 'GlobalMarketState',
-                path: 'global_market_state.latest_withdraw_epoch_idx',
-              },
-              {
-                kind: 'const',
-                type: 'string',
-                value: 'withdraw-request',
-              },
-            ],
-          },
-        },
-        {
           name: 'investorLpTokenAccount',
           isMut: false,
           isSigner: false,
@@ -14286,12 +14870,12 @@ export const IDL: Credix = {
           isSigner: false,
         },
         {
-          name: 'credixMultisigKey',
+          name: 'credixTreasury',
           isMut: false,
           isSigner: false,
         },
         {
-          name: 'credixMultisigTokenAccount',
+          name: 'credixTreasuryTokenAccount',
           isMut: true,
           isSigner: false,
         },
@@ -14374,7 +14958,7 @@ export const IDL: Credix = {
       accounts: [
         {
           name: 'owner',
-          isMut: true,
+          isMut: false,
           isSigner: true,
         },
         {
@@ -14384,7 +14968,7 @@ export const IDL: Credix = {
         },
         {
           name: 'withdrawEpoch',
-          isMut: false,
+          isMut: true,
           isSigner: false,
           pda: {
             seeds: [
@@ -14476,37 +15060,6 @@ export const IDL: Credix = {
           },
         },
         {
-          name: 'withdrawRequest',
-          isMut: true,
-          isSigner: false,
-          pda: {
-            seeds: [
-              {
-                kind: 'account',
-                type: 'publicKey',
-                account: 'GlobalMarketState',
-                path: 'global_market_state',
-              },
-              {
-                kind: 'account',
-                type: 'publicKey',
-                path: 'investor',
-              },
-              {
-                kind: 'account',
-                type: 'u32',
-                account: 'GlobalMarketState',
-                path: 'global_market_state.latest_withdraw_epoch_idx',
-              },
-              {
-                kind: 'const',
-                type: 'string',
-                value: 'withdraw-request',
-              },
-            ],
-          },
-        },
-        {
           name: 'programState',
           isMut: false,
           isSigner: false,
@@ -14551,12 +15104,12 @@ export const IDL: Credix = {
           isSigner: false,
         },
         {
-          name: 'credixMultisigKey',
+          name: 'credixTreasury',
           isMut: false,
           isSigner: false,
         },
         {
-          name: 'credixMultisigTokenAccount',
+          name: 'credixTreasuryTokenAccount',
           isMut: true,
           isSigner: false,
         },
@@ -15523,10 +16076,10 @@ export const IDL: Credix = {
           type: 'u32',
         },
         {
-          name: 'repaymentPeriodInputs',
+          name: 'repaymentPeriods',
           type: {
             vec: {
-              defined: 'RepaymentPeriodInput',
+              defined: 'RepaymentPeriod',
             },
           },
         },
@@ -16268,12 +16821,12 @@ export const IDL: Credix = {
           },
         },
         {
-          name: 'credixMultisigKey',
+          name: 'credixTreasury',
           isMut: false,
           isSigner: false,
         },
         {
-          name: 'credixMultisigTokenAccount',
+          name: 'credixTreasuryTokenAccount',
           isMut: true,
           isSigner: false,
         },
@@ -16710,36 +17263,6 @@ export const IDL: Credix = {
       args: [],
     },
     {
-      name: 'migrateDeal',
-      accounts: [
-        {
-          name: 'owner',
-          isMut: true,
-          isSigner: true,
-        },
-        {
-          name: 'programState',
-          isMut: false,
-          isSigner: false,
-          pda: {
-            seeds: [
-              {
-                kind: 'const',
-                type: 'string',
-                value: 'program-state',
-              },
-            ],
-          },
-        },
-        {
-          name: 'deal',
-          isMut: true,
-          isSigner: false,
-        },
-      ],
-      args: [],
-    },
-    {
       name: 'migrateDealTranches',
       accounts: [
         {
@@ -16762,7 +17285,207 @@ export const IDL: Credix = {
           },
         },
         {
+          name: 'globalMarketState',
+          isMut: false,
+          isSigner: false,
+        },
+        {
+          name: 'deal',
+          isMut: false,
+          isSigner: false,
+          pda: {
+            seeds: [
+              {
+                kind: 'account',
+                type: 'publicKey',
+                account: 'GlobalMarketState',
+                path: 'global_market_state',
+              },
+              {
+                kind: 'account',
+                type: 'publicKey',
+                account: 'Deal',
+                path: 'deal.borrower',
+              },
+              {
+                kind: 'account',
+                type: 'u16',
+                account: 'Deal',
+                path: 'deal.deal_number',
+              },
+              {
+                kind: 'const',
+                type: 'string',
+                value: 'deal-info',
+              },
+            ],
+          },
+        },
+        {
           name: 'dealTranches',
+          isMut: true,
+          isSigner: false,
+        },
+        {
+          name: 'systemProgram',
+          isMut: false,
+          isSigner: false,
+        },
+      ],
+      args: [],
+    },
+    {
+      name: 'migrateRepaymentSchedule',
+      accounts: [
+        {
+          name: 'owner',
+          isMut: true,
+          isSigner: true,
+        },
+        {
+          name: 'programState',
+          isMut: false,
+          isSigner: false,
+          pda: {
+            seeds: [
+              {
+                kind: 'const',
+                type: 'string',
+                value: 'program-state',
+              },
+            ],
+          },
+        },
+        {
+          name: 'globalMarketState',
+          isMut: false,
+          isSigner: false,
+        },
+        {
+          name: 'deal',
+          isMut: false,
+          isSigner: false,
+          pda: {
+            seeds: [
+              {
+                kind: 'account',
+                type: 'publicKey',
+                account: 'GlobalMarketState',
+                path: 'global_market_state',
+              },
+              {
+                kind: 'account',
+                type: 'publicKey',
+                account: 'Deal',
+                path: 'deal.borrower',
+              },
+              {
+                kind: 'account',
+                type: 'u16',
+                account: 'Deal',
+                path: 'deal.deal_number',
+              },
+              {
+                kind: 'const',
+                type: 'string',
+                value: 'deal-info',
+              },
+            ],
+          },
+        },
+        {
+          name: 'repaymentSchedule',
+          isMut: true,
+          isSigner: false,
+        },
+        {
+          name: 'systemProgram',
+          isMut: false,
+          isSigner: false,
+        },
+      ],
+      args: [],
+    },
+    {
+      name: 'migrateProgramState',
+      accounts: [
+        {
+          name: 'owner',
+          isMut: true,
+          isSigner: true,
+        },
+        {
+          name: 'programState',
+          isMut: true,
+          isSigner: false,
+        },
+        {
+          name: 'systemProgram',
+          isMut: false,
+          isSigner: false,
+        },
+      ],
+      args: [],
+    },
+    {
+      name: 'migrateWithdrawEpoch',
+      accounts: [
+        {
+          name: 'owner',
+          isMut: true,
+          isSigner: true,
+        },
+        {
+          name: 'programState',
+          isMut: false,
+          isSigner: false,
+          pda: {
+            seeds: [
+              {
+                kind: 'const',
+                type: 'string',
+                value: 'program-state',
+              },
+            ],
+          },
+        },
+        {
+          name: 'withdrawEpoch',
+          isMut: true,
+          isSigner: false,
+        },
+        {
+          name: 'systemProgram',
+          isMut: false,
+          isSigner: false,
+        },
+      ],
+      args: [],
+    },
+    {
+      name: 'migrateCredixPass',
+      accounts: [
+        {
+          name: 'owner',
+          isMut: true,
+          isSigner: true,
+        },
+        {
+          name: 'programState',
+          isMut: false,
+          isSigner: false,
+          pda: {
+            seeds: [
+              {
+                kind: 'const',
+                type: 'string',
+                value: 'program-state',
+              },
+            ],
+          },
+        },
+        {
+          name: 'credixPass',
           isMut: true,
           isSigner: false,
         },
@@ -16776,94 +17499,6 @@ export const IDL: Credix = {
     },
   ],
   accounts: [
-    {
-      name: 'deserializableDeal',
-      type: {
-        kind: 'struct',
-        fields: [
-          {
-            name: 'name',
-            type: 'string',
-          },
-          {
-            name: 'borrower',
-            type: 'publicKey',
-          },
-          {
-            name: 'amountWithdrawn',
-            type: 'u64',
-          },
-          {
-            name: 'goLiveAt',
-            type: 'i64',
-          },
-          {
-            name: 'createdAt',
-            type: 'i64',
-          },
-          {
-            name: 'maxFundingDuration',
-            type: 'u8',
-          },
-          {
-            name: 'dealNumber',
-            type: 'u16',
-          },
-          {
-            name: 'bump',
-            type: 'u8',
-          },
-          {
-            name: 'openedAt',
-            type: 'i64',
-          },
-          {
-            name: 'arrangementFees',
-            type: 'u64',
-          },
-          {
-            name: 'arrangementFeesRepaid',
-            type: 'u64',
-          },
-          {
-            name: 'timeLatestArrangementFeesCharged',
-            type: 'i64',
-          },
-          {
-            name: 'migrated',
-            type: 'bool',
-          },
-          {
-            name: 'originalGoLiveAt',
-            type: 'i64',
-          },
-          {
-            name: 'prevUpdateTs',
-            type: {
-              option: 'i64',
-            },
-          },
-          {
-            name: 'arrangementFee',
-            type: {
-              defined: 'Fraction',
-            },
-          },
-          {
-            name: 'collectionTokenAccount',
-            type: {
-              option: 'publicKey',
-            },
-          },
-          {
-            name: 'offRampTokenAccount',
-            type: {
-              option: 'publicKey',
-            },
-          },
-        ],
-      },
-    },
     {
       name: 'mainnetDealTranches',
       type: {
@@ -16882,6 +17517,44 @@ export const IDL: Credix = {
             type: {
               vec: {
                 defined: 'MainnetDealTranche',
+              },
+            },
+          },
+        ],
+      },
+    },
+    {
+      name: 'mainnetRepaymentSchedule',
+      type: {
+        kind: 'struct',
+        fields: [
+          {
+            name: 'totalPeriods',
+            type: 'u16',
+          },
+          {
+            name: 'startTs',
+            type: 'i64',
+          },
+          {
+            name: 'daycountConvention',
+            type: {
+              defined: 'DaycountConvention',
+            },
+          },
+          {
+            name: 'periods',
+            type: {
+              vec: {
+                defined: 'MainnetRepaymentPeriod',
+              },
+            },
+          },
+          {
+            name: 'waterfallDefinitions',
+            type: {
+              vec: {
+                defined: 'DistributionWaterfall',
               },
             },
           },
@@ -16914,18 +17587,6 @@ export const IDL: Credix = {
             type: 'u8',
           },
           {
-            name: 'isBorrower',
-            type: 'bool',
-          },
-          {
-            name: 'isInvestor',
-            type: 'bool',
-          },
-          {
-            name: 'active',
-            type: 'bool',
-          },
-          {
             name: 'releaseTimestamp',
             type: 'i64',
           },
@@ -16934,19 +17595,17 @@ export const IDL: Credix = {
             type: 'publicKey',
           },
           {
-            name: 'disableWithdrawalFee',
-            type: 'bool',
-          },
-          {
-            name: 'bypassWithdrawEpochs',
-            type: 'bool',
-          },
-          {
             name: 'withdrawCap',
             type: {
               option: {
                 defined: 'WithdrawCap',
               },
+            },
+          },
+          {
+            name: 'flags',
+            type: {
+              defined: 'Flags',
             },
           },
         ],
@@ -17288,6 +17947,28 @@ export const IDL: Credix = {
               array: ['publicKey', 10],
             },
           },
+          {
+            name: 'credixTreasury',
+            type: 'publicKey',
+          },
+        ],
+      },
+    },
+    {
+      name: 'oldProgramState',
+      type: {
+        kind: 'struct',
+        fields: [
+          {
+            name: 'credixMultisigKey',
+            type: 'publicKey',
+          },
+          {
+            name: 'credixManagers',
+            type: {
+              array: ['publicKey', 10],
+            },
+          },
         ],
       },
     },
@@ -17408,38 +18089,74 @@ export const IDL: Credix = {
             type: 'u32',
           },
           {
-            name: 'totalRequestedBaseAmount',
-            type: 'u64',
+            name: 'requests',
+            type: {
+              vec: {
+                defined: 'WithdrawRequest',
+              },
+            },
           },
           {
-            name: 'participatingInvestorsTotalLpAmount',
-            type: 'u64',
-          },
-        ],
-      },
-    },
-    {
-      name: 'withdrawRequest',
-      type: {
-        kind: 'struct',
-        fields: [
-          {
-            name: 'baseAmount',
-            type: 'u64',
+            name: 'market',
+            type: 'publicKey',
           },
           {
-            name: 'baseAmountWithdrawn',
-            type: 'u64',
-          },
-          {
-            name: 'investorTotalLpAmount',
-            type: 'u64',
+            name: 'epochId',
+            type: 'u32',
           },
         ],
       },
     },
   ],
   types: [
+    {
+      name: 'OldCredixPass',
+      type: {
+        kind: 'struct',
+        fields: [
+          {
+            name: 'bump',
+            type: 'u8',
+          },
+          {
+            name: 'isBorrower',
+            type: 'bool',
+          },
+          {
+            name: 'isInvestor',
+            type: 'bool',
+          },
+          {
+            name: 'active',
+            type: 'bool',
+          },
+          {
+            name: 'releaseTimestamp',
+            type: 'i64',
+          },
+          {
+            name: 'user',
+            type: 'publicKey',
+          },
+          {
+            name: 'disableWithdrawalFee',
+            type: 'bool',
+          },
+          {
+            name: 'bypassWithdrawEpochs',
+            type: 'bool',
+          },
+          {
+            name: 'withdrawCap',
+            type: {
+              option: {
+                defined: 'WithdrawCap',
+              },
+            },
+          },
+        ],
+      },
+    },
     {
       name: 'MainnetDealTranche',
       type: {
@@ -17490,8 +18207,122 @@ export const IDL: Credix = {
           {
             name: 'tranche',
             type: {
-              defined: 'Tranche',
+              defined: 'MainnetTranche',
             },
+          },
+          {
+            name: 'variableRate',
+            type: {
+              defined: 'VariableRate',
+            },
+          },
+          {
+            name: 'interestRateUpdatedAt',
+            type: 'i64',
+          },
+          {
+            name: 'dataPadding',
+            type: {
+              array: ['u32', 18],
+            },
+          },
+        ],
+      },
+    },
+    {
+      name: 'MainnetTranche',
+      type: {
+        kind: 'struct',
+        fields: [
+          {
+            name: 'size',
+            type: 'u64',
+          },
+          {
+            name: 'outstandingPrincipal',
+            type: 'u64',
+          },
+          {
+            name: 'rates',
+            type: {
+              defined: 'TrancheRates',
+            },
+          },
+          {
+            name: 'amountsDue',
+            type: {
+              defined: 'TrancheAmountsDue',
+            },
+          },
+          {
+            name: 'amountsRepaid',
+            type: {
+              defined: 'TrancheAmountsRepaid',
+            },
+          },
+        ],
+      },
+    },
+    {
+      name: 'MainnetRepaymentPeriod',
+      type: {
+        kind: 'struct',
+        fields: [
+          {
+            name: 'waterfallIndex',
+            type: 'u64',
+          },
+          {
+            name: 'accrualInDays',
+            type: 'u32',
+          },
+          {
+            name: 'principalExpected',
+            type: {
+              option: 'u64',
+            },
+          },
+          {
+            name: 'timeFrame',
+            type: {
+              defined: 'TimeFrame',
+            },
+          },
+          {
+            name: 'calculationWaterfallIndex',
+            type: 'u64',
+          },
+        ],
+      },
+    },
+    {
+      name: 'MainnetWithdrawEpoch',
+      type: {
+        kind: 'struct',
+        fields: [
+          {
+            name: 'goLive',
+            type: 'i64',
+          },
+          {
+            name: 'requestSeconds',
+            type: 'u32',
+          },
+          {
+            name: 'redeemSeconds',
+            type: 'u32',
+          },
+          {
+            name: 'availableLiquiditySeconds',
+            type: 'u32',
+          },
+          {
+            name: 'totalRequestedBaseAmount',
+            type: 'u64',
+          },
+          {
+            name: 'participatingInvestorsTotalLpAmount',
+            type: 'u64',
           },
         ],
       },
@@ -17703,6 +18534,18 @@ export const IDL: Credix = {
       },
     },
     {
+      name: 'Flags',
+      type: {
+        kind: 'struct',
+        fields: [
+          {
+            name: 'innerFlags',
+            type: 'u64',
+          },
+        ],
+      },
+    },
+    {
       name: 'TrancheClaim',
       type: {
         kind: 'struct',
@@ -17847,9 +18690,13 @@ export const IDL: Credix = {
             },
           },
           {
+            name: 'interestRateUpdatedAt',
+            type: 'i64',
+          },
+          {
             name: 'dataPadding',
             type: {
-              array: ['u32', 20],
+              array: ['u32', 18],
             },
           },
         ],
@@ -17885,6 +18732,10 @@ export const IDL: Credix = {
             type: {
               defined: 'TrancheAmountsRepaid',
             },
+          },
+          {
+            name: 'yearlyOutstandingPrincipalForMembershipFees',
+            type: 'u64',
           },
         ],
       },
@@ -18083,6 +18934,10 @@ export const IDL: Credix = {
             name: 'calculationWaterfallIndex',
             type: 'u64',
           },
+          {
+            name: 'calculationDate',
+            type: 'i64',
+          },
         ],
       },
     },
@@ -18187,38 +19042,6 @@ export const IDL: Credix = {
       },
     },
     {
-      name: 'RepaymentPeriodInput',
-      type: {
-        kind: 'struct',
-        fields: [
-          {
-            name: 'calculationWaterfallIndex',
-            type: 'u64',
-          },
-          {
-            name: 'waterfallIndex',
-            type: 'u64',
-          },
-          {
-            name: 'accrualInDays',
-            type: 'u32',
-          },
-          {
-            name: 'principalExpected',
-            type: {
-              option: 'u64',
-            },
-          },
-          {
-            name: 'timeFrame',
-            type: {
-              defined: 'TimeFrame',
-            },
-          },
-        ],
-      },
-    },
-    {
       name: 'TrancheSnapshot',
       type: {
         kind: 'struct',
@@ -18253,6 +19076,34 @@ export const IDL: Credix = {
           },
           {
             name: 'amount',
+            type: 'u64',
+          },
+        ],
+      },
+    },
+    {
+      name: 'WithdrawRequest',
+      type: {
+        kind: 'struct',
+        fields: [
+          {
+            name: 'investor',
+            type: 'publicKey',
+          },
+          {
+            name: 'baseRequested',
+            type: 'u64',
+          },
+          {
+            name: 'baseLocked',
+            type: 'u64',
+          },
+          {
+            name: 'baseAmountWithdrawn',
+            type: 'u64',
+          },
+          {
+            name: 'currentLpTokensOwned',
             type: 'u64',
           },
         ],
@@ -19799,8 +20650,48 @@ export const IDL: Credix = {
     },
     {
       code: 6096,
+      name: 'CollectionTokenAccountNotSet',
+      msg: 'Instruction expected collection token account to be set for the deal',
+    },
+    {
+      code: 6097,
+      name: 'ArrangementFeeCollectionTokenAccountNotSet',
+      msg: 'Instruction expected arrangement fee Collection token account to be set for the deal',
+    },
+    {
+      code: 6098,
+      name: 'LockedLiquidityCalculationIncorrect',
+      msg: 'The sum of total liquidity on investor requests is more than locked liquidity on global market state.',
+    },
+    {
+      code: 6099,
       name: 'MissingArrangementFeeCollectionAuthority',
       msg: 'Arrangement Fee Collection authority Missing',
+    },
+    {
+      code: 6100,
+      name: 'VariableRateInTrancheNotUpdated',
+      msg: 'Variable rate is not updated in last 24 hours.',
+    },
+    {
+      code: 6101,
+      name: 'VariableRepaymentNotOnLastDay',
+      msg: 'Variable rate is only possible on last day of the period.',
+    },
+    {
+      code: 6102,
+      name: 'InvalidDealTranches',
+      msg: 'Deal tranches do not belong to the deal passed',
+    },
+    {
+      code: 6103,
+      name: 'WithdrawRequestNotFound',
+      msg: 'Withdraw Request not found for investor in epoch.',
+    },
+    {
+      code: 6104,
+      name: 'WithdrawRequestAlreadyExists',
+      msg: 'Investors can only create one withdraw request per epoch.',
     },
   ],
 };
