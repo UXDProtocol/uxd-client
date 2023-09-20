@@ -35,11 +35,10 @@ export class CredixLpDepository {
     public readonly credixLiquidityCollateral: PublicKey,
     public readonly credixSharesMint: PublicKey,
     public readonly credixPass: PublicKey,
+    public readonly credixTreasuryPoolCollateral: PublicKey,
+    public readonly credixTreasury: PublicKey,
     public readonly credixTreasuryCollateral: PublicKey,
-    public readonly credixMultisigKey: PublicKey,
-    public readonly credixMultisigCollateral: PublicKey,
     public readonly credixWithdrawEpoch: PublicKey,
-    public readonly credixWithdrawRequest: PublicKey,
     public readonly credixProgramId: PublicKey,
     public readonly credixPoolOutstandingCredit: BN
   ) {}
@@ -111,12 +110,12 @@ export class CredixLpDepository {
 
     // Then we can read all the informations needed from the onchain accounts
     const credixSharesMint = credixGlobalMarketStateAccount.lpTokenMint;
-    const credixTreasuryCollateral =
+    const credixTreasuryPoolCollateral =
       credixGlobalMarketStateAccount.treasuryPoolTokenAccount;
 
-    const credixMultisigKey = credixProgramStateAccount.credixMultisigKey;
-    const credixMultisigCollateral = this.findCredixMultisigCollateralAddress(
-      credixMultisigKey,
+    const credixTreasury = credixProgramStateAccount.credixTreasury;
+    const credixTreasuryCollateral = this.findCredixMultisigCollateralAddress(
+      credixTreasury,
       collateralMint
     );
 
@@ -141,12 +140,6 @@ export class CredixLpDepository {
       credixLatestWithdrawEpochIdx,
       credixProgramId
     );
-    const credixWithdrawRequest = this.findCredixWithdrawRequestAddress(
-      depository,
-      credixGlobalMarketState,
-      credixLatestWithdrawEpochIdx,
-      credixProgramId
-    );
 
     // Resolve final informations when all scheduled work is done
     const collateralDecimals = await collateralDecimalsPromise;
@@ -165,11 +158,10 @@ export class CredixLpDepository {
       credixLiquidityCollateral,
       credixSharesMint,
       credixPass,
+      credixTreasuryPoolCollateral,
+      credixTreasury,
       credixTreasuryCollateral,
-      credixMultisigKey,
-      credixMultisigCollateral,
       credixWithdrawEpoch,
-      credixWithdrawRequest,
       credixProgramId,
       credixPoolOutstandingCredit
     );
@@ -255,10 +247,10 @@ export class CredixLpDepository {
   }
 
   private static findCredixMultisigCollateralAddress(
-    credixMultisigKey: PublicKey,
+    credixTreasury: PublicKey,
     collateralMint: PublicKey
   ): PublicKey {
-    return findATAAddrSync(credixMultisigKey, collateralMint)[0];
+    return findATAAddrSync(credixTreasury, collateralMint)[0];
   }
 
   private static findCredixWithdrawEpochAddress(
@@ -376,23 +368,6 @@ export class CredixLpDepository {
     return credixWithdrawEpochAccount;
   }
 
-  public static async getCredixWithdrawRequestAccount(
-    credixProgram: Program<CredixIDL>,
-    credixWithdrawRequest: PublicKey
-  ) {
-    const credixWithdrawRequestAccount =
-      await credixProgram.account.withdrawRequest.fetchNullable(
-        credixWithdrawRequest
-      );
-    if (!credixWithdrawRequestAccount) {
-      throw new Error(
-        'Could not read credixWithdrawRequest account: ' +
-          credixWithdrawRequest.toString()
-      );
-    }
-    return credixWithdrawRequestAccount;
-  }
-
   public static async getCollateralDecimals(
     connection: Connection,
     collateralMint: PublicKey
@@ -421,9 +396,10 @@ export class CredixLpDepository {
       credixLiquidityCollateral: this.credixLiquidityCollateral.toBase58(),
       credixSharesMint: this.credixSharesMint.toBase58(),
       credixPass: this.credixPass.toBase58(),
+      credixTreasuryPoolCollateral:
+        this.credixTreasuryPoolCollateral.toBase58(),
+      credixTreasury: this.credixTreasury.toBase58(),
       credixTreasuryCollateral: this.credixTreasuryCollateral.toBase58(),
-      credixMultisigKey: this.credixMultisigKey.toBase58(),
-      credixMultisigCollateral: this.credixMultisigCollateral.toBase58(),
       credixProgramId: this.credixProgramId.toBase58(),
     });
     console.groupEnd();
