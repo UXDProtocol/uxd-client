@@ -3,7 +3,6 @@ import {
   Wallet,
   AnchorProvider,
   Program,
-  BN,
 } from '@project-serum/anchor';
 import { ConfirmOptions, Connection, PublicKey } from '@solana/web3.js';
 import { IDL } from '../idl';
@@ -41,6 +40,7 @@ export class AlloyxVaultDepository {
     collateralMint,
     collateralSymbol,
     alloyxVaultId,
+    alloyxVaultMint,
     alloyxProgramId,
   }: {
     connection: Connection;
@@ -48,6 +48,7 @@ export class AlloyxVaultDepository {
     collateralMint: PublicKey;
     collateralSymbol: string;
     alloyxVaultId: string;
+    alloyxVaultMint: PublicKey;
     alloyxProgramId: PublicKey;
   }): Promise<AlloyxVaultDepository> {
     // Collateral decimals can be resolved asynchronously
@@ -58,18 +59,18 @@ export class AlloyxVaultDepository {
 
     // First we need to resolve the basic alloyx vault address
     const alloyxVaultInfo = this.findAlloyxVaultInfoAddress(
-      alloyxProgramId,
-      alloyxVaultId
+      alloyxVaultId,
+      alloyxProgramId
     );
 
     // Then derive alloyx internal accounts that depends on the above
     const alloyxVaultCollateral = this.findAlloyxVaultCollateralAddress(
-      alloyxVaultInfo,
+      alloyxVaultId,
       alloyxProgramId
     );
     const alloyxVaultShares = this.findAlloyxVaultSharesAddress(
-      alloyxVaultCollateral,
-      collateralMint
+      alloyxVaultId,
+      alloyxProgramId
     );
 
     // Then we can find the depository address
@@ -84,22 +85,6 @@ export class AlloyxVaultDepository {
       depository,
       alloyxProgramId
     );
-
-    // Then we can read the content of all alloyx accounts on chain
-    const alloyxProgram = this.getAlloyxProgram(connection, alloyxProgramId);
-    const alloyxVaultInfoAccountPromise = this.getAlloyxVaultInfoAccount(
-      alloyxProgram,
-      alloyxVaultInfo
-    );
-
-    // Wait until we have all the accounts deserialized data before progressing further
-    const alloyxVaultInfoAccount = await alloyxVaultInfoAccountPromise;
-    const alloyxProgramStateAccount = await alloyxProgramStateAccountPromise;
-
-    // Then we can read all the informations needed from the onchain accounts
-    const alloyxVaultMint = alloyxVaultInfoAccount.lpTokenMint;
-    const alloyxTreasuryPoolCollateral =
-      alloyxVaultInfoAccount.treasuryPoolTokenAccount;
 
     // Then generate the depository token accounts
     const depositoryCollateral = this.findDepositoryCollateralAddress(
