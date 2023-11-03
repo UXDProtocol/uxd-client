@@ -6,6 +6,7 @@ export {
   MercurialVaultDepositoryAccount,
   IdentityDepositoryAccount,
   CredixLpDepositoryAccount,
+  AlloyxVaultDepositoryAccount,
 } from './interfaces';
 export { MercurialVaultDepository } from './mercurial/depository';
 export { IdentityDepository } from './identity/depository';
