@@ -94,3 +94,27 @@ export class CredixLpDepositoryAccount {
   profitsTotalCollected!: BN; // u128
   profitsBeneficiaryCollateral!: PublicKey;
 }
+
+// V1
+export class AlloyxVaultDepositoryAccount {
+  bump!: number; // u8
+  version!: number; // u8
+  controller!: PublicKey;
+  collateralMint!: PublicKey;
+  depositoryCollateral!: PublicKey;
+  depositoryShares!: PublicKey;
+  alloyxVaultInfo!: PublicKey;
+  alloyxVaultCollateral!: PublicKey;
+  alloyxVaultShares!: PublicKey;
+  alloyxVaultMint!: PublicKey;
+  redeemableAmountUnderManagementCap!: BN; // u64
+  mintingFeeInBps!: number; // u8
+  redeemingFeeInBps!: number; // u8
+  mintingDisabled!: boolean;
+  collateralAmountDeposited!: BN; // u64
+  redeemableAmountUnderManagement!: BN; // u64
+  mintingFeeTotalAccrued!: BN; // u64
+  redeemingFeeTotalAccrued!: BN; // u64
+  profitsTotalCollected!: BN; // u64
+  profitsBeneficiaryCollateral!: PublicKey;
+}

@@ -18,6 +18,7 @@ import { IDL as UXD_IDL } from './idl';
 import type { Uxd as UXD_IDL_TYPE } from './idl';
 import { IdentityDepository } from './identity/depository';
 import { CredixLpDepository } from './credix_lp/depository';
+import { AlloyxVaultDepository } from './alloyx_vault/depository';
 
 export class UXDClient {
   public instruction: InstructionNamespace<UXD_IDL_TYPE>;
@@ -61,11 +62,13 @@ export class UXDClient {
         identityDepositoryWeightBps: number;
         mercurialVaultDepositoryWeightBps: number;
         credixLpDepositoryWeightBps: number;
+        alloyxVaultDepositoryWeightBps: number;
       };
       routerDepositories?: {
         identityDepository: PublicKey;
         mercurialVaultDepository: PublicKey;
         credixLpDepository: PublicKey;
+        alloyxVaultDepository: PublicKey;
       };
       outflowLimitPerEpochAmount?: number;
       outflowLimitPerEpochBps?: number;
@@ -423,27 +426,6 @@ export class UXDClient {
     });
   }
 
-  /**
-   * @deprecated
-   * for backward compatibility only
-   * please use createEditControllerInstruction instead
-   */
-  public createSetRedeemableGlobalSupplyCapInstruction(
-    controller: Controller,
-    authority: PublicKey,
-    redeemableGlobalSupplyCap: number,
-    options: ConfirmOptions
-  ): TransactionInstruction {
-    return this.createEditControllerInstruction(
-      controller,
-      authority,
-      {
-        redeemableGlobalSupplyCap,
-      },
-      options
-    );
-  }
-
   public createEditIdentityDepositoryInstruction(
     controller: Controller,
     depository: IdentityDepository,
@@ -707,6 +689,7 @@ export class UXDClient {
     identityDepository: IdentityDepository,
     mercurialVaultDepository: MercurialVaultDepository,
     credixLpDepository: CredixLpDepository,
+    alloyxVaultDepository: AlloyxVaultDepository,
     payer: PublicKey,
     options: ConfirmOptions
   ): TransactionInstruction {
@@ -717,11 +700,14 @@ export class UXDClient {
         accounts: {
           payer: payer,
           controller: controller.pda,
-          identityDepository: identityDepository.pda,
-          mercurialVaultDepository: mercurialVaultDepository.pda,
-          depository: credixLpDepository.pda,
           collateralMint: collateralMintPda,
-          depositoryShares: credixLpDepository.depositoryShares,
+
+          identityDepository: identityDepository.pda,
+
+          mercurialVaultDepository: mercurialVaultDepository.pda,
+
+          credixLpDepository: credixLpDepository.pda,
+          credixLpDepositoryShares: credixLpDepository.depositoryShares,
           credixGlobalMarketState: credixLpDepository.credixGlobalMarketState,
           credixSigningAuthority: credixLpDepository.credixSigningAuthority,
           credixLiquidityCollateral:
@@ -729,6 +715,9 @@ export class UXDClient {
           credixSharesMint: credixLpDepository.credixSharesMint,
           credixPass: credixLpDepository.credixPass,
           credixWithdrawEpoch: credixLpDepository.credixWithdrawEpoch,
+
+          alloyxVaultDepository: alloyxVaultDepository.pda,
+
           systemProgram: SystemProgram.programId,
           credixProgram: credixLpDepository.credixProgramId,
         },
@@ -742,6 +731,7 @@ export class UXDClient {
     identityDepository: IdentityDepository,
     mercurialVaultDepository: MercurialVaultDepository,
     credixLpDepository: CredixLpDepository,
+    alloyxVaultDepository: AlloyxVaultDepository,
     payer: PublicKey,
     profitsBeneficiaryCollateral: PublicKey,
     options: ConfirmOptions
@@ -753,13 +743,16 @@ export class UXDClient {
         accounts: {
           payer: payer,
           controller: controller.pda,
+          collateralMint: collateralMintPda,
+
           identityDepository: identityDepository.pda,
           identityDepositoryCollateral: identityDepository.collateralVaultPda,
+
           mercurialVaultDepository: mercurialVaultDepository.pda,
-          depository: credixLpDepository.pda,
-          collateralMint: collateralMintPda,
-          depositoryCollateral: credixLpDepository.depositoryCollateral,
-          depositoryShares: credixLpDepository.depositoryShares,
+
+          credixLpDepository: credixLpDepository.pda,
+          credixLpDepositoryCollateral: credixLpDepository.depositoryCollateral,
+          credixLpDepositoryShares: credixLpDepository.depositoryShares,
           credixProgramState: credixLpDepository.credixProgramState,
           credixGlobalMarketState: credixLpDepository.credixGlobalMarketState,
           credixSigningAuthority: credixLpDepository.credixSigningAuthority,
@@ -772,6 +765,9 @@ export class UXDClient {
           credixTreasury: credixLpDepository.credixTreasury,
           credixTreasuryCollateral: credixLpDepository.credixTreasuryCollateral,
           credixWithdrawEpoch: credixLpDepository.credixWithdrawEpoch,
+
+          alloyxVaultDepository: alloyxVaultDepository.pda,
+
           profitsBeneficiaryCollateral: profitsBeneficiaryCollateral,
           systemProgram: SystemProgram.programId,
           tokenProgram: TOKEN_PROGRAM_ID,
@@ -804,6 +800,7 @@ export class UXDClient {
     identityDepository: IdentityDepository,
     mercurialVaultDepository: MercurialVaultDepository,
     credixLpDepository: CredixLpDepository,
+    alloyxVaultDepository: AlloyxVaultDepository,
     user: PublicKey,
     collateralAmount: number,
     options: ConfirmOptions,
@@ -858,6 +855,8 @@ export class UXDClient {
           credixLpDepository.credixLiquidityCollateral,
         credixLpDepositorySharesMint: credixLpDepository.credixSharesMint,
 
+        alloyxVaultDepository: alloyxVaultDepository.pda,
+
         systemProgram: SystemProgram.programId,
         tokenProgram: TOKEN_PROGRAM_ID,
         associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
@@ -875,6 +874,7 @@ export class UXDClient {
     identityDepository: IdentityDepository,
     mercurialVaultDepository: MercurialVaultDepository,
     credixLpDepository: CredixLpDepository,
+    alloyxVaultDepository: AlloyxVaultDepository,
     user: PublicKey,
     redeemableAmount: number,
     options: ConfirmOptions,
@@ -917,6 +917,8 @@ export class UXDClient {
           mercurialVaultDepository.mercurialVaultCollateralTokenSafe,
 
         credixLpDepository: credixLpDepository.pda,
+
+        alloyxVaultDepository: alloyxVaultDepository.pda,
 
         systemProgram: SystemProgram.programId,
         tokenProgram: TOKEN_PROGRAM_ID,
