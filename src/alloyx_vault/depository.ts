@@ -185,13 +185,13 @@ export class AlloyxVaultDepository {
   }
 
   private static findAlloyxVaultPassAddress(
-    alloyxVaultId: PublicKey,
+    alloyxVaultId: string,
     depository: PublicKey,
     alloyxProgramId: PublicKey
   ): PublicKey {
     return PublicKey.findProgramAddressSync(
       [
-        alloyxVaultId.toBuffer(),
+        Buffer.from(alloyxVaultId),
         Buffer.from(ALLOYX_VAULT_INTERNAL_VAULT_PASS_NAMESPACE),
         depository.toBuffer(),
       ],
