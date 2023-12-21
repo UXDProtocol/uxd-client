@@ -79,9 +79,10 @@ export class AlloyxVaultDepository {
       collateralMint,
       uxdProgramId
     );
+
     // Then the alloyx pass which depends on the depository
     const alloyxVaultPass = this.findAlloyxVaultPassAddress(
-      alloyxVaultInfo,
+      alloyxVaultId,
       depository,
       alloyxProgramId
     );
