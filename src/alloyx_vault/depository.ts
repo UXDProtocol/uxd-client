@@ -26,6 +26,7 @@ export class AlloyxVaultDepository {
     public readonly collateralSymbol: string,
     public readonly depositoryCollateral: PublicKey,
     public readonly depositoryShares: PublicKey,
+    public readonly alloyxVaultId: string,
     public readonly alloyxVaultInfo: PublicKey,
     public readonly alloyxVaultCollateral: PublicKey,
     public readonly alloyxVaultShares: PublicKey,
@@ -79,9 +80,10 @@ export class AlloyxVaultDepository {
       collateralMint,
       uxdProgramId
     );
+
     // Then the alloyx pass which depends on the depository
     const alloyxVaultPass = this.findAlloyxVaultPassAddress(
-      alloyxVaultInfo,
+      alloyxVaultId,
       depository,
       alloyxProgramId
     );
@@ -107,6 +109,7 @@ export class AlloyxVaultDepository {
       collateralSymbol,
       depositoryCollateral,
       depositoryShares,
+      alloyxVaultId,
       alloyxVaultInfo,
       alloyxVaultCollateral,
       alloyxVaultShares,
@@ -185,13 +188,13 @@ export class AlloyxVaultDepository {
   }
 
   private static findAlloyxVaultPassAddress(
-    alloyxVaultId: PublicKey,
+    alloyxVaultId: string,
     depository: PublicKey,
     alloyxProgramId: PublicKey
   ): PublicKey {
     return PublicKey.findProgramAddressSync(
       [
-        alloyxVaultId.toBuffer(),
+        Buffer.from(alloyxVaultId),
         Buffer.from(ALLOYX_VAULT_INTERNAL_VAULT_PASS_NAMESPACE),
         depository.toBuffer(),
       ],

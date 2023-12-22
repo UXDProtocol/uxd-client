@@ -13,10 +13,6 @@ export class ControllerAccount {
   isFrozen!: boolean;
   redeemableGlobalSupplyCap!: BN; // u128
   redeemableCirculatingSupply!: BN; // u128
-  registeredMercurialVaultDepositories!: PublicKey[];
-  registeredMercurialVaultDepositoriesCount!: number; // u8
-  registeredCredixLpDepositories!: PublicKey[];
-  registeredCredixLpDepositoriesCount!: number; // u8
   profitsTotalCollected!: BN; // u128
   identityDepositoryWeightBps!: number; // u16
   mercurialVaultDepositoryWeightBps!: number; // u16
@@ -29,6 +25,8 @@ export class ControllerAccount {
   slotsPerEpoch!: BN; // u64
   epochOutflowAmount!: BN; // u64
   lastOutflowSlot!: BN; // u64
+  alloyxVaultDepository!: PublicKey;
+  alloyxVaultDepositoryWeightBps!: number; // u16
 }
 
 // V1

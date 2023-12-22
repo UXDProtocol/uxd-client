@@ -780,6 +780,146 @@ export class UXDClient {
     );
   }
 
+  public createEditAlloyxVaultDepositoryInstruction(
+    controller: Controller,
+    depository: AlloyxVaultDepository,
+    authority: PublicKey,
+    uiFields: {
+      redeemableAmountUnderManagementCap?: number;
+      mintingFeeInBps?: number;
+      redeemingFeeInBps?: number;
+      mintingDisabled?: boolean;
+      profitsBeneficiaryCollateral?: PublicKey;
+    },
+    options: ConfirmOptions
+  ): TransactionInstruction {
+    const {
+      redeemableAmountUnderManagementCap,
+      mintingFeeInBps,
+      redeemingFeeInBps,
+      mintingDisabled,
+      profitsBeneficiaryCollateral,
+    } = uiFields;
+    const fields = {
+      redeemableAmountUnderManagementCap:
+        redeemableAmountUnderManagementCap !== undefined
+          ? uiToNative(
+              redeemableAmountUnderManagementCap,
+              controller.redeemableMintDecimals
+            )
+          : null,
+      mintingFeeInBps: mintingFeeInBps !== undefined ? mintingFeeInBps : null,
+      redeemingFeeInBps:
+        redeemingFeeInBps !== undefined ? redeemingFeeInBps : null,
+      mintingDisabled: mintingDisabled !== undefined ? mintingDisabled : null,
+      profitsBeneficiaryCollateral:
+        profitsBeneficiaryCollateral !== undefined
+          ? profitsBeneficiaryCollateral
+          : null,
+    };
+    return this.instruction.editAlloyxVaultDepository(fields, {
+      accounts: {
+        authority,
+        controller: controller.pda,
+        depository: depository.pda,
+      },
+      options,
+    });
+  }
+
+  public createRegisterAlloyxVaultDepositoryInstruction(
+    controller: Controller,
+    depository: AlloyxVaultDepository,
+    authority: PublicKey,
+    mintingFeeInBps: number,
+    redeemingFeeInBps: number,
+    redeemableAmountUnderManagementCap: number,
+    options: ConfirmOptions,
+    payer?: PublicKey
+  ): TransactionInstruction {
+    const nativeRedeemableAmountUnderManagementCap = uiToNative(
+      redeemableAmountUnderManagementCap,
+      controller.redeemableMintDecimals
+    );
+
+    return this.instruction.registerAlloyxVaultDepository(
+      mintingFeeInBps,
+      redeemingFeeInBps,
+      nativeRedeemableAmountUnderManagementCap,
+      {
+        accounts: {
+          authority,
+          payer: payer ?? authority,
+          controller: controller.pda,
+          depository: depository.pda,
+          collateralMint: depository.collateralMint,
+          depositoryCollateral: depository.depositoryCollateral,
+          depositoryShares: depository.depositoryShares,
+          alloyxVaultInfo: depository.alloyxVaultInfo,
+          alloyxVaultCollateral: depository.alloyxVaultCollateral,
+          alloyxVaultShares: depository.alloyxVaultShares,
+          alloyxVaultMint: depository.alloyxVaultMint,
+          systemProgram: SystemProgram.programId,
+          tokenProgram: TOKEN_PROGRAM_ID,
+          associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+          rent: SYSVAR_RENT_PUBKEY,
+        },
+        options,
+      }
+    );
+  }
+
+  public createRebalanceAlloyxVaultDepositoryInstruction(
+    controller: Controller,
+    identityDepository: IdentityDepository,
+    mercurialVaultDepository: MercurialVaultDepository,
+    credixLpDepository: CredixLpDepository,
+    alloyxVaultDepository: AlloyxVaultDepository,
+    payer: PublicKey,
+    profitsBeneficiaryCollateral: PublicKey,
+    options: ConfirmOptions
+  ): TransactionInstruction {
+    const collateralMintPda = identityDepository.collateralMint;
+    const payerCollateral = findATAAddrSync(payer, collateralMintPda)[0];
+
+    return this.instruction.rebalanceAlloyxVaultDepository(
+      alloyxVaultDepository.alloyxVaultId,
+      {
+        accounts: {
+          payer: payer,
+          payerCollateral: payerCollateral,
+
+          controller: controller.pda,
+          collateralMint: collateralMintPda,
+
+          identityDepository: identityDepository.pda,
+          identityDepositoryCollateral: identityDepository.collateralVaultPda,
+
+          mercurialVaultDepository: mercurialVaultDepository.pda,
+
+          credixLpDepository: credixLpDepository.pda,
+
+          alloyxVaultDepository: alloyxVaultDepository.pda,
+          alloyxVaultDepositoryCollateral:
+            alloyxVaultDepository.depositoryCollateral,
+          alloyxVaultDepositoryShares: alloyxVaultDepository.depositoryShares,
+          alloyxVaultInfo: alloyxVaultDepository.alloyxVaultInfo,
+          alloyxVaultCollateral: alloyxVaultDepository.alloyxVaultCollateral,
+          alloyxVaultShares: alloyxVaultDepository.alloyxVaultShares,
+          alloyxVaultMint: alloyxVaultDepository.alloyxVaultMint,
+          alloyxVaultPass: alloyxVaultDepository.alloyxVaultPass,
+
+          profitsBeneficiaryCollateral: profitsBeneficiaryCollateral,
+          systemProgram: SystemProgram.programId,
+          tokenProgram: TOKEN_PROGRAM_ID,
+          associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+          alloyxProgram: alloyxVaultDepository.alloyxProgramId,
+        },
+        options,
+      }
+    );
+  }
+
   public createFreezeProgramInstruction(
     freeze: boolean,
     controller: Controller,
